@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Unified Cyber Threat Detection Platform Prototype</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <script src="../static/js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Unified Cyber Threat Detection Platform</h1>
+            <p>AI-Powered Email & Web Security Analysis with Explainable AI</p>
+            <div style="margin-top: 10px;">
+                <span class="status-indicator status-active"></span>
+                <span>Platform Status: Active</span>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="control-panel">
+                <h2 style="color: #2c3e50; margin-bottom: 25px;">🔍 Threat Analysis Control</h2>
+                
+                <div class="demo-buttons">
+                    <button class="demo-btn" onclick="loadDemo('phishing')">📧 Phishing</button>
+                    <button class="demo-btn" onclick="loadDemo('bruteforce')">🔓 Brute Force</button>
+                    <button class="demo-btn" onclick="loadDemo('coordinated')">🎯 Coordinated</button>
+                </div>
+                
+                <div class="input-group">
+                    <label for="emailContent">📧 Email Content</label>
+                    <textarea id="emailContent" placeholder="Paste suspicious email content here..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="emailSender">👤 Email Sender</label>
+                    <input type="text" id="emailSender" placeholder="sender@domain.com">
+                </div>
+                
+                <div class="input-group">
+                    <label for="emailSubject">📝 Email Subject</label>
+                    <input type="text" id="emailSubject" placeholder="Email subject line">
+                </div>
+                
+                <div class="input-group">
+                    <label for="ipAddress">🌐 IP Address</label>
+                    <input type="text" id="ipAddress" placeholder="192.168.1.100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="requestCount">📊 Request Count (last hour)</label>
+                    <input type="number" id="requestCount" placeholder="10" value="10" min="0" max="1000">
+                </div>
+                
+                <div class="input-group">
+                    <label for="errorRate">⚠️ Error Rate (%)</label>
+                    <input type="number" id="errorRate" placeholder="5" value="5" min="0" max="100">
+                </div>
+                
+                <button class="analyze-btn" onclick="analyzeThreat()" id="analyzeBtn">
+                    🔍 Analyze Threats
+                </button>
+            </div>
+            
+            <div class="analysis-results">
+                <div id="resultsContent">
+                    <div class="loading">
+                        <h3>🛡️ Ready to Analyze</h3>
+                        <p>Enter threat data and click "Analyze Threats" to begin comprehensive security analysis.</p>
+                        <div style="margin-top: 30px;">
+                            <h4>🎯 Platform Capabilities:</h4>
+                            <ul class="feature-list" style="text-align: left; margin-top: 15px;">
+                                <li>📧 Email Phishing Detection with XAI</li>
+                                <li>🌐 Web Traffic Anomaly Detection</li>
+                                <li>🔗 Cross-Platform Threat Correlation</li>
+                                <li>🧠 Explainable AI Insights</li>
+                                <li>🎯 Unified Risk Scoring</li>
+                                <li>🛠️ Actionable Security Recommendations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

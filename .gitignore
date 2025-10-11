@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data files
+data/raw/*
+data/processed/*
+!data/samples/
+*.csv
+*.xlsx
+*.json
+*.txt
+!requirements.txt
+
+# Models
+models/*.pkl
+models/*.joblib
+models/*.h5
+
+# Reports
+reports/*.html
+reports/*.pdf
+reports/*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Flask
+instance/
+.webassets-cache
+
+
+
+
+
+
+
+
+
