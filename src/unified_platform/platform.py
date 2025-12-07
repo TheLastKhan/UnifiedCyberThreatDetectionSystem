@@ -213,3 +213,4 @@ class ThreatIntelligence:
                     intelligence['attack_techniques'].append('SQL Injection')
         
         return intelligence
+

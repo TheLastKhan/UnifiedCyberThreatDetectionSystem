@@ -42,6 +42,27 @@ def initialize_platform():
             {'ip': '192.168.1.100', 'timestamp': '20/Sep/2025:13:55:36 +0200', 'method': 'GET', 
              'path': '/', 'status': '200', 'user_agent': 'Mozilla/5.0'}
         ]
+
+        # 10 farklı IP'den normal trafik simülasyonu
+        for i in range(10, 20):
+            web_logs.append({
+                'ip': f'192.168.1.{i}', 
+                'timestamp': '20/Sep/2025:14:00:00 +0200', 
+                'method': 'GET', 
+                'path': '/dashboard', 
+                'status': '200', 
+                'user_agent': 'Mozilla/5.0'
+            })
+
+        # Bir tane de eğitim setine "Anormal" veri ekleyelim ki farkı görsün
+        web_logs.append({
+            'ip': '10.10.10.10',
+            'timestamp': '20/Sep/2025:14:00:00 +0200',
+            'method': 'GET',
+            'path': '/admin/login', # Admin paneline
+            'status': '401',        # Başarısız giriş
+            'user_agent': 'sqlmap'  # Şüpheli araç
+        })
         
         platform = UnifiedThreatPlatform()
         
@@ -232,3 +253,4 @@ if __name__ == '__main__':
     
     # Run Flask app
     app.run(debug=True, host='0.0.0.0', port=5000)
+
