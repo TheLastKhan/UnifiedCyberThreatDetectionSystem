@@ -56,6 +56,19 @@ pylint>=2.13.0
 openpyxl>=3.0.10
 xlsxwriter>=3.0.3
 
+# Database & ORM
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+alembic>=1.9.0
+sqlmodel>=0.0.8
+
+# REST API Framework
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+pydantic[email]>=2.0.0
+python-multipart>=0.0.6
+
 # Optional but Recommended
 psutil>=5.9.0
 memory-profiler>=0.60.0
