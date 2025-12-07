@@ -42,8 +42,15 @@ python-dotenv>=0.20.0
 
 # Development & Testing
 pytest>=7.1.0
+pytest-cov>=4.0.0
 jupyter>=1.0.0
 ipython>=8.4.0
+
+# Code Quality & Type Checking
+flake8>=4.0.0
+mypy>=0.990
+black>=22.0.0
+pylint>=2.13.0
 
 # Data Processing
 openpyxl>=3.0.10

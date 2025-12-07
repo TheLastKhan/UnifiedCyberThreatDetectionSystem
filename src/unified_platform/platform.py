@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import json
 import logging
+from typing import Dict, List, Tuple, Optional, Any, Union
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +32,7 @@ class UnifiedThreatPlatform:
         threat_intelligence: ThreatIntelligence module
     """
     
-    def __init__(self, email_config=None, web_config=None):
+    def __init__(self, email_config: Optional[Dict[str, Any]] = None, web_config: Optional[Dict[str, Any]] = None):
         """
         Initialize the Unified Threat Detection Platform.
         
@@ -44,7 +45,7 @@ class UnifiedThreatPlatform:
         self.correlation_engine = CorrelationEngine()
         self.threat_intelligence = ThreatIntelligence()
         
-    def initialize(self, email_data=None, web_logs=None):
+    def initialize(self, email_data: Optional[Tuple[pd.DataFrame, List[int]]] = None, web_logs: Optional[pd.DataFrame] = None) -> None:
         """
         Initialize platform and train models.
         
@@ -84,7 +85,9 @@ class UnifiedThreatPlatform:
             print(f"❌ Initialization failed: {e}")
             raise
     
-    def analyze_unified_threat(self, email_data=None, web_logs=None, ip_address=None):
+    def analyze_unified_threat(self, email_data: Optional[Union[Dict[str, str], str]] = None, 
+                              web_logs: Optional[List[Dict[str, Any]]] = None, 
+                              ip_address: Optional[str] = None) -> Dict[str, Any]:
         """
         Perform unified threat analysis across email and web platforms.
         
@@ -164,7 +167,7 @@ class UnifiedThreatPlatform:
             logger.error(f"Error in unified threat analysis: {e}")
             raise
     
-    def _calculate_unified_risk(self, results):
+    def _calculate_unified_risk(self, results: Dict[str, Any]) -> float:
         """Birleşik risk skorunu hesaplar"""
         email_risk = 0
         web_risk = 0
@@ -186,7 +189,7 @@ class UnifiedThreatPlatform:
         total_risk = min(100, email_risk + web_risk + correlation_bonus)
         return round(total_risk, 1)
     
-    def _determine_threat_level(self, risk_score):
+    def _determine_threat_level(self, risk_score: float) -> str:
         """Risk skoruna göre tehdit seviyesi belirler"""
         if risk_score >= 80:
             return 'CRITICAL'
@@ -197,7 +200,7 @@ class UnifiedThreatPlatform:
         else:
             return 'LOW'
     
-    def _generate_unified_recommendations(self, results):
+    def _generate_unified_recommendations(self, results: Dict[str, Any]) -> Dict[str, List[str]]:
         """Birleşik öneriler oluşturur"""
         recommendations = {
             'immediate': [],

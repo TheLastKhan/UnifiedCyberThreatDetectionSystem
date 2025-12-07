@@ -15,6 +15,12 @@ from lime.lime_tabular import LimeTabularExplainer
 import re
 import pickle
 import os
+from typing import Dict, List, Tuple, Optional, Any
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class EmailPhishingDetector:
     """
@@ -55,7 +61,7 @@ class EmailPhishingDetector:
         self.lime_explainer = None
         self.is_trained = False
     
-    def extract_email_features(self, email_text, sender="", subject=""):
+    def extract_email_features(self, email_text: str, sender: str = "", subject: str = "") -> Dict[str, Any]:
         """
         Extract features from email text.
         
@@ -113,11 +119,11 @@ class EmailPhishingDetector:
         
         return features
     
-    def _count_patterns(self, text, patterns):
+    def _count_patterns(self, text: str, patterns: List[str]) -> int:
         """Belirli pattern'leri sayar"""
         return sum(text.lower().count(pattern) for pattern in patterns)
     
-    def _check_suspicious_urls(self, text):
+    def _check_suspicious_urls(self, text: str) -> int:
         """Şüpheli URL pattern'leri kontrol eder"""
         suspicious_patterns = [
             r'bit\.ly', r'tinyurl', r'\.tk', r'\.ml',
@@ -126,7 +132,7 @@ class EmailPhishingDetector:
         return sum(1 for pattern in suspicious_patterns 
                   if re.search(pattern, text.lower()))
     
-    def _analyze_sender(self, sender):
+    def _analyze_sender(self, sender: str) -> int:
         """Sender'ın şüphe skorunu hesaplar"""
         if not sender:
             return 1
@@ -148,7 +154,7 @@ class EmailPhishingDetector:
             
         return suspicious_score
     
-    def train(self, emails_df, labels):
+    def train(self, emails_df: pd.DataFrame, labels: List[int]) -> np.ndarray:
         """
         Train the email phishing detector model.
         
@@ -225,7 +231,7 @@ class EmailPhishingDetector:
             print(f"❌ Error during training: {e}")
             raise
     
-    def predict_with_explanation(self, email_text, sender="", subject=""):
+    def predict_with_explanation(self, email_text: str, sender: str = "", subject: str = "") -> Dict[str, Any]:
         """
         Predict phishing probability with LIME explanation.
         
@@ -291,7 +297,7 @@ class EmailPhishingDetector:
             print(f"❌ Error during prediction: {e}")
             raise
     
-    def _identify_risk_factors(self, features, email_text):
+    def _identify_risk_factors(self, features: Dict[str, Any], email_text: str) -> List[str]:
         """Risk faktörlerini belirler"""
         risks = []
         
@@ -318,7 +324,7 @@ class EmailPhishingDetector:
         
         return risks
     
-    def save_model(self, filepath):
+    def save_model(self, filepath: str) -> None:
         """
         Save the trained model to disk.
         
@@ -351,7 +357,7 @@ class EmailPhishingDetector:
             print(f"❌ Error saving model: {e}")
             raise
     
-    def load_model(self, filepath):
+    def load_model(self, filepath: str) -> None:
         """
         Load a previously trained model from disk.
         

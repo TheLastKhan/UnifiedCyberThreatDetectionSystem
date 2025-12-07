@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict, Counter
 import ipaddress
 import logging
+from typing import Dict, List, Tuple, Optional, Any
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -53,7 +54,7 @@ class WebLogAnalyzer:
         self.is_trained = False
         self.attack_patterns = {}
         
-    def parse_log_line(self, log_line):
+    def parse_log_line(self, log_line: str) -> Optional[Dict[str, str]]:
         """
         Parse Apache/Nginx combined log format.
         
@@ -88,7 +89,7 @@ class WebLogAnalyzer:
             logger.error(f"Error parsing log line: {e}")
             return None
     
-    def extract_behavioral_features(self, ip_logs):
+    def extract_behavioral_features(self, ip_logs: List[Dict[str, Any]]) -> Dict[str, Any]:
         """IP'nin davranışsal özelliklerini çıkarır"""
         if not ip_logs:
             return {}
@@ -195,7 +196,7 @@ class WebLogAnalyzer:
         
         return features
     
-    def _calculate_geo_risk(self, ip):
+    def _calculate_geo_risk(self, ip: str) -> float:
         """IP'nin coğrafi risk skorunu hesaplar (basit)"""
         high_risk_prefixes = ['1.1.1', '8.8.8', '208.67']
         for prefix in high_risk_prefixes:
@@ -203,14 +204,14 @@ class WebLogAnalyzer:
                 return 0.8
         return 0.2
     
-    def _is_private_ip(self, ip):
+    def _is_private_ip(self, ip: str) -> bool:
         """IP'nin private olup olmadığını kontrol eder"""
         try:
             return ipaddress.ip_address(ip).is_private
         except:
             return False
     
-    def detect_attack_patterns(self, ip_logs):
+    def detect_attack_patterns(self, ip_logs: List[Dict[str, Any]]) -> List[str]:
         """Saldırı pattern'lerini tespit eder"""
         attacks = []
         
@@ -244,7 +245,7 @@ class WebLogAnalyzer:
         
         return attacks
     
-    def train_anomaly_detector(self, logs_df):
+    def train_anomaly_detector(self, logs_df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
         """
         Train the anomaly detection model on web logs.
         
@@ -309,7 +310,7 @@ class WebLogAnalyzer:
             print(f"❌ Error during training: {e}")
             raise
     
-    def analyze_ip_with_explanation(self, ip_logs, ip_address):
+    def analyze_ip_with_explanation(self, ip_logs: List[Dict[str, Any]], ip_address: str) -> Optional[Dict[str, Any]]:
         """
         Analyze IP behavior with anomaly detection and explanations.
         
@@ -373,7 +374,7 @@ class WebLogAnalyzer:
             logger.error(f"Error analyzing IP {ip_address}: {e}")
             raise
     
-    def _calculate_risk_level(self, anomaly_score, attack_patterns, features):
+    def _calculate_risk_level(self, anomaly_score: float, attack_patterns: List[str], features: Dict[str, Any]) -> str:
         """Risk seviyesini hesaplar"""
         base_risk = 0
         
@@ -402,7 +403,7 @@ class WebLogAnalyzer:
         else:
             return 'LOW'
     
-    def _generate_insights(self, features):
+    def _generate_insights(self, features: Dict[str, Any]) -> List[str]:
         """Davranışsal insights oluşturur"""
         insights = []
         
@@ -420,7 +421,7 @@ class WebLogAnalyzer:
         
         return insights
     
-    def _generate_recommendations(self, attack_patterns, features):
+    def _generate_recommendations(self, attack_patterns: List[str], features: Dict[str, Any]) -> List[str]:
         """Güvenlik önerileri oluşturur"""
         recommendations = []
         
