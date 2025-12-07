@@ -31,6 +31,13 @@ Sistemin gerçek dünya senaryolarında nasıl kullanılacağına dair kapsamlı
 - **[Usage Scenarios & Tutorials](docs/USAGE_SCENARIOS.md)** - 5 detaylı senaryo (Phishing Campaign, Web Attack, Coordinated Attack, Model Training, Dashboard Integration)
 - **[Best Practices Guide](docs/BEST_PRACTICES.md)** - Veri hazırlığı, model eğitimi, deployment checklist, troubleshooting
 
+### Deployment & Operations
+Production ortamına deploy etmek için kapsamlı kılavuzlar:
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Docker, Nginx, SSL/TLS, Monitoring, Backup, Production Checklist
+- **[Dockerfile](Dockerfile)** - Production-ready Docker image
+- **[docker-compose.yml](docker-compose.yml)** - Full stack (API, Database, Cache, Nginx, Monitoring)
+- **[.env.example](.env.example)** - Environment configuration template
+
 ### Hızlı Genel Bakış
 
 ```
