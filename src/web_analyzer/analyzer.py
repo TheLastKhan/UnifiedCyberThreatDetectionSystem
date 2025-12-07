@@ -12,9 +12,37 @@ import re
 from datetime import datetime, timedelta
 from collections import defaultdict, Counter
 import ipaddress
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class WebLogAnalyzer:
+    """
+    Web log analysis using machine learning and behavioral analysis.
+    
+    This class analyzes web server logs to detect anomalies and attacks
+    using Isolation Forest anomaly detection and pattern matching.
+    
+    Attributes:
+        config (dict): Configuration parameters for the analyzer
+        scaler: StandardScaler for feature normalization
+        anomaly_detector: IsolationForest model for anomaly detection
+        feature_names (list): Names of all features used in the model
+        is_trained (bool): Whether the model has been trained
+        attack_patterns (dict): Definitions of known attack patterns
+    """
+    
     def __init__(self, config=None):
+        """
+        Initialize the WebLogAnalyzer.
+        
+        Args:
+            config (dict, optional): Configuration dictionary with keys:
+                - contamination (float): Expected proportion of anomalies (default: 0.1)
+                - random_state (int): Random seed for reproducibility (default: 42)
+        """
         self.config = config or {}
         self.scaler = StandardScaler()
         self.anomaly_detector = IsolationForest(
@@ -26,19 +54,39 @@ class WebLogAnalyzer:
         self.attack_patterns = {}
         
     def parse_log_line(self, log_line):
-        """Apache/Nginx log formatını parse eder"""
-        # Combined Log Format pattern
-        pattern = (r'(?P<ip>\d+\.\d+\.\d+\.\d+) '
-                  r'- - \[(?P<timestamp>[^\]]+)\] '
-                  r'"(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" '
-                  r'(?P<status>\d+) (?P<size>\S+) '
-                  r'"(?P<referer>[^"]*)" "(?P<user_agent>[^"]*)"')
+        """
+        Parse Apache/Nginx combined log format.
         
-        match = re.match(pattern, log_line)
-        if not match:
+        Args:
+            log_line (str): A single line from web server log
+            
+        Returns:
+            dict: Parsed log components or None if parsing fails
+                - ip, timestamp, method, path, protocol
+                - status, size, referer, user_agent
+                
+        Example:
+            >>> log = '192.168.1.1 - - [01/Jan/2025:12:00:00 +0000] "GET / HTTP/1.1" 200 1234 "-" "Mozilla/5.0"'
+            >>> parser.parse_log_line(log)
+        """
+        try:
+            # Combined Log Format pattern
+            pattern = (r'(?P<ip>\d+\.\d+\.\d+\.\d+) '
+                      r'- - \[(?P<timestamp>[^\]]+)\] '
+                      r'"(?P<method>\S+) (?P<path>\S+) (?P<protocol>\S+)" '
+                      r'(?P<status>\d+) (?P<size>\S+) '
+                      r'"(?P<referer>[^"]*)" "(?P<user_agent>[^"]*)"')
+            
+            match = re.match(pattern, log_line)
+            if not match:
+                logger.warning(f"Failed to parse log line: {log_line[:50]}...")
+                return None
+            
+            return match.groupdict()
+            
+        except Exception as e:
+            logger.error(f"Error parsing log line: {e}")
             return None
-        
-        return match.groupdict()
     
     def extract_behavioral_features(self, ip_logs):
         """IP'nin davranışsal özelliklerini çıkarır"""
@@ -197,77 +245,133 @@ class WebLogAnalyzer:
         return attacks
     
     def train_anomaly_detector(self, logs_df):
-        """Anomaly detection modelini eğitir"""
-        print("🌐 Web Log Analyzer training started...")
+        """
+        Train the anomaly detection model on web logs.
         
-        # Group logs by IP
-        ip_groups = logs_df.groupby('ip')
-        features_list = []
-        ip_list = []
+        Extracts behavioral features from logs grouped by IP, normalizes them,
+        and trains an Isolation Forest model.
         
-        for ip, ip_logs in ip_groups:
-            ip_data = ip_logs.to_dict('records')
-            features = self.extract_behavioral_features(ip_data)
+        Args:
+            logs_df (pd.DataFrame): DataFrame with columns: ip, timestamp, method,
+                                   path, status, user_agent, protocol, referer, size
+                                   
+        Returns:
+            tuple: (features_df, ip_list) - Extracted features and corresponding IPs
             
-            if features:  # Only add if features extracted successfully
-                features_list.append(features)
-                ip_list.append(ip)
-        
-        if not features_list:
-            raise ValueError("No features could be extracted from log data!")
-        
-        # Convert to DataFrame
-        features_df = pd.DataFrame(features_list)
-        features_df = features_df.fillna(0)
-        
-        self.feature_names = features_df.columns.tolist()
-        
-        # Normalize features
-        features_normalized = self.scaler.fit_transform(features_df)
-        
-        # Train anomaly detector
-        self.anomaly_detector.fit(features_normalized)
-        
-        self.is_trained = True
-        print("✅ Web log analyzer training completed!")
-        
-        return features_df, ip_list
+        Raises:
+            ValueError: If no valid features can be extracted from logs
+            TypeError: If logs_df is not a pandas DataFrame
+        """
+        try:
+            print("🌐 Web Log Analyzer training started...")
+            
+            if not isinstance(logs_df, pd.DataFrame):
+                raise TypeError("logs_df must be a pandas DataFrame")
+            
+            # Group logs by IP
+            ip_groups = logs_df.groupby('ip')
+            features_list = []
+            ip_list = []
+            
+            for ip, ip_logs in ip_groups:
+                try:
+                    ip_data = ip_logs.to_dict('records')
+                    features = self.extract_behavioral_features(ip_data)
+                    
+                    if features:  # Only add if features extracted successfully
+                        features_list.append(features)
+                        ip_list.append(ip)
+                except Exception as e:
+                    logger.warning(f"Failed to extract features for IP {ip}: {e}")
+                    continue
+            
+            if not features_list:
+                raise ValueError("No features could be extracted from log data!")
+            
+            # Convert to DataFrame
+            features_df = pd.DataFrame(features_list)
+            features_df = features_df.fillna(0)
+            
+            self.feature_names = features_df.columns.tolist()
+            
+            # Normalize features
+            features_normalized = self.scaler.fit_transform(features_df)
+            
+            # Train anomaly detector
+            self.anomaly_detector.fit(features_normalized)
+            
+            self.is_trained = True
+            print(f"✅ Web log analyzer training completed! Trained on {len(ip_list)} IPs")
+            
+            return features_df, ip_list
+            
+        except Exception as e:
+            print(f"❌ Error during training: {e}")
+            raise
     
     def analyze_ip_with_explanation(self, ip_logs, ip_address):
-        """IP analizi + açıklama döndürür"""
-        if not self.is_trained:
-            raise ValueError("Model is not trained yet!")
+        """
+        Analyze IP behavior with anomaly detection and explanations.
         
-        # Extract features
-        features = self.extract_behavioral_features(ip_logs)
+        Extracts behavioral features, detects anomalies, identifies attack
+        patterns, and provides recommendations.
         
-        if not features:
-            return None
-        
-        # Convert to array
-        features_df = pd.DataFrame([features])
-        features_df = features_df.reindex(columns=self.feature_names, fill_value=0)
-        features_normalized = self.scaler.transform(features_df)
-        
-        # Anomaly detection
-        anomaly_score = self.anomaly_detector.decision_function(features_normalized)[0]
-        is_anomaly = self.anomaly_detector.predict(features_normalized)[0] == -1
-        
-        # Attack patterns
-        attack_patterns = self.detect_attack_patterns(ip_logs)
-        
-        # Risk level calculation
-        risk_level = self._calculate_risk_level(anomaly_score, attack_patterns, features)
-        
-        return {
-            'ip_address': ip_address,
-            'anomaly_score': float(anomaly_score),
-            'is_anomaly': bool(is_anomaly),
-            'risk_level': risk_level,
-            'attack_patterns': attack_patterns,
-            'behavioral_insights': self._generate_insights(features),
-            'recommendations': self._generate_recommendations(attack_patterns, features)
-        }
+        Args:
+            ip_logs (list): List of log records for a specific IP
+            ip_address (str): The IP address being analyzed
+            
+        Returns:
+            dict: Analysis results containing:
+                - ip_address: The analyzed IP
+                - anomaly_score: Anomaly detection score
+                - is_anomaly: Whether IP is flagged as anomalous
+                - risk_level: 'LOW', 'MEDIUM', 'HIGH', or 'CRITICAL'
+                - attack_patterns: List of detected attack patterns
+                - behavioral_insights: Behavioral observations
+                - recommendations: Security recommendations
+                
+        Raises:
+            ValueError: If model is not trained yet
+        """
+        try:
+            if not self.is_trained:
+                raise ValueError("Model is not trained yet! Call train_anomaly_detector() first.")
+            
+            # Extract features
+            features = self.extract_behavioral_features(ip_logs)
+            
+            if not features:
+                logger.warning(f"No features extracted for IP {ip_address}")
+                return None
+            
+            # Convert to array
+            features_df = pd.DataFrame([features])
+            features_df = features_df.reindex(columns=self.feature_names, fill_value=0)
+            features_normalized = self.scaler.transform(features_df)
+            
+            # Anomaly detection
+            anomaly_score = self.anomaly_detector.decision_function(features_normalized)[0]
+            is_anomaly = self.anomaly_detector.predict(features_normalized)[0] == -1
+            
+            # Attack patterns
+            attack_patterns = self.detect_attack_patterns(ip_logs)
+            
+            # Risk level calculation
+            risk_level = self._calculate_risk_level(anomaly_score, attack_patterns, features)
+            
+            return {
+                'ip_address': ip_address,
+                'anomaly_score': float(anomaly_score),
+                'is_anomaly': bool(is_anomaly),
+                'risk_level': risk_level,
+                'attack_patterns': attack_patterns,
+                'behavioral_insights': self._generate_insights(features),
+                'recommendations': self._generate_recommendations(attack_patterns, features)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing IP {ip_address}: {e}")
+            raise
     
     def _calculate_risk_level(self, anomaly_score, attack_patterns, features):
         """Risk seviyesini hesaplar"""

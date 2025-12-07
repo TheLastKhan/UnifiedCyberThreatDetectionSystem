@@ -17,7 +17,31 @@ import pickle
 import os
 
 class EmailPhishingDetector:
+    """
+    Email phishing detection using machine learning and explainable AI.
+    
+    This class provides functionality to detect phishing emails using TF-IDF
+    vectorization, Random Forest classification, and LIME explainability.
+    
+    Attributes:
+        config (dict): Configuration parameters for the detector
+        vectorizer: TF-IDF vectorizer for text feature extraction
+        model: Random Forest classifier for predictions
+        feature_names (list): Names of all features used in the model
+        lime_explainer: LIME explainer for model interpretability
+        is_trained (bool): Whether the model has been trained
+    """
+    
     def __init__(self, config=None):
+        """
+        Initialize the EmailPhishingDetector.
+        
+        Args:
+            config (dict, optional): Configuration dictionary with keys:
+                - max_features (int): Maximum features for TF-IDF (default: 5000)
+                - n_estimators (int): Number of trees in Random Forest (default: 100)
+                - random_state (int): Random seed for reproducibility (default: 42)
+        """
         self.config = config or {}
         self.vectorizer = TfidfVectorizer(
             max_features=self.config.get('max_features', 5000),
@@ -32,7 +56,25 @@ class EmailPhishingDetector:
         self.is_trained = False
     
     def extract_email_features(self, email_text, sender="", subject=""):
-        """Email'den feature'lar çıkarır"""
+        """
+        Extract features from email text.
+        
+        Extracts both statistical and semantic features from email content
+        to identify phishing indicators.
+        
+        Args:
+            email_text (str): The body of the email
+            sender (str, optional): Sender's email address
+            subject (str, optional): Email subject line
+            
+        Returns:
+            dict: Dictionary containing extracted features with keys:
+                - email_length, word_count, sentence_count
+                - capital_ratio, exclamation_count, question_count
+                - urgent_words, financial_words, personal_info_words
+                - url_count, suspicious_urls, ip_in_url
+                - sender_suspicious, free_email_provider
+        """
         full_text = f"{subject} {email_text}"
         
         features = {
@@ -107,89 +149,147 @@ class EmailPhishingDetector:
         return suspicious_score
     
     def train(self, emails_df, labels):
-        """Modeli eğitir"""
-        print("📧 Email Phishing Detector training started...")
+        """
+        Train the email phishing detector model.
         
-        # Feature extraction
-        features_list = []
-        for idx, row in emails_df.iterrows():
-            email_features = self.extract_email_features(
-                row.get('body', ''),
-                row.get('sender', ''),
-                row.get('subject', '')
+        Extracts features from emails, vectorizes text using TF-IDF,
+        trains a Random Forest classifier, and initializes LIME explainer.
+        
+        Args:
+            emails_df (pd.DataFrame): DataFrame with columns 'body', 'sender', 'subject'
+            labels (list or array): List of binary labels (0: safe, 1: phishing)
+            
+        Returns:
+            np.ndarray: Combined feature matrix used for training
+            
+        Raises:
+            ValueError: If required columns are missing from emails_df
+        """
+        try:
+            print("📧 Email Phishing Detector training started...")
+            
+            # Validate input
+            if not isinstance(emails_df, pd.DataFrame):
+                raise TypeError("emails_df must be a pandas DataFrame")
+            
+            if len(emails_df) != len(labels):
+                raise ValueError("Number of emails and labels must match")
+            
+            # Feature extraction
+            features_list = []
+            for idx, row in emails_df.iterrows():
+                try:
+                    email_features = self.extract_email_features(
+                        row.get('body', ''),
+                        row.get('sender', ''),
+                        row.get('subject', '')
+                    )
+                    features_list.append(email_features)
+                except Exception as e:
+                    print(f"⚠️ Warning: Error processing row {idx}: {e}")
+                    continue
+            
+            features_df = pd.DataFrame(features_list)
+            
+            # Text vectorization
+            email_texts = (emails_df['subject'].fillna('') + ' ' + 
+                          emails_df['body'].fillna(''))
+            text_features = self.vectorizer.fit_transform(email_texts)
+            
+            # Combine features
+            combined_features = np.hstack([
+                features_df.values,
+                text_features.toarray()
+            ])
+            
+            self.feature_names = (list(features_df.columns) + 
+                                 [f'word_{i}' for i in range(text_features.shape[1])])
+            
+            # Train model
+            self.model.fit(combined_features, labels)
+            
+            # Setup LIME explainer
+            self.lime_explainer = LimeTabularExplainer(
+                combined_features,
+                feature_names=self.feature_names,
+                class_names=['Safe', 'Phishing'],
+                mode='classification'
             )
-            features_list.append(email_features)
-        
-        features_df = pd.DataFrame(features_list)
-        
-        # Text vectorization
-        email_texts = (emails_df['subject'].fillna('') + ' ' + 
-                      emails_df['body'].fillna(''))
-        text_features = self.vectorizer.fit_transform(email_texts)
-        
-        # Combine features
-        combined_features = np.hstack([
-            features_df.values,
-            text_features.toarray()
-        ])
-        
-        self.feature_names = (list(features_df.columns) + 
-                             [f'word_{i}' for i in range(text_features.shape[1])])
-        
-        # Train model
-        self.model.fit(combined_features, labels)
-        
-        # Setup LIME explainer
-        self.lime_explainer = LimeTabularExplainer(
-            combined_features,
-            feature_names=self.feature_names,
-            class_names=['Safe', 'Phishing'],
-            mode='classification'
-        )
-        
-        self.is_trained = True
-        print("✅ Email detector training completed!")
-        
-        return combined_features
+            
+            self.is_trained = True
+            print("✅ Email detector training completed!")
+            
+            return combined_features
+            
+        except Exception as e:
+            print(f"❌ Error during training: {e}")
+            raise
     
     def predict_with_explanation(self, email_text, sender="", subject=""):
-        """Prediction + XAI explanation döndürür"""
-        if not self.is_trained:
-            raise ValueError("Model is not trained yet!")
+        """
+        Predict phishing probability with LIME explanation.
         
-        # Feature extraction
-        email_features = self.extract_email_features(email_text, sender, subject)
-        features_df = pd.DataFrame([email_features])
+        Makes a prediction on whether an email is phishing and provides
+        LIME-based explanation for the prediction.
         
-        # Text features
-        full_text = f"{subject} {email_text}"
-        text_features = self.vectorizer.transform([full_text])
-        
-        # Combine features
-        combined_features = np.hstack([
-            features_df.values,
-            text_features.toarray()
-        ])
-        
-        # Prediction
-        prediction = self.model.predict(combined_features)[0]
-        probabilities = self.model.predict_proba(combined_features)[0]
-        
-        # LIME explanation
-        lime_explanation = self.lime_explainer.explain_instance(
-            combined_features[0],
-            self.model.predict_proba,
-            num_features=10
-        )
-        
-        return {
-            'prediction': 'Phishing' if prediction == 1 else 'Safe',
-            'confidence': max(probabilities) * 100,
-            'phishing_probability': probabilities[1] * 100,
-            'safe_probability': probabilities[0] * 100,
-            'lime_explanation': lime_explanation.as_list(),
-            'risk_factors': self._identify_risk_factors(email_features, email_text)
-        }
+        Args:
+            email_text (str): The body of the email to analyze
+            sender (str, optional): Sender's email address
+            subject (str, optional): Email subject line
+            
+        Returns:
+            dict: Prediction results containing:
+                - prediction (str): 'Safe' or 'Phishing'
+                - confidence (float): Prediction confidence (0-100)
+                - phishing_probability (float): Phishing probability (0-100)
+                - safe_probability (float): Safe probability (0-100)
+                - lime_explanation (list): Feature importance explanations
+                - risk_factors (list): Identified risk factors in the email
+                
+        Raises:
+            ValueError: If model is not trained yet
+        """
+        try:
+            if not self.is_trained:
+                raise ValueError("Model is not trained yet! Call train() first.")
+            
+            # Feature extraction
+            email_features = self.extract_email_features(email_text, sender, subject)
+            features_df = pd.DataFrame([email_features])
+            
+            # Text features
+            full_text = f"{subject} {email_text}"
+            text_features = self.vectorizer.transform([full_text])
+            
+            # Combine features
+            combined_features = np.hstack([
+                features_df.values,
+                text_features.toarray()
+            ])
+            
+            # Prediction
+            prediction = self.model.predict(combined_features)[0]
+            probabilities = self.model.predict_proba(combined_features)[0]
+            
+            # LIME explanation
+            lime_explanation = self.lime_explainer.explain_instance(
+                combined_features[0],
+                self.model.predict_proba,
+                num_features=10
+            )
+            
+            return {
+                'prediction': 'Phishing' if prediction == 1 else 'Safe',
+                'confidence': max(probabilities) * 100,
+                'phishing_probability': probabilities[1] * 100,
+                'safe_probability': probabilities[0] * 100,
+                'lime_explanation': lime_explanation.as_list(),
+                'risk_factors': self._identify_risk_factors(email_features, email_text)
+            }
+            
+        except Exception as e:
+            print(f"❌ Error during prediction: {e}")
+            raise
     
     def _identify_risk_factors(self, features, email_text):
         """Risk faktörlerini belirler"""
@@ -219,29 +319,64 @@ class EmailPhishingDetector:
         return risks
     
     def save_model(self, filepath):
-        """Modeli kaydeder"""
-        model_data = {
-            'vectorizer': self.vectorizer,
-            'model': self.model,
-            'feature_names': self.feature_names,
-            'config': self.config
-        }
+        """
+        Save the trained model to disk.
         
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        with open(filepath, 'wb') as f:
-            pickle.dump(model_data, f)
+        Serializes the vectorizer, model, and configuration for later use.
         
-        print(f"✅ Model saved to {filepath}")
+        Args:
+            filepath (str): Path where the model should be saved
+            
+        Raises:
+            IOError: If file cannot be written to the specified path
+        """
+        try:
+            if not self.is_trained:
+                raise ValueError("Model is not trained yet!")
+                
+            model_data = {
+                'vectorizer': self.vectorizer,
+                'model': self.model,
+                'feature_names': self.feature_names,
+                'config': self.config
+            }
+            
+            os.makedirs(os.path.dirname(filepath) or '.', exist_ok=True)
+            with open(filepath, 'wb') as f:
+                pickle.dump(model_data, f)
+            
+            print(f"✅ Model saved to {filepath}")
+            
+        except Exception as e:
+            print(f"❌ Error saving model: {e}")
+            raise
     
     def load_model(self, filepath):
-        """Modeli yükler"""
-        with open(filepath, 'rb') as f:
-            model_data = pickle.load(f)
+        """
+        Load a previously trained model from disk.
         
-        self.vectorizer = model_data['vectorizer']
-        self.model = model_data['model']
-        self.feature_names = model_data['feature_names']
-        self.config = model_data.get('config', {})
-        self.is_trained = True
-        
-        print(f"✅ Model loaded from {filepath}")
+        Args:
+            filepath (str): Path to the saved model file
+            
+        Raises:
+            FileNotFoundError: If the model file does not exist
+            ValueError: If the file is not a valid model
+        """
+        try:
+            if not os.path.exists(filepath):
+                raise FileNotFoundError(f"Model file not found: {filepath}")
+                
+            with open(filepath, 'rb') as f:
+                model_data = pickle.load(f)
+            
+            self.vectorizer = model_data['vectorizer']
+            self.model = model_data['model']
+            self.feature_names = model_data['feature_names']
+            self.config = model_data.get('config', {})
+            self.is_trained = True
+            
+            print(f"✅ Model loaded from {filepath}")
+            
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+            raise

@@ -1,6 +1,6 @@
 """
 Unified Threat Detection Platform
-Main Integration Module
+Main Integration Module for Email & Web Security Analysis
 """
 
 import pandas as pd
@@ -8,77 +8,161 @@ import numpy as np
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from ..email_detector.detector import EmailPhishingDetector
 from ..web_analyzer.analyzer import WebLogAnalyzer
 
 class UnifiedThreatPlatform:
+    """
+    Unified platform for detecting threats across email and web domains.
+    
+    Integrates email phishing detection, web log analysis, and cross-platform
+    correlation to provide comprehensive threat intelligence.
+    
+    Attributes:
+        email_detector: EmailPhishingDetector instance
+        web_analyzer: WebLogAnalyzer instance
+        correlation_engine: CorrelationEngine for cross-platform analysis
+        threat_intelligence: ThreatIntelligence module
+    """
+    
     def __init__(self, email_config=None, web_config=None):
+        """
+        Initialize the Unified Threat Detection Platform.
+        
+        Args:
+            email_config (dict, optional): Configuration for email detector
+            web_config (dict, optional): Configuration for web analyzer
+        """
         self.email_detector = EmailPhishingDetector(email_config)
         self.web_analyzer = WebLogAnalyzer(web_config)
         self.correlation_engine = CorrelationEngine()
         self.threat_intelligence = ThreatIntelligence()
         
     def initialize(self, email_data=None, web_logs=None):
-        """Platform'u başlatır ve modelleri eğitir"""
-        print("🚀 Initializing Unified Threat Detection Platform...")
+        """
+        Initialize platform and train models.
         
-        # Train email detector
-        if email_data is not None:
-            emails_df, labels = email_data
-            self.email_detector.train(emails_df, labels)
+        Trains email phishing detector and web log anomaly detector
+        on provided datasets.
         
-        # Train web analyzer  
-        if web_logs is not None and not web_logs.empty:
-            self.web_analyzer.train_anomaly_detector(web_logs)
-        
-        print("✅ Platform initialization completed!")
+        Args:
+            email_data (tuple, optional): (emails_df, labels) for training email detector
+            web_logs (pd.DataFrame, optional): Web logs for training web analyzer
+            
+        Raises:
+            ValueError: If provided data is invalid
+        """
+        try:
+            print("🚀 Initializing Unified Threat Detection Platform...")
+            
+            # Train email detector
+            if email_data is not None:
+                try:
+                    emails_df, labels = email_data
+                    self.email_detector.train(emails_df, labels)
+                except Exception as e:
+                    logger.error(f"Error training email detector: {e}")
+                    raise
+            
+            # Train web analyzer  
+            if web_logs is not None and not web_logs.empty:
+                try:
+                    self.web_analyzer.train_anomaly_detector(web_logs)
+                except Exception as e:
+                    logger.error(f"Error training web analyzer: {e}")
+                    raise
+            
+            print("✅ Platform initialization completed!")
+            
+        except Exception as e:
+            print(f"❌ Initialization failed: {e}")
+            raise
     
     def analyze_unified_threat(self, email_data=None, web_logs=None, ip_address=None):
-        """Birleşik tehdit analizi yapar"""
-        results = {
-            'timestamp': datetime.now().isoformat(),
-            'email_analysis': None,
-            'web_analysis': None,
-            'correlation_analysis': None,
-            'unified_risk_score': 0,
-            'threat_level': 'LOW',
-            'recommendations': []
-        }
+        """
+        Perform unified threat analysis across email and web platforms.
         
-        # Email analysis
-        if email_data:
-            if isinstance(email_data, dict):
-                results['email_analysis'] = self.email_detector.predict_with_explanation(
-                    email_data.get('body', ''),
-                    email_data.get('sender', ''),
-                    email_data.get('subject', '')
-                )
-            else:
-                results['email_analysis'] = self.email_detector.predict_with_explanation(email_data)
+        Analyzes potential threats from both email and web perspectives,
+        correlates findings, and calculates unified risk scores.
         
-        # Web analysis
-        if web_logs and ip_address:
-            results['web_analysis'] = self.web_analyzer.analyze_ip_with_explanation(
-                web_logs, ip_address
-            )
-        
-        # Correlation analysis
-        if results['email_analysis'] and results['web_analysis']:
-            results['correlation_analysis'] = self.correlation_engine.analyze_correlation(
-                results['email_analysis'],
-                results['web_analysis'],
-                ip_address
-            )
-        
-        # Calculate unified risk
-        results['unified_risk_score'] = self._calculate_unified_risk(results)
-        results['threat_level'] = self._determine_threat_level(results['unified_risk_score'])
-        
-        # Generate recommendations
-        results['recommendations'] = self._generate_unified_recommendations(results)
-        
-        return results
+        Args:
+            email_data (dict or str, optional): Email content as dict or text
+            web_logs (list or pd.DataFrame, optional): Web logs to analyze
+            ip_address (str, optional): IP address for correlation
+            
+        Returns:
+            dict: Comprehensive threat analysis containing:
+                - timestamp: Analysis timestamp
+                - email_analysis: Email detection results
+                - web_analysis: Web analysis results
+                - correlation_analysis: Cross-platform findings
+                - unified_risk_score: Overall risk (0-100)
+                - threat_level: 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'
+                - recommendations: Security recommendations
+        """
+        try:
+            results = {
+                'timestamp': datetime.now().isoformat(),
+                'email_analysis': None,
+                'web_analysis': None,
+                'correlation_analysis': None,
+                'unified_risk_score': 0,
+                'threat_level': 'LOW',
+                'recommendations': []
+            }
+            
+            # Email analysis
+            if email_data:
+                try:
+                    if isinstance(email_data, dict):
+                        results['email_analysis'] = self.email_detector.predict_with_explanation(
+                            email_data.get('body', ''),
+                            email_data.get('sender', ''),
+                            email_data.get('subject', '')
+                        )
+                    else:
+                        results['email_analysis'] = self.email_detector.predict_with_explanation(email_data)
+                except Exception as e:
+                    logger.error(f"Error analyzing email: {e}")
+            
+            # Web analysis
+            if web_logs and ip_address:
+                try:
+                    results['web_analysis'] = self.web_analyzer.analyze_ip_with_explanation(
+                        web_logs, ip_address
+                    )
+                except Exception as e:
+                    logger.error(f"Error analyzing web logs: {e}")
+            
+            # Correlation analysis
+            if results['email_analysis'] and results['web_analysis']:
+                try:
+                    results['correlation_analysis'] = self.correlation_engine.analyze_correlation(
+                        results['email_analysis'],
+                        results['web_analysis'],
+                        ip_address
+                    )
+                except Exception as e:
+                    logger.error(f"Error in correlation analysis: {e}")
+            
+            # Calculate unified risk
+            results['unified_risk_score'] = self._calculate_unified_risk(results)
+            results['threat_level'] = self._determine_threat_level(results['unified_risk_score'])
+            
+            # Generate recommendations
+            results['recommendations'] = self._generate_unified_recommendations(results)
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error in unified threat analysis: {e}")
+            raise
     
     def _calculate_unified_risk(self, results):
         """Birleşik risk skorunu hesaplar"""
