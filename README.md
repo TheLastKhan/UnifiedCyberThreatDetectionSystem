@@ -14,6 +14,31 @@ Bu proje, email phishing tespiti ve web log analizini birleştirerek kapsamlı b
 - 🧠 **Explainable AI:** LIME ve SHAP ile açıklanabilir AI
 - 📊 **Interactive Dashboard:** Flask tabanlı web arayüzü
 
+## 📐 Sistem Mimarisi
+
+Detaylı sistem mimarisi, veri akışı, sınıf diyagramları ve diğer teknik dökümanlar:
+
+- **[Architecture Documentation](docs/architecture.html)** - Tüm diyagramlar (System Architecture, Data Flow, Class Diagram, Sequence Diagram, Component Diagram)
+
+### Hızlı Genel Bakış
+
+```
+User Input (Email + Web Logs)
+         ↓
+    ┌────┴────┐
+    ↓         ↓
+Email      Web
+Detector   Analyzer
+    ↓         ↓
+    └────┬────┘
+         ↓
+Correlation Engine
+         ↓
+Unified Platform
+         ↓
+Report + Dashboard
+```
+
 ## 🚀 Kurulum
 
 ### Gereksinimler
