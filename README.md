@@ -14,11 +14,16 @@ Bu proje, email phishing tespiti ve web log analizini birleştirerek kapsamlı b
 - 🧠 **Explainable AI:** LIME ve SHAP ile açıklanabilir AI
 - 📊 **Interactive Dashboard:** Flask tabanlı web arayüzü
 
-## 📐 Sistem Mimarisi
+## 📐 Teknik Dokümantasyon
 
+### Sistem Mimarisi
 Detaylı sistem mimarisi, veri akışı, sınıf diyagramları ve diğer teknik dökümanlar:
-
 - **[Architecture Documentation](docs/architecture.html)** - Tüm diyagramlar (System Architecture, Data Flow, Class Diagram, Sequence Diagram, Component Diagram)
+
+### API Documentation
+REST API'nin detaylı dokümantasyonu, endpoint'leri, request/response örnekleri:
+- **[Interactive API Documentation (Swagger UI)](docs/api.html)** - Tüm endpoint'ler, parametreler, response'lar
+- **[OpenAPI Specification](docs/openapi.yaml)** - OpenAPI 3.0.0 formatında tam specification
 
 ### Hızlı Genel Bakış
 

@@ -1,0 +1,682 @@
+openapi: 3.0.0
+info:
+  title: Unified Cyber Threat Detection System API
+  description: |
+    AI-powered email phishing detection ve web log analysis ile kapsamlı siber güvenlik tehdidi tespit sistemi.
+    
+    ## Özellikler
+    - Email phishing detection (TF-IDF + Random Forest + LIME)
+    - Web log anomaly detection (Isolation Forest + LIME)
+    - Cross-platform threat correlation
+    - Explainable AI predictions
+    - Real-time threat analysis
+    
+    ## Authentication
+    Şu anda public API'dir. Production ortamında API Key eklenecektir.
+    
+    ## Rate Limiting
+    - Public: 100 requests/minute
+    - Authenticated: 1000 requests/minute
+    
+  version: 1.0.0
+  contact:
+    name: Development Team
+    email: dev@unifiedthreat.local
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Development Server
+  - url: https://api.unifiedthreat.com/v1
+    description: Production Server
+
+tags:
+  - name: Email Detection
+    description: Email phishing detection endpoints
+  - name: Web Analysis
+    description: Web log analysis endpoints
+  - name: Unified Analysis
+    description: Cross-platform threat analysis
+  - name: Reports
+    description: Threat analysis reports
+  - name: Health
+    description: System health and status
+
+paths:
+  /health:
+    get:
+      summary: System health check
+      description: Sistem sağlığını ve hazırırlık durumunu kontrol eder
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Sistem sağlıklı ve hazır
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, warning, critical]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                  components:
+                    type: object
+                    properties:
+                      email_detector:
+                        type: string
+                      web_analyzer:
+                        type: string
+                      unified_platform:
+                        type: string
+              example:
+                status: healthy
+                timestamp: "2024-12-07T10:30:00Z"
+                version: "1.0.0"
+                components:
+                  email_detector: ready
+                  web_analyzer: ready
+                  unified_platform: ready
+
+  /email/analyze:
+    post:
+      summary: Email phishing detection
+      description: Email metnini analiz ederek phishing olasılığını ve risk faktörlerini hesapla
+      operationId: analyzeEmail
+      tags:
+        - Email Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email_text
+              properties:
+                email_text:
+                  type: string
+                  minLength: 10
+                  maxLength: 50000
+                  description: Analiz edilecek email metni
+                sender:
+                  type: string
+                  format: email
+                  description: Gönderenin email adresi (opsiyonel)
+                subject:
+                  type: string
+                  maxLength: 500
+                  description: Email konusu (opsiyonel)
+            examples:
+              phishing_email:
+                summary: Phishing email örneği
+                value:
+                  email_text: "Click here to verify your account: http://fake-bank.com"
+                  sender: "noreply@phishing-site.com"
+                  subject: "Urgent: Verify Your Account"
+              legitimate_email:
+                summary: Meşru email örneği
+                value:
+                  email_text: "Hi, this is a meeting reminder for tomorrow at 2 PM"
+                  sender: "colleague@company.com"
+                  subject: "Meeting Reminder"
+      responses:
+        '200':
+          description: Email analizi başarılı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailPrediction'
+        '400':
+          description: Geçersiz request (eksik veya hatalı veri)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit aşıldı
+        '500':
+          description: Sunucu hatası
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /email/train:
+    post:
+      summary: Email detector modelini eğit
+      description: Yeni data ile email phishing detector modelini eğit
+      operationId: trainEmailDetector
+      tags:
+        - Email Detection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - emails
+                - labels
+              properties:
+                emails:
+                  type: array
+                  minItems: 10
+                  items:
+                    type: string
+                  description: Eğitim verisi email metinleri
+                labels:
+                  type: array
+                  items:
+                    type: integer
+                    enum: [0, 1]
+                  description: Label'ler (0=meşru, 1=phishing)
+      responses:
+        '200':
+          description: Model eğitimi başarılı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  accuracy:
+                    type: number
+                    format: float
+                  training_time:
+                    type: number
+                    format: float
+        '400':
+          description: Geçersiz eğitim verisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Eğitim sırasında hata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /web/analyze:
+    post:
+      summary: Web log anomaly detection
+      description: Web log verilerini analiz ederek anormal davranışları ve saldırı desenleri tespit et
+      operationId: analyzeWebLog
+      tags:
+        - Web Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - logs
+              properties:
+                logs:
+                  type: array
+                  minItems: 1
+                  maxItems: 10000
+                  items:
+                    type: string
+                  description: Web server log satırları
+            examples:
+              apache_logs:
+                summary: Apache format logs
+                value:
+                  logs:
+                    - '192.168.1.100 - - [07/Dec/2024:10:30:00 +0000] "GET /admin HTTP/1.1" 200 1234'
+                    - '192.168.1.101 - - [07/Dec/2024:10:30:01 +0000] "POST /login HTTP/1.1" 200 567'
+      responses:
+        '200':
+          description: Web log analizi başarılı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebAnalysisPrediction'
+        '400':
+          description: Geçersiz log formatı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Sunucu hatası
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /web/train:
+    post:
+      summary: Web analyzer modelini eğit
+      description: Yeni data ile web anomaly detector modelini eğit
+      operationId: trainWebAnalyzer
+      tags:
+        - Web Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - logs
+              properties:
+                logs:
+                  type: array
+                  minItems: 10
+                  items:
+                    type: string
+                  description: Eğitim verisi log satırları
+      responses:
+        '200':
+          description: Model eğitimi başarılı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  anomalies_detected:
+                    type: integer
+                  training_time:
+                    type: number
+                    format: float
+
+  /unified/analyze:
+    post:
+      summary: Unified threat analysis
+      description: Email ve web verilerini birlikte analiz ederek cross-platform tehdit korelasyonu yap
+      operationId: analyzeUnifiedThreat
+      tags:
+        - Unified Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                      description: Email metni
+                    sender:
+                      type: string
+                      format: email
+                      description: Gönderici adresi
+                    subject:
+                      type: string
+                      description: Email konusu
+                web_logs:
+                  type: array
+                  items:
+                    type: string
+                  description: Web log satırları
+            examples:
+              complete_analysis:
+                summary: Tam analiz isteği
+                value:
+                  email:
+                    text: "Click here to claim your prize"
+                    sender: "attacker@fake-site.com"
+                    subject: "You've Won!"
+                  web_logs:
+                    - '192.168.1.100 - - [07/Dec/2024:10:30:00 +0000] "GET /malware.exe HTTP/1.1" 200 5000'
+      responses:
+        '200':
+          description: Unified threat analysis başarılı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnifiedThreatAnalysis'
+        '400':
+          description: Geçersiz request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reports/latest:
+    get:
+      summary: En son threat analysis raporunu getir
+      description: Sistem tarafından oluşturulan en son threat analysis raporunu döndür
+      operationId: getLatestReport
+      tags:
+        - Reports
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Kaç rapor getirileceği
+      responses:
+        '200':
+          description: Raporlar başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ThreatReport'
+                  total:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /reports/{report_id}:
+    get:
+      summary: Belirli bir raporu getir
+      description: ID'si verilen threat analysis raporunu döndür
+      operationId: getReportById
+      tags:
+        - Reports
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Rapor ID'si
+      responses:
+        '200':
+          description: Rapor başarıyla getirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatReport'
+        '404':
+          description: Rapor bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reports/export/{report_id}:
+    get:
+      summary: Raporu dışa aktar
+      description: Raporu PDF, CSV veya JSON formatında dışa aktar
+      operationId: exportReport
+      tags:
+        - Reports
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Rapor ID'si
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, pdf, csv]
+            default: json
+          description: Dışa aktarma formatı
+      responses:
+        '200':
+          description: Rapor başarıyla dışa aktarıldı
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+            text/csv:
+              schema:
+                type: string
+        '404':
+          description: Rapor bulunamadı
+
+components:
+  schemas:
+    EmailPrediction:
+      type: object
+      properties:
+        prediction:
+          type: integer
+          enum: [0, 1]
+          description: Tahmin (0=meşru, 1=phishing)
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Tahmin güven skoru (0-1)
+        risk_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Risk skoru (0-100)
+        risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Risk seviyesi
+        risk_factors:
+          type: array
+          items:
+            type: object
+            properties:
+              factor:
+                type: string
+                description: Risk faktörü (örn. "suspicious_links", "urgency_language")
+              importance:
+                type: number
+                format: float
+                description: Önem skoru
+              evidence:
+                type: string
+                description: Faktöre ait kanıt
+          description: LIME tarafından belirlenen risk faktörleri
+        analysis_time:
+          type: number
+          format: float
+          description: Analiz süresi (saniye)
+        timestamp:
+          type: string
+          format: date-time
+          description: Analiz zamanı
+      example:
+        prediction: 1
+        confidence: 0.92
+        risk_score: 87
+        risk_level: critical
+        risk_factors:
+          - factor: "suspicious_links"
+            importance: 0.85
+            evidence: "URLs pointing to non-legitimate domain"
+          - factor: "urgency_language"
+            importance: 0.78
+            evidence: "Urgent action required detected"
+        analysis_time: 0.234
+        timestamp: "2024-12-07T10:30:00Z"
+
+    WebAnalysisPrediction:
+      type: object
+      properties:
+        anomalies_detected:
+          type: integer
+          description: Tespit edilen anomali sayısı
+        anomaly_scores:
+          type: array
+          items:
+            type: object
+            properties:
+              log_index:
+                type: integer
+              ip_address:
+                type: string
+                format: ipv4
+              anomaly_score:
+                type: number
+                format: float
+              is_anomaly:
+                type: boolean
+              risk_level:
+                type: string
+                enum: [normal, suspicious, malicious]
+              indicators:
+                type: array
+                items:
+                  type: string
+          description: Her log satırı için anomali skoru
+        summary:
+          type: object
+          properties:
+            total_logs_analyzed:
+              type: integer
+            unique_ips:
+              type: integer
+            high_risk_ips:
+              type: array
+              items:
+                type: string
+                format: ipv4
+            suspected_attack_patterns:
+              type: array
+              items:
+                type: string
+        analysis_time:
+          type: number
+          format: float
+        timestamp:
+          type: string
+          format: date-time
+
+    UnifiedThreatAnalysis:
+      type: object
+      properties:
+        threat_id:
+          type: string
+          description: Tehdit ID'si
+        overall_risk_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Genel risk skoru
+        overall_risk_level:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Genel risk seviyesi
+        email_analysis:
+          $ref: '#/components/schemas/EmailPrediction'
+        web_analysis:
+          $ref: '#/components/schemas/WebAnalysisPrediction'
+        correlation_score:
+          type: number
+          format: float
+          description: Email-Web korelasyon skoru
+        correlated_threats:
+          type: array
+          items:
+            type: object
+            properties:
+              email_risk_factor:
+                type: string
+              web_indicator:
+                type: string
+              correlation_strength:
+                type: number
+                format: float
+          description: Email ve web tehditleri arasındaki bağlantılar
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Güvenlik önerileri
+        timestamp:
+          type: string
+          format: date-time
+
+    ThreatReport:
+      type: object
+      properties:
+        report_id:
+          type: string
+        analysis_type:
+          type: string
+          enum: [email, web, unified]
+        threat_summary:
+          type: object
+          properties:
+            total_threats:
+              type: integer
+            critical_count:
+              type: integer
+            high_count:
+              type: integer
+            medium_count:
+              type: integer
+            low_count:
+              type: integer
+        details:
+          type: array
+          items:
+            type: object
+        generated_at:
+          type: string
+          format: date-time
+        analysis_duration:
+          type: number
+          format: float
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Hata tipi
+        message:
+          type: string
+          description: Hata mesajı
+        details:
+          type: object
+          description: Ek hata detayları
+        timestamp:
+          type: string
+          format: date-time
+      example:
+        error: "ValidationError"
+        message: "Invalid email text: minimum 10 characters required"
+        timestamp: "2024-12-07T10:30:00Z"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API Key authentication (Future implementation)
+
+security:
+  - ApiKeyAuth: []
