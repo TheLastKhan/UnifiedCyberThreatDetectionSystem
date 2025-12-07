@@ -31,6 +31,12 @@ Sistemin gerçek dünya senaryolarında nasıl kullanılacağına dair kapsamlı
 - **[Usage Scenarios & Tutorials](docs/USAGE_SCENARIOS.md)** - 5 detaylı senaryo (Phishing Campaign, Web Attack, Coordinated Attack, Model Training, Dashboard Integration)
 - **[Best Practices Guide](docs/BEST_PRACTICES.md)** - Veri hazırlığı, model eğitimi, deployment checklist, troubleshooting
 
+### Database & Persistence
+Veri depolaması ve analitik için PostgreSQL entegrasyonu:
+- **[Database Integration Guide](docs/FAZ4_DATABASE.md)** - SQLAlchemy ORM modelleri, bağlantı yönetimi, CSV import, 17 test (✅ 100% passing)
+- **Models**: Email, WebLog, ThreatCorrelation, ThreatReport, AuditLog
+- **Features**: Connection pooling, transaction safety, batch import (4500+ emails), comprehensive queries
+
 ### Deployment & Operations
 Production ortamına deploy etmek için kapsamlı kılavuzlar:
 - **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Docker, Nginx, SSL/TLS, Monitoring, Backup, Production Checklist
