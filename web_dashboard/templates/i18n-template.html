@@ -1,0 +1,95 @@
+<!-- HTML Template with i18n Support -->
+
+<!-- Include i18n CSS -->
+<link rel="stylesheet" href="static/css/i18n.css">
+
+<!-- Header with i18n -->
+<header>
+    <h1 data-i18n="header.title"></h1>
+    <p data-i18n="header.subtitle"></p>
+</header>
+
+<!-- Navigation -->
+<nav>
+    <ul>
+        <li><a href="#" data-i18n="nav.dashboard"></a></li>
+        <li><a href="#" data-i18n="nav.analysis"></a></li>
+        <li><a href="#" data-i18n="nav.threats"></a></li>
+        <li><a href="#" data-i18n="nav.reports"></a></li>
+        <li><a href="#" data-i18n="nav.settings"></a></li>
+    </ul>
+</nav>
+
+<!-- Email Analysis Section -->
+<section id="email-analysis">
+    <h2 data-i18n="email.title"></h2>
+    <form>
+        <label data-i18n="email.sender"></label>
+        <input type="email" placeholder="sender@example.com">
+        
+        <label data-i18n="email.subject"></label>
+        <input type="text" placeholder="">
+        
+        <label data-i18n="email.body"></label>
+        <textarea></textarea>
+        
+        <button type="submit" data-i18n="email.analyze"></button>
+    </form>
+</section>
+
+<!-- Web Analysis Section -->
+<section id="web-analysis">
+    <h2 data-i18n="web.title"></h2>
+    <form>
+        <label data-i18n="web.url"></label>
+        <input type="url" placeholder="https://example.com">
+        
+        <button type="submit" data-i18n="web.analyze"></button>
+    </form>
+</section>
+
+<!-- Risk Level Display -->
+<div class="risk-indicator">
+    <div class="risk critical">
+        <span data-i18n="risk.critical"></span>
+    </div>
+    <div class="risk high">
+        <span data-i18n="risk.high"></span>
+    </div>
+    <div class="risk medium">
+        <span data-i18n="risk.medium"></span>
+    </div>
+    <div class="risk low">
+        <span data-i18n="risk.low"></span>
+    </div>
+</div>
+
+<!-- Settings -->
+<section id="settings">
+    <h2 data-i18n="nav.settings"></h2>
+    
+    <div class="setting-group">
+        <label data-i18n="settings.theme"></label>
+        <button id="dark-mode-toggle">
+            <span data-i18n="settings.dark_mode"></span>
+        </button>
+    </div>
+    
+    <div class="setting-group">
+        <label data-i18n="settings.language"></label>
+        <select id="language-select">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+        </select>
+    </div>
+</section>
+
+<!-- Include i18next initialization -->
+<script src="static/i18n/i18next-init.html"></script>
+
+<!-- Language change listener -->
+<script>
+    document.getElementById('language-select')?.addEventListener('change', (e) => {
+        setLanguage(e.target.value);
+    });
+</script>
