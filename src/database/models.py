@@ -64,6 +64,10 @@ class Email(Base):
     risk_factors = Column(JSON, nullable=True)  # List of risk factors with importance
     urls = Column(JSON, nullable=True)  # Extracted URLs
     
+    # New fields (AŞAMA 4 addition)
+    severity = Column(String(20), nullable=True, index=True)  # phishing, malware, spam, suspicious, legitimate
+    detection_method = Column(String(50), nullable=True, index=True)  # tfidf, bert, fasttext, ensemble
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -86,6 +90,8 @@ class Email(Base):
             'confidence': self.confidence,
             'risk_score': self.risk_score,
             'risk_level': self.risk_level,
+            'severity': self.severity,
+            'detection_method': self.detection_method,
             'risk_factors': self.risk_factors,
             'urls': self.urls,
             'created_at': self.created_at.isoformat(),
@@ -140,6 +146,10 @@ class WebLog(Base):
     indicators = Column(JSON, nullable=True)  # List of detected indicators
     attack_patterns = Column(JSON, nullable=True)  # Detected attack patterns
     
+    # New fields (AŞAMA 4 addition)
+    attack_type = Column(String(50), nullable=True, index=True)  # sql_injection, xss, ddos, etc.
+    ml_confidence = Column(Float, nullable=True)  # Anomaly detection confidence
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -162,6 +172,8 @@ class WebLog(Base):
             'anomaly_score': self.anomaly_score,
             'is_anomaly': self.is_anomaly,
             'risk_level': self.risk_level,
+            'attack_type': self.attack_type,
+            'ml_confidence': self.ml_confidence,
             'indicators': self.indicators,
             'attack_patterns': self.attack_patterns,
             'created_at': self.created_at.isoformat(),
