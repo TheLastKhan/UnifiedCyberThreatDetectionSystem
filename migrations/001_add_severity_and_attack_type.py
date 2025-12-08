@@ -12,9 +12,8 @@ Status: Development
 
 from sqlalchemy import (
     Column, String, DateTime, Index, text, MetaData, Table,
-    create_engine, inspect
+    create_engine, inspect, Enum
 )
-from sqlalchemy.dialects.postgresql import enum
 from datetime import datetime
 from pathlib import Path
 import logging
