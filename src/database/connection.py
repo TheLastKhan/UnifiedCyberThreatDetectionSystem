@@ -209,3 +209,12 @@ def init_db():
 def test_db_connection() -> bool:
     """Test database connection."""
     return DatabaseEngine().test_connection()
+
+
+# Export public API
+_db_engine = DatabaseEngine()
+DATABASE_URL = _db_engine.config.connection_string
+get_engine = _db_engine.get_engine
+get_session = _db_engine.get_session
+session_context = _db_engine.session_context
+

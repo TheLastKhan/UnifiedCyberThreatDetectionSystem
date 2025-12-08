@@ -104,7 +104,7 @@ def install_kaggle():
 
 def download_dataset(kaggle_id: str, local_path: str, dataset_name: str) -> bool:
     """
-    Download dataset from Kaggle
+    Download dataset from Kaggle using Python SDK
     
     Args:
         kaggle_id: Kaggle dataset identifier (username/dataset-name)
@@ -115,6 +115,9 @@ def download_dataset(kaggle_id: str, local_path: str, dataset_name: str) -> bool
         True if successful
     """
     try:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        import zipfile
+        
         local_path = Path(local_path)
         local_path.mkdir(parents=True, exist_ok=True)
         
@@ -122,27 +125,16 @@ def download_dataset(kaggle_id: str, local_path: str, dataset_name: str) -> bool
         logger.info(f"   Dataset ID: {kaggle_id}")
         logger.info(f"   Local path: {local_path}")
         
-        # Use kaggle CLI
-        subprocess.run(
-            ["kaggle", "datasets", "download", "-d", kaggle_id, "-p", str(local_path), "--quiet"],
-            check=True,
-            capture_output=True
-        )
+        # Initialize Kaggle API
+        api = KaggleApi()
+        api.authenticate()
         
-        # Extract if zip
-        import zipfile
-        for zip_file in local_path.glob("*.zip"):
-            logger.info(f"   Extracting {zip_file.name}...")
-            with zipfile.ZipFile(zip_file, 'r') as z:
-                z.extractall(local_path)
-            zip_file.unlink()
+        # Download using Python SDK
+        api.dataset_download_files(kaggle_id, path=str(local_path), unzip=True)
         
         logger.info(f"✅ {dataset_name} downloaded successfully")
         return True
         
-    except subprocess.CalledProcessError as e:
-        logger.error(f"❌ Failed to download {dataset_name}: {e}")
-        return False
     except Exception as e:
         logger.error(f"❌ Error processing {dataset_name}: {e}")
         return False
