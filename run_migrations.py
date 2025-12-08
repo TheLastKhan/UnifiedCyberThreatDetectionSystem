@@ -19,9 +19,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.database.connection import DATABASE_URL, get_engine, get_session
-from migrations.001_add_severity_and_attack_type import (
-    run_migration, rollback_migration, SEVERITY_ENUM, ATTACK_TYPE_ENUM
-)
+from migrations import run_migration, rollback_migration, SEVERITY_ENUM, ATTACK_TYPE_ENUM
 
 # Setup logging
 logging.basicConfig(
