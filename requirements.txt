@@ -9,6 +9,15 @@ xgboost>=1.6.0
 lightgbm>=3.3.0
 catboost>=1.0.0
 
+# Deep Learning & Transformers
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+transformers>=4.30.0
+datasets>=2.10.0
+accelerate>=0.20.0
+tensorboard>=2.12.0
+
 # Explainable AI (XAI)
 lime>=0.2.0.1
 shap>=0.41.0
