@@ -4,8 +4,8 @@
 **Durum**: ACTIVE  
 **Toplam Görev**: 25 item  
 **Tahmini Süre**: 50-60 saat
-**Tamamlanan**: AŞAMA 1-3 ✅ (~6.5 saat)
-**Kalan**: AŞAMA 4-9 (~44-55 saat)
+**Tamamlanan**: AŞAMA 1-4.2 ✅ (~8 saat)
+**Kalan**: AŞAMA 4.3 + 5-9 (~42-55 saat)
 
 ---
 
@@ -127,14 +127,37 @@
   - **Başlangıç**: PARALEL - HAZIR ✅
   - **NOT**: Veri indirildikten sonra çalıştırılacak
 
-#### **4.2** Database Schema Genişletme (SONRA)
-- [ ] **4.2.1** Schema Updates
-  - [ ] Email model'e severity ekle
-  - [ ] WebLog model'e attack_type ekle
-  - [ ] Migration script oluştur
-  - [ ] Existing data migrate
-  - **Tahmini Süre**: 2-3 saat
-  - **Başlangıç**: Veri import bittikten sonra
+#### **4.2** Database Schema Genişletme ✅ **TAMAMLANDI**
+- [x] **4.2.1** Schema Updates ✅
+  - [x] Email model'e severity ekle ✅
+  - [x] Email model'e detection_method ekle ✅
+  - [x] WebLog model'e attack_type ekle ✅
+  - [x] WebLog model'e ml_confidence ekle ✅
+  - [x] Migration script oluştur ✅
+  - [x] Existing data migrate ✅
+  - **Dosya**: `migrations/001_add_severity_and_attack_type.py` (350 satır) ✅
+  - **Tahmini Süre**: 2 saat ✅ **TAMAMLANDI**
+  - **Başlangıç**: ✅ **TAMAMLANDI**
+  - **Çalıştırma**: `python run_migrations.py`
+
+- [x] **4.2.2** Migration Runner ✅
+  - [x] Migration executor script ✅
+  - [x] Database verification ✅
+  - [x] Rollback support ✅
+  - [x] Status reporting ✅
+  - **Dosya**: `run_migrations.py` (260 satır) ✅
+  - **Tahmini Süre**: 1 saat ✅ **TAMAMLANDI**
+  - **Başlangıç**: ✅ **TAMAMLANDI**
+
+- [x] **4.2.3** ORM Models Updated ✅
+  - [x] Email.severity (VARCHAR(20)) ✅
+  - [x] Email.detection_method (VARCHAR(50)) ✅
+  - [x] WebLog.attack_type (VARCHAR(50)) ✅
+  - [x] WebLog.ml_confidence (FLOAT) ✅
+  - [x] Updated to_dict() methods ✅
+  - **Dosya**: `src/database/models.py` ✅
+  - **Tahmini Süre**: 1 saat ✅ **TAMAMLANDI**
+  - **Başlangıç**: ✅ **TAMAMLANDI**
 
 #### **4.3** Data Quality Assurance (SONRA)
 - [ ] **4.3.1** Verileri test et
