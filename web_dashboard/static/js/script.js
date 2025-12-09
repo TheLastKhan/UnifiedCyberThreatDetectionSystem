@@ -1,247 +1,342 @@
-async function loadDemo(demoType) {
-    try {
-        const response = await fetch(`/api/demo/${demoType}`);
-        const data = await response.json();
-        
-        if (response.ok) {
-            document.getElementById('emailContent').value = data.email_content || '';
-            document.getElementById('emailSender').value = data.email_sender || '';
-            document.getElementById('emailSubject').value = data.email_subject || '';
-            document.getElementById('ipAddress').value = data.ip_address || '';
-            document.getElementById('requestCount').value = data.request_count || 10;
-            document.getElementById('errorRate').value = data.error_rate || 5;
-            
-            // Show demo loaded message
-            showNotification(`${demoType.toUpperCase()} demo data loaded!`, 'success');
-        } else {
-            showNotification('Failed to load demo data', 'error');
-        }
-    } catch (error) {
-        console.error('Demo load error:', error);
-        showNotification('Error loading demo data', 'error');
+// ==================== DASHBOARD INITIALIZATION ====================
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDashboard();
+    setupCharts();
+    setupEventListeners();
+    loadModelsStatus();
+});
+
+function initializeDashboard() {
+    console.log('🚀 Initializing CyberGuard Dashboard...');
+    
+    // Load theme preference
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeToggle').innerHTML = '<i class="fas fa-sun"></i>';
     }
 }
 
-async function analyzeThreat() {
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    analyzeBtn.disabled = true;
-    analyzeBtn.textContent = '🔍 Analyzing...';
+// ==================== NAVIGATION ====================
+
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const pageName = this.dataset.page;
+        showPage(pageName);
+    });
+});
+
+function showPage(pageName) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
     
-    // Show loading
-    document.getElementById('resultsContent').innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            <h3>🔍 Analyzing Threats...</h3>
-            <p>Running AI models and correlation analysis...</p>
-        </div>
-    `;
+    // Show selected page
+    const page = document.getElementById(`page-${pageName}`);
+    if (page) {
+        page.classList.add('active');
+    }
     
-    try {
-        const requestData = {
-            email_content: document.getElementById('emailContent').value,
-            email_sender: document.getElementById('emailSender').value,
-            email_subject: document.getElementById('emailSubject').value,
-            ip_address: document.getElementById('ipAddress').value,
-            request_count: parseInt(document.getElementById('requestCount').value) || 0,
-            error_rate: parseFloat(document.getElementById('errorRate').value) || 0
-        };
-        
-        const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+    // Update active nav item
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.page === pageName) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Update breadcrumb
+    const breadcrumbMap = {
+        'dashboard': 'Dashboard',
+        'email-analysis': 'Email Analysis',
+        'web-analysis': 'Web Analysis',
+        'reports': 'Reports',
+        'settings': 'Settings'
+    };
+    document.getElementById('breadcrumb-text').textContent = breadcrumbMap[pageName] || pageName;
+}
+
+// ==================== THEME TOGGLE ====================
+
+document.getElementById('themeToggle').addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDarkMode);
+    
+    this.innerHTML = isDarkMode ? 
+        '<i class="fas fa-sun"></i>' : 
+        '<i class="fas fa-moon"></i>';
+});
+
+// ==================== CHARTS ====================
+
+let threatChart, performanceChart;
+
+function setupCharts() {
+    // Threat Distribution Chart
+    const threatCtx = document.getElementById('threatChart')?.getContext('2d');
+    if (threatCtx) {
+        threatChart = new Chart(threatCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Phishing', 'Spam', 'Normal', 'Malware'],
+                datasets: [{
+                    data: [35, 20, 40, 5],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b',
+                        '#10b981',
+                        '#6366f1'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
             },
-            body: JSON.stringify(requestData)
-        });
-        
-        const results = await response.json();
-        
-        if (response.ok && results.success) {
-            displayResults(results);
-        } else {
-            showError(results.error || 'Analysis failed');
-        }
-        
-    } catch (error) {
-        console.error('Analysis error:', error);
-        showError('Network error occurred');
-    } finally {
-        analyzeBtn.disabled = false;
-        analyzeBtn.textContent = '🔍 Analyze Threats';
-    }
-}
-
-function displayResults(results) {
-    const riskColor = getRiskColor(results.unified_risk_score);
-    const threatClass = `threat-${results.threat_level.toLowerCase()}`;
-    
-    let html = `
-        <div class="risk-score-card" style="background: ${riskColor};">
-            <div class="risk-score">${results.unified_risk_score}</div>
-            <div class="risk-label">Unified Risk Score</div>
-            <div style="margin-top: 10px;">
-                <span class="threat-indicator ${threatClass}">${results.threat_level}</span>
-            </div>
-        </div>
-    `;
-    
-    // Email Analysis Section
-    if (results.email_analysis) {
-        const emailPrediction = results.email_analysis.prediction;
-        const emailConfidence = results.email_analysis.confidence;
-        const predictionClass = emailPrediction === 'Phishing' ? 'threat-high' : 'threat-low';
-        
-        html += `
-            <div class="analysis-section">
-                <h3>📧 Email Threat Analysis</h3>
-                <div style="margin-bottom: 15px;">
-                    <strong>Prediction:</strong> 
-                    <span class="threat-indicator ${predictionClass}">${emailPrediction}</span>
-                    <strong>Confidence:</strong> ${emailConfidence.toFixed(1)}%
-                </div>
-                <div><strong>Risk Factors:</strong></div>
-                <ul class="feature-list">
-        `;
-        
-        results.email_analysis.risk_factors?.forEach(factor => {
-            html += `<li>• ${factor}</li>`;
-        });
-        
-        html += `
-                </ul>
-            </div>
-        `;
-    }
-    
-    // Web Analysis Section
-    if (results.web_analysis) {
-        const webRiskClass = `threat-${results.web_analysis.risk_level.toLowerCase()}`;
-        
-        html += `
-            <div class="analysis-section">
-                <h3>🌐 Web Traffic Analysis</h3>
-                <div style="margin-bottom: 15px;">
-                    <strong>Risk Level:</strong> 
-                    <span class="threat-indicator ${webRiskClass}">${results.web_analysis.risk_level}</span>
-                    <strong>Anomaly Score:</strong> ${results.web_analysis.anomaly_score.toFixed(3)}
-                </div>
-        `;
-        
-        if (results.web_analysis.attack_patterns?.length > 0) {
-            html += `
-                <div><strong>Attack Patterns:</strong></div>
-                <ul class="feature-list">
-            `;
-            results.web_analysis.attack_patterns.forEach(pattern => {
-                html += `<li>⚡ ${pattern}</li>`;
-            });
-            html += `</ul>`;
-        }
-        
-        if (results.web_analysis.behavioral_insights?.length > 0) {
-            html += `
-                <div style="margin-top: 15px;"><strong>Behavioral Insights:</strong></div>
-                <ul class="feature-list">
-            `;
-            results.web_analysis.behavioral_insights.forEach(insight => {
-                html += `<li>💡 ${insight}</li>`;
-            });
-            html += `</ul>`;
-        }
-        
-        html += `</div>`;
-    }
-    
-    // Correlation Analysis
-    if (results.correlation_analysis?.indicators?.length > 0) {
-        html += `
-            <div class="analysis-section">
-                <h3>🔗 Correlation Analysis</h3>
-                <div><strong>Coordinated Attack Indicators:</strong></div>
-                <ul class="feature-list">
-        `;
-        
-        results.correlation_analysis.indicators.forEach(indicator => {
-            html += `<li>🎯 ${indicator.type}: ${indicator.description}</li>`;
-        });
-        
-        html += `
-                </ul>
-            </div>
-        `;
-    }
-    
-    // Recommendations
-    if (results.recommendations) {
-        html += `
-            <div class="recommendations">
-                <h3>🛠️ Security Recommendations</h3>
-        `;
-        
-        ['immediate', 'short_term', 'long_term'].forEach(category => {
-            const recs = results.recommendations[category];
-            if (recs && recs.length > 0) {
-                const categoryNames = {
-                    'immediate': '🚨 Immediate Actions',
-                    'short_term': '📅 Short-term Actions', 
-                    'long_term': '🔮 Long-term Improvements'
-                };
-                
-                html += `<h4>${categoryNames[category]}</h4>`;
-                recs.forEach(rec => {
-                    html += `<div class="recommendation-item">${rec}</div>`;
-                });
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
             }
         });
+    }
+
+    // Model Performance Chart
+    const perfCtx = document.getElementById('performanceChart')?.getContext('2d');
+    if (perfCtx) {
+        performanceChart = new Chart(perfCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Stacking\nEnsemble', 'Voting\nEnsemble', 'Random\nForest'],
+                datasets: [
+                    {
+                        label: 'Accuracy',
+                        data: [89.6, 88.48, 85.82],
+                        backgroundColor: '#6366f1',
+                        borderRadius: 8
+                    },
+                    {
+                        label: 'F1-Score',
+                        data: [86.18, 84.28, 78.59],
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 8
+                    },
+                    {
+                        label: 'ROC-AUC',
+                        data: [96.65, 96.39, 95.48],
+                        backgroundColor: '#10b981',
+                        borderRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+}
+
+// ==================== EMAIL ANALYSIS ====================
+
+document.getElementById('analyzeEmailBtn')?.addEventListener('click', analyzeEmail);
+document.getElementById('clearEmailBtn')?.addEventListener('click', clearEmailForm);
+
+async function analyzeEmail() {
+    const subject = document.getElementById('emailSubject').value;
+    const body = document.getElementById('emailBody').value;
+    const from = document.getElementById('emailFrom').value;
+
+    if (!body) {
+        alert('Please enter email body');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/email/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subject: subject,
+                body: body,
+                sender: from
+            })
+        });
+
+        const result = await response.json();
+        displayEmailResults(result);
+    } catch (error) {
+        console.error('Error analyzing email:', error);
+        alert('Error analyzing email. Check console for details.');
+    }
+}
+
+function displayEmailResults(result) {
+    const resultsDiv = document.getElementById('emailResults');
+    
+    if (result.model_confidence) {
+        const prob = result.model_confidence.phishing_probability;
+        const isPhishing = result.model_confidence.prediction === 'phishing';
         
-        html += `</div>`;
+        document.getElementById('emailResultBadge').textContent = 
+            isPhishing ? '🚨 PHISHING DETECTED' : '✅ LEGITIMATE';
+        document.getElementById('emailResultBadge').style.color = 
+            isPhishing ? '#ef4444' : '#10b981';
+        
+        document.getElementById('emailPrediction').textContent = 
+            isPhishing ? 'Phishing' : 'Legitimate';
+        
+        document.getElementById('emailConfidence').textContent = 
+            (prob * 100).toFixed(2) + '%';
+        
+        document.getElementById('emailRisk').textContent = 
+            isPhishing ? 'High Risk' : 'Low Risk';
     }
     
-    document.getElementById('resultsContent').innerHTML = html;
+    resultsDiv.style.display = 'block';
 }
 
-function showError(message) {
-    document.getElementById('resultsContent').innerHTML = `
-        <div class="loading">
-            <h3 style="color: #e74c3c;">❌ Analysis Error</h3>
-            <p>${message}</p>
-            <p style="margin-top: 15px;">Please check your input and try again.</p>
-        </div>
-    `;
+function clearEmailForm() {
+    document.getElementById('emailSubject').value = '';
+    document.getElementById('emailBody').value = '';
+    document.getElementById('emailFrom').value = '';
+    document.getElementById('emailResults').style.display = 'none';
 }
 
-function showNotification(message, type) {
-    // Simple notification system
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 1000;
-        background: ${type === 'success' ? '#27ae60' : '#e74c3c'};
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    `;
-    notification.textContent = message;
+// ==================== WEB LOG ANALYSIS ====================
+
+document.getElementById('analyzeLogBtn')?.addEventListener('click', analyzeWebLog);
+document.getElementById('clearLogBtn')?.addEventListener('click', clearWebForm);
+
+async function analyzeWebLog() {
+    const ip = document.getElementById('logIP').value;
+    const method = document.getElementById('logMethod').value;
+    const path = document.getElementById('logPath').value;
+    const status = document.getElementById('logStatus').value;
+    const agent = document.getElementById('logAgent').value;
+
+    if (!ip || !path) {
+        alert('Please enter IP and path');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/web/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ip: ip,
+                method: method,
+                path: path,
+                status: status,
+                user_agent: agent
+            })
+        });
+
+        const result = await response.json();
+        displayWebResults(result);
+    } catch (error) {
+        console.error('Error analyzing log:', error);
+        alert('Error analyzing log. Check console for details.');
+    }
+}
+
+function displayWebResults(result) {
+    const resultsDiv = document.getElementById('webResults');
     
-    document.body.appendChild(notification);
+    if (result.model_analysis) {
+        const isAnomaly = result.model_analysis.is_anomalous;
+        
+        document.getElementById('webResultBadge').textContent = 
+            isAnomaly ? '⚠️ ANOMALY DETECTED' : '✅ NORMAL';
+        document.getElementById('webResultBadge').style.color = 
+            isAnomaly ? '#f59e0b' : '#10b981';
+        
+        document.getElementById('webStatus').textContent = 
+            isAnomaly ? 'Anomalous' : 'Normal';
+        
+        document.getElementById('webAnomalyScore').textContent = 
+            result.model_analysis.anomaly_score.toFixed(4);
+    }
     
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+    resultsDiv.style.display = 'block';
 }
 
-function getRiskColor(score) {
-    if (score >= 80) return 'linear-gradient(135deg, #c0392b, #e74c3c)';
-    if (score >= 60) return 'linear-gradient(135deg, #d35400, #e67e22)';
-    if (score >= 40) return 'linear-gradient(135deg, #f39c12, #f1c40f)';
-    return 'linear-gradient(135deg, #27ae60, #2ecc71)';
+function clearWebForm() {
+    document.getElementById('logIP').value = '';
+    document.getElementById('logPath').value = '';
+    document.getElementById('logStatus').value = '';
+    document.getElementById('logAgent').value = '';
+    document.getElementById('webResults').style.display = 'none';
 }
 
-// Auto-load demo data on page load
-window.addEventListener('load', function() {
-    setTimeout(() => loadDemo('phishing'), 1000);
-});
+// ==================== MODEL STATUS ====================
+
+async function loadModelsStatus() {
+    try {
+        const response = await fetch('/api/models/status');
+        const status = await response.json();
+        
+        console.log('📊 Models Status:', status);
+        updateSystemStatus(status);
+    } catch (error) {
+        console.error('Error loading model status:', error);
+    }
+}
+
+function updateSystemStatus(status) {
+    const statusElement = document.getElementById('system-status');
+    const allLoaded = Object.values(status).every(v => v === true);
+    
+    if (allLoaded) {
+        statusElement.textContent = '✅ System Active (All Models Loaded)';
+        document.querySelector('.status-dot').style.background = '#10b981';
+    } else {
+        statusElement.textContent = '⚠️ Some Models Missing';
+        document.querySelector('.status-dot').style.background = '#f59e0b';
+    }
+}
+
+// ==================== EVENT LISTENERS ====================
+
+function setupEventListeners() {
+    // Settings slider
+    const thresholdSlider = document.querySelector('input[type="range"]');
+    if (thresholdSlider) {
+        thresholdSlider.addEventListener('input', function() {
+            const value = (this.value / 100).toFixed(2);
+            document.getElementById('thresholdValue').textContent = value;
+        });
+    }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function formatDate(date) {
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+console.log('✅ Dashboard scripts loaded successfully');

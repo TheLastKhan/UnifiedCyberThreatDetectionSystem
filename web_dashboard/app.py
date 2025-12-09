@@ -1,5 +1,6 @@
 """
 Flask Web Dashboard for Unified Threat Detection Platform
+Integrated with trained ML models (Stacking/Voting Ensembles + Isolation Forest)
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -16,9 +17,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # Add src to path
 sys.path.append('../src')
 from src.unified_platform.platform import UnifiedThreatPlatform
+from web_dashboard.api import api_bp, load_trained_models
 
 app = Flask(__name__)
 CORS(app)
+
+# Register API blueprint
+app.register_blueprint(api_bp)
 
 # Global platform instance
 platform = None
