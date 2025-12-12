@@ -38,7 +38,7 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/v1/health || exit 1
+    CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Gunicorn ile başlat
 CMD ["gunicorn", \
@@ -48,4 +48,4 @@ CMD ["gunicorn", \
      "--timeout", "120", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
-     "app:app"]
+     "web_dashboard.app:app"]

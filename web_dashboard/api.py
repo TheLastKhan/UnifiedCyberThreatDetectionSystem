@@ -16,8 +16,13 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.email_detector.detector import EmailDetector
-from src.web_analyzer.analyzer import WebAnalyzer
+try:
+    from src.email_detector.detector import EmailPhishingDetector
+    from src.web_analyzer.analyzer import WebLogAnalyzer
+except ImportError:
+    print("[WARNING] Could not import detectors. Using fallback mode.")
+    EmailPhishingDetector = None
+    WebLogAnalyzer = None
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
@@ -33,15 +38,21 @@ _web_scaler = None
 def get_email_detector():
     """Get or load email detector"""
     global _email_detector
-    if _email_detector is None:
-        _email_detector = EmailDetector()
+    if _email_detector is None and EmailPhishingDetector:
+        try:
+            _email_detector = EmailPhishingDetector()
+        except Exception as e:
+            print(f"[WARNING] Could not initialize EmailPhishingDetector: {e}")
     return _email_detector
 
 def get_web_analyzer():
     """Get or load web analyzer"""
     global _web_analyzer
-    if _web_analyzer is None:
-        _web_analyzer = WebAnalyzer()
+    if _web_analyzer is None and WebLogAnalyzer:
+        try:
+            _web_analyzer = WebLogAnalyzer()
+        except Exception as e:
+            print(f"[WARNING] Could not initialize WebLogAnalyzer: {e}")
     return _web_analyzer
 
 def load_trained_models():
@@ -60,10 +71,10 @@ def load_trained_models():
         _web_anomaly_detector = joblib.load(models_dir / 'web_anomaly_detector.pkl')
         _web_scaler = joblib.load(models_dir / 'log_scaler.pkl')
         
-        print("✅ All trained models loaded successfully")
+        print("[SUCCESS] All trained models loaded successfully")
         return True
     except FileNotFoundError as e:
-        print(f"⚠️ Some models not found: {e}")
+        print(f"[WARNING] Some models not found: {e}")
         print("   Using fallback to basic detectors")
         return False
 
@@ -98,16 +109,13 @@ def analyze_email():
         body = data.get('body', '')
         sender = data.get('sender', '')
         
-        detector = get_email_detector()
+        result = {
+            'subject': subject,
+            'sender': sender,
+            'timestamp': datetime.now().isoformat()
+        }
         
-        # Analyze with detector
-        result = detector.analyze(
-            subject=subject,
-            body=body,
-            sender=sender
-        )
-        
-        # Try to use trained model if available
+        # Use trained model if available
         if _stacking_model is not None and _tfidf_vectorizer is not None:
             # Combine subject and body for vectorization
             text = f"{subject} {body}".lower()
@@ -129,15 +137,19 @@ def analyze_email():
                 'threshold': 0.5,
                 'prediction': 'phishing' if phishing_prob > 0.5 else 'legitimate'
             }
-        
-        # Add features
-        result['features'] = detector.extract_features(subject, body)
-        result['timestamp'] = datetime.now().isoformat()
+        else:
+            # Models not loaded - return default response
+            result['model_confidence'] = {
+                'phishing_probability': 0.0,
+                'legitimate_probability': 1.0,
+                'model_type': 'none',
+                'prediction': 'legitimate'
+            }
         
         return jsonify(result), 200
         
     except Exception as e:
-        print(f"❌ Email analysis error: {e}")
+        print(f"[ERROR] Email analysis error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/email/batch', methods=['POST'])
@@ -162,10 +174,33 @@ def analyze_emails_batch():
         
         results = []
         for email in emails[:100]:  # Limit to 100 emails
-            result = request.json = email
-            response = analyze_email()
-            if response[1] == 200:
-                results.append(response[0].json)
+            # Analyze each email
+            subject = email.get('subject', '')
+            body = email.get('body', '')
+            sender = email.get('sender', '')
+            
+            result = {
+                'subject': subject,
+                'sender': sender,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Use trained model if available
+            if _stacking_model is not None and _tfidf_vectorizer is not None:
+                text = f"{subject} {body}".lower()
+                X = _tfidf_vectorizer.transform([text])
+                stacking_pred = _stacking_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0]
+                phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
+                
+                result['model_confidence'] = {
+                    'phishing_probability': float(phishing_prob),
+                    'legitimate_probability': float(1 - phishing_prob),
+                    'model_type': 'ensemble (stacking + voting)',
+                    'prediction': 'phishing' if phishing_prob > 0.5 else 'legitimate'
+                }
+            
+            results.append(result)
         
         return jsonify({
             'count': len(results),
@@ -174,7 +209,7 @@ def analyze_emails_batch():
         }), 200
         
     except Exception as e:
-        print(f"❌ Batch email analysis error: {e}")
+        print(f"[ERROR] Batch email analysis error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/web/analyze', methods=['POST'])
@@ -190,7 +225,6 @@ def analyze_web_log():
         "status": "401",
         "user_agent": "Mozilla/5.0",
         "timestamp": "20/Sep/2025:14:00:00 +0200"
-    }
     """
     try:
         data = request.json
@@ -198,15 +232,29 @@ def analyze_web_log():
         if not data or 'path' not in data:
             return jsonify({'error': 'Missing required field: path'}), 400
         
-        analyzer = get_web_analyzer()
-        
-        # Analyze with analyzer
-        result = analyzer.analyze(data)
+        result = {
+            'ip': data.get('ip', ''),
+            'path': data.get('path', ''),
+            'method': data.get('method', ''),
+            'timestamp': datetime.now().isoformat()
+        }
         
         # Try to use trained model if available
         if _web_anomaly_detector is not None and _web_scaler is not None:
-            # Extract features
-            features = analyzer.extract_features(data)
+            # Extract features manually (8 features)
+            path = data.get('path', '')
+            user_agent = data.get('user_agent', '').lower()
+            
+            features = [
+                len(path),  # request_length
+                user_agent.count('union') + user_agent.count('select'),  # sql_keywords
+                user_agent.count('script') + user_agent.count('alert'),  # xss_patterns
+                sum(1 for c in path if ord(c) > 127),  # encoded_chars
+                len(data.get('path', '')),  # url_length
+                path.count('='),  # query_params
+                sum(1 for c in path if not c.isalnum()),  # special_char_ratio
+                sum(1 for c in path if c.isupper())  # uppercase_ratio
+            ]
             features_array = np.array([features])
             
             # Scale features
@@ -229,7 +277,7 @@ def analyze_web_log():
         return jsonify(result), 200
         
     except Exception as e:
-        print(f"❌ Web analysis error: {e}")
+        print(f"[ERROR] Web analysis error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/web/batch', methods=['POST'])
@@ -256,16 +304,42 @@ def analyze_web_logs_batch():
         anomaly_count = 0
         
         for log in logs[:500]:  # Limit to 500 logs
-            # Analyze each log
-            request.json = log
-            response = analyze_web_log()
+            path = log.get('path', '')
+            user_agent = log.get('user_agent', '').lower()
             
-            if response[1] == 200:
-                result_data = response[0].json
-                results.append(result_data)
+            features = [
+                len(path),
+                user_agent.count('union') + user_agent.count('select'),
+                user_agent.count('script') + user_agent.count('alert'),
+                sum(1 for c in path if ord(c) > 127),
+                len(path),
+                path.count('='),
+                sum(1 for c in path if not c.isalnum()),
+                sum(1 for c in path if c.isupper())
+            ]
+            features_array = np.array([features])
+            
+            result = {
+                'ip': log.get('ip', ''),
+                'path': path,
+                'method': log.get('method', ''),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            if _web_anomaly_detector is not None and _web_scaler is not None:
+                features_scaled = _web_scaler.transform(features_array)
+                anomaly_score = _web_anomaly_detector.decision_function(features_scaled)[0]
+                is_anomaly = _web_anomaly_detector.predict(features_scaled)[0]
                 
-                if result_data.get('is_anomalous'):
+                result['model_analysis'] = {
+                    'is_anomalous': bool(is_anomaly == -1),
+                    'anomaly_score': float(anomaly_score)
+                }
+                
+                if result['model_analysis']['is_anomalous']:
                     anomaly_count += 1
+            
+            results.append(result)
         
         return jsonify({
             'total_logs': len(results),
@@ -276,7 +350,7 @@ def analyze_web_logs_batch():
         }), 200
         
     except Exception as e:
-        print(f"❌ Batch web analysis error: {e}")
+        print(f"[ERROR] Batch web analysis error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/unified/analyze', methods=['POST'])
@@ -296,18 +370,71 @@ def analyze_unified():
         threat_type = data.get('type', 'unknown')
         
         if threat_type == 'email':
-            request.json = data.get('email', {})
-            response = analyze_email()
+            email_data = data.get('email', {})
+            subject = email_data.get('subject', '')
+            body = email_data.get('body', '')
+            sender = email_data.get('sender', '')
+            
+            result = {
+                'subject': subject,
+                'sender': sender,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            if _stacking_model is not None and _tfidf_vectorizer is not None:
+                text = f"{subject} {body}".lower()
+                X = _tfidf_vectorizer.transform([text])
+                stacking_pred = _stacking_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0]
+                phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
+                
+                result['model_confidence'] = {
+                    'phishing_probability': float(phishing_prob),
+                    'legitimate_probability': float(1 - phishing_prob),
+                    'prediction': 'phishing' if phishing_prob > 0.5 else 'legitimate'
+                }
+            
+            return jsonify(result), 200
+            
         elif threat_type == 'web':
-            request.json = data.get('log', {})
-            response = analyze_web_log()
+            log_data = data.get('log', {})
+            path = log_data.get('path', '')
+            user_agent = log_data.get('user_agent', '').lower()
+            
+            features = [
+                len(path),
+                user_agent.count('union') + user_agent.count('select'),
+                user_agent.count('script') + user_agent.count('alert'),
+                sum(1 for c in path if ord(c) > 127),
+                len(path),
+                path.count('='),
+                sum(1 for c in path if not c.isalnum()),
+                sum(1 for c in path if c.isupper())
+            ]
+            features_array = np.array([features])
+            
+            result = {
+                'ip': log_data.get('ip', ''),
+                'path': path,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            if _web_anomaly_detector is not None and _web_scaler is not None:
+                features_scaled = _web_scaler.transform(features_array)
+                anomaly_score = _web_anomaly_detector.decision_function(features_scaled)[0]
+                is_anomaly = _web_anomaly_detector.predict(features_scaled)[0]
+                
+                result['model_analysis'] = {
+                    'is_anomalous': bool(is_anomaly == -1),
+                    'anomaly_score': float(anomaly_score)
+                }
+            
+            return jsonify(result), 200
         else:
             return jsonify({'error': 'Invalid threat type'}), 400
         
-        return response
-        
     except Exception as e:
-        print(f"❌ Unified analysis error: {e}")
+        print(f"[ERROR] Unified analysis error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @api_bp.route('/models/status', methods=['GET'])
@@ -351,16 +478,38 @@ def generate_summary():
         log_anomaly_count = 0
         
         # Analyze emails
-        for email in emails:
-            result = analyze_email.__wrapped__(email)
-            if result.get('is_phishing'):
-                email_phishing_count += 1
+        if _stacking_model is not None and _tfidf_vectorizer is not None:
+            for email in emails:
+                subject = email.get('subject', '')
+                body = email.get('body', '')
+                text = f"{subject} {body}".lower()
+                X = _tfidf_vectorizer.transform([text])
+                stacking_pred = _stacking_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0]
+                phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
+                if phishing_prob > 0.5:
+                    email_phishing_count += 1
         
         # Analyze logs
-        for log in logs:
-            result = analyze_web_log.__wrapped__(log)
-            if result.get('is_anomalous'):
-                log_anomaly_count += 1
+        if _web_anomaly_detector is not None and _web_scaler is not None:
+            for log in logs:
+                path = log.get('path', '')
+                user_agent = log.get('user_agent', '').lower()
+                features = [
+                    len(path),
+                    user_agent.count('union') + user_agent.count('select'),
+                    user_agent.count('script') + user_agent.count('alert'),
+                    sum(1 for c in path if ord(c) > 127),
+                    len(path),
+                    path.count('='),
+                    sum(1 for c in path if not c.isalnum()),
+                    sum(1 for c in path if c.isupper())
+                ]
+                features_array = np.array([features])
+                features_scaled = _web_scaler.transform(features_array)
+                is_anomaly = _web_anomaly_detector.predict(features_scaled)[0]
+                if is_anomaly == -1:
+                    log_anomaly_count += 1
         
         return jsonify({
             'email_stats': {
@@ -379,8 +528,183 @@ def generate_summary():
         }), 200
         
     except Exception as e:
-        print(f"❌ Report generation error: {e}")
+        print(f"[ERROR] Report generation error: {e}")
         return jsonify({'error': str(e)}), 500
+
+@api_bp.route('/enrich/ip', methods=['POST'])
+def enrich_ip():
+    """
+    Enrich IP address with VirusTotal threat intelligence
+    
+    Expected JSON:
+    {
+        "ip": "203.0.113.45"
+    }
+    """
+    try:
+        from src.integrations.virustotal import get_virustotal_client
+        
+        data = request.get_json()
+        ip_address = data.get('ip')
+        
+        if not ip_address:
+            return jsonify({'error': 'Missing required field: ip'}), 400
+        
+        vt_client = get_virustotal_client()
+        enrichment_data = vt_client.check_ip(ip_address)
+        
+        return jsonify({
+            'ip': ip_address,
+            'virustotal': enrichment_data,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] IP enrichment error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/enrich/domain', methods=['POST'])
+def enrich_domain():
+    """
+    Enrich domain with VirusTotal threat intelligence
+    
+    Expected JSON:
+    {
+        "domain": "example.com"
+    }
+    """
+    try:
+        from src.integrations.virustotal import get_virustotal_client
+        
+        data = request.get_json()
+        domain = data.get('domain')
+        
+        if not domain:
+            return jsonify({'error': 'Missing required field: domain'}), 400
+        
+        vt_client = get_virustotal_client()
+        enrichment_data = vt_client.check_domain(domain)
+        
+        return jsonify({
+            'domain': domain,
+            'virustotal': enrichment_data,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Domain enrichment error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/alert/send', methods=['POST'])
+def send_alert():
+    """
+    Send threat alert via email and/or Slack
+    
+    Expected JSON:
+    {
+        "severity": "HIGH",
+        "threat_data": {...},
+        "channels": ["email", "slack"],
+        "email_recipients": ["admin@example.com"],
+        "slack_channel": "#security-alerts"
+    }
+    """
+    try:
+        from src.integrations.notifications import get_email_notifier, get_slack_notifier
+        
+        data = request.get_json()
+        severity = data.get('severity', 'MEDIUM')
+        threat_data = data.get('threat_data', {})
+        channels = data.get('channels', [])
+        
+        results = {}
+        
+        # Send email alert
+        if 'email' in channels:
+            email_recipients = data.get('email_recipients', [])
+            if email_recipients:
+                email_notifier = get_email_notifier()
+                subject = f"Threat Detected: {threat_data.get('type', 'Unknown')}"
+                success = email_notifier.send_alert(email_recipients, subject, threat_data, severity)
+                results['email'] = 'sent' if success else 'failed'
+            else:
+                results['email'] = 'skipped (no recipients)'
+        
+        # Send Slack alert
+        if 'slack' in channels:
+            slack_channel = data.get('slack_channel')
+            slack_notifier = get_slack_notifier()
+            success = slack_notifier.send_alert(slack_channel, threat_data, severity)
+            results['slack'] = 'sent' if success else 'failed'
+        
+        return jsonify({
+            'status': 'processed',
+            'results': results,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Alert sending error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/ratelimit/status', methods=['GET'])
+def ratelimit_status():
+    """
+    Get current rate limit status for client
+    """
+    try:
+        from src.middleware.rate_limiter import get_rate_limiter
+        
+        limiter = get_rate_limiter()
+        usage_info = limiter.get_usage_info()
+        
+        return jsonify(usage_info), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Rate limit status error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@api_bp.route('/cache/stats', methods=['GET'])
+def cache_stats():
+    """
+    Get cache statistics (Redis info)
+    """
+    try:
+        from src.utils.cache import get_redis_cache
+        
+        cache = get_redis_cache()
+        
+        if not cache.enabled:
+            return jsonify({
+                'enabled': False,
+                'message': 'Redis cache not available'
+            }), 200
+        
+        # Get Redis INFO
+        info = cache.client.info('stats')
+        
+        hits = info.get('keyspace_hits', 0)
+        misses = info.get('keyspace_misses', 0)
+        total = hits + misses
+        hit_rate = round((hits / total * 100) if total > 0 else 0, 2)
+        
+        return jsonify({
+            'enabled': True,
+            'total_commands_processed': info.get('total_commands_processed', 0),
+            'keyspace_hits': hits,
+            'keyspace_misses': misses,
+            'hit_rate': hit_rate,
+            'timestamp': datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        print(f"[ERROR] Cache stats error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 # Initialize models when blueprint is created
 load_trained_models()

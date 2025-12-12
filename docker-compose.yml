@@ -14,6 +14,8 @@ services:
       - FLASK_APP=app:app
       - DEBUG=False
       - DATABASE_URL=postgresql://threat_user:threat_password@db:5432/threat_detection
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
       - REDIS_URL=redis://cache:6379/0
       - LOG_LEVEL=INFO
     depends_on:
@@ -27,7 +29,7 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -48,7 +50,6 @@ services:
       POSTGRES_USER: threat_user
       POSTGRES_PASSWORD: threat_password
       POSTGRES_DB: threat_detection
-      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c effective_cache_size=1GB"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -111,48 +112,48 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Prometheus Monitoring (Optional)
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: threat-detection-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    restart: unless-stopped
-    networks:
-      - threat-detection-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # Prometheus Monitoring (Optional) - Disabled for testing
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: threat-detection-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus_data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #   restart: unless-stopped
+  #   networks:
+  #     - threat-detection-network
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
-  # Grafana Dashboards (Optional)
-  grafana:
-    image: grafana/grafana:latest
-    container_name: threat-detection-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
-    volumes:
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - prometheus
-    restart: unless-stopped
-    networks:
-      - threat-detection-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # Grafana Dashboards (Optional) - Disabled for testing
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: threat-detection-grafana
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #     - GF_INSTALL_PLUGINS=grafana-piechart-panel
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   depends_on:
+  #     - prometheus
+  #   restart: unless-stopped
+  #   networks:
+  #     - threat-detection-network
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
 volumes:
   postgres_data:

@@ -5,10 +5,16 @@ Dashboard başlatma scripti
 import os
 import sys
 import subprocess
+import io
+
+# Fix encoding for Windows
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
 
 def main():
     """Flask dashboard'u başlatır"""
-    print("🌐 Starting Unified Threat Detection Dashboard...")
+    print("Starting Unified Threat Detection Dashboard...")
     
     # Change to web_dashboard directory
     dashboard_dir = "web_dashboard"
@@ -23,10 +29,9 @@ def main():
     
     try:
         # Start Flask app
-        print("🚀 Dashboard will be available at: http://localhost:5000")
+        print("Dashboard will be available at: http://localhost:5000")
         print("Press Ctrl+C to stop the dashboard")
         print("=" * 60)
-        
         subprocess.run([
             sys.executable, 
             os.path.join(dashboard_dir, 'app.py')
