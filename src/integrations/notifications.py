@@ -71,7 +71,7 @@ class EmailNotifier:
         try:
             # Create message
             msg = MIMEMultipart('alternative')
-            msg['From'] = self.from_email
+            msg['From'] = self.from_email  # type: ignore[assignment]
             msg['To'] = ', '.join(to_emails)
             msg['Subject'] = f"[{severity}] {subject}"
             
@@ -84,9 +84,9 @@ class EmailNotifier:
             msg.attach(MIMEText(text_body, 'plain'))
             
             # Send via SMTP
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:  # type: ignore[arg-type]
                 server.starttls()
-                server.login(self.smtp_user, self.smtp_password)
+                server.login(self.smtp_user, self.smtp_password)  # type: ignore[arg-type]
                 server.send_message(msg)
             
             logger.info(f"Alert email sent to {to_emails}: {subject}")
@@ -245,7 +245,7 @@ class SlackNotifier:
             
             # Send to Slack
             response = requests.post(
-                self.webhook_url,
+                self.webhook_url,  # type: ignore[arg-type]
                 json=payload,
                 timeout=10
             )

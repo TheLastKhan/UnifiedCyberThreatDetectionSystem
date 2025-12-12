@@ -38,7 +38,7 @@ class VirusTotalClient:
             
         self.last_request_time = None
         self.session = requests.Session()
-        self.session.headers.update({
+        self.session.headers.update({  # type: ignore[arg-type]
             'x-apikey': self.api_key,
             'Accept': 'application/json'
         })

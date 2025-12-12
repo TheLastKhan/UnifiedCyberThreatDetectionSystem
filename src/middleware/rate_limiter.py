@@ -51,9 +51,9 @@ class RateLimiter:
         """
         # Try to get real IP behind proxy
         if request.headers.get('X-Forwarded-For'):
-            return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+            return request.headers.get('X-Forwarded-For').split(',')[0].strip()  # type: ignore[union-attr]
         elif request.headers.get('X-Real-IP'):
-            return request.headers.get('X-Real-IP')
+            return request.headers.get('X-Real-IP')  # type: ignore[return-value]
         else:
             return request.remote_addr or 'unknown'
     
@@ -70,22 +70,22 @@ class RateLimiter:
             Tuple of (allowed: bool, current_count: int, retry_after: int)
         """
         try:
-            current = self.cache.client.get(key)
+            current = self.cache.client.get(key)  # type: ignore[union-attr]
             
             if current is None:
                 # First request in window
-                self.cache.client.setex(key, window, 1)
+                self.cache.client.setex(key, window, 1)  # type: ignore[union-attr]
                 return True, 1, 0
             
             current = int(current)
             
             if current < limit:
                 # Within limit, increment counter
-                self.cache.client.incr(key)
+                self.cache.client.incr(key)  # type: ignore[union-attr]
                 return True, current + 1, 0
             else:
                 # Rate limit exceeded
-                ttl = self.cache.client.ttl(key)
+                ttl = self.cache.client.ttl(key)  # type: ignore[union-attr]
                 return False, current, ttl if ttl > 0 else window
                 
         except Exception as e:
@@ -169,9 +169,9 @@ class RateLimiter:
         day_key = f"ratelimit:{identifier}:day:{timestamp // 86400}"
         
         try:
-            minute_count = int(self.cache.client.get(minute_key) or 0)
-            hour_count = int(self.cache.client.get(hour_key) or 0)
-            day_count = int(self.cache.client.get(day_key) or 0)
+            minute_count = int(self.cache.client.get(minute_key) or 0)  # type: ignore[union-attr]
+            hour_count = int(self.cache.client.get(hour_key) or 0)  # type: ignore[union-attr]
+            day_count = int(self.cache.client.get(day_key) or 0)  # type: ignore[union-attr]
             
             return {
                 'enabled': True,

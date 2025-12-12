@@ -27,9 +27,11 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:5000/api/v1
-    description: Development Server
-  - url: https://api.unifiedthreat.com/v1
+  - url: http://localhost:5000/api
+    description: Development Server (Docker)
+  - url: http://localhost/api
+    description: Development Server (Nginx)
+  - url: https://api.unifiedthreat.com/api
     description: Production Server
 
 tags:
@@ -43,6 +45,14 @@ tags:
     description: Threat analysis reports
   - name: Health
     description: System health and status
+  - name: Threat Intelligence
+    description: VirusTotal integration endpoints (AŞAMA 8)
+  - name: Notifications
+    description: Alert and notification endpoints (AŞAMA 8)
+  - name: Caching
+    description: Redis cache management (AŞAMA 8)
+  - name: Rate Limiting
+    description: API rate limit monitoring (AŞAMA 8)
 
 paths:
   /health:
@@ -454,6 +464,308 @@ paths:
         '404':
           description: Rapor bulunamadı
 
+  # ====================================
+  # AŞAMA 8: Threat Intelligence
+  # ====================================
+  /enrich/ip:
+    post:
+      summary: IP reputation check via VirusTotal
+      description: IP adresinin VirusTotal üzerindeki itibarını sorgular
+      operationId: enrichIP
+      tags:
+        - Threat Intelligence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ip
+              properties:
+                ip:
+                  type: string
+                  format: ipv4
+                  description: Sorgulanacak IP adresi
+            example:
+              ip: "203.0.113.45"
+      responses:
+        '200':
+          description: IP itibar bilgisi başarıyla alındı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ip:
+                    type: string
+                  virustotal:
+                    type: object
+                    properties:
+                      malicious:
+                        type: integer
+                      suspicious:
+                        type: integer
+                      harmless:
+                        type: integer
+                      undetected:
+                        type: integer
+                      reputation:
+                        type: integer
+                      country:
+                        type: string
+                      as_owner:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+              example:
+                ip: "203.0.113.45"
+                virustotal:
+                  malicious: 12
+                  suspicious: 3
+                  harmless: 45
+                  reputation: -5
+                  country: "US"
+                  as_owner: "Example ISP"
+        '400':
+          description: Geçersiz istek
+        '500':
+          description: VirusTotal API hatası
+
+  /enrich/domain:
+    post:
+      summary: Domain reputation check via VirusTotal
+      description: Domain adının VirusTotal üzerindeki itibarını sorgular
+      operationId: enrichDomain
+      tags:
+        - Threat Intelligence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain
+              properties:
+                domain:
+                  type: string
+                  format: hostname
+                  description: Sorgulanacak domain adı
+            example:
+              domain: "suspicious-site.com"
+      responses:
+        '200':
+          description: Domain itibar bilgisi başarıyla alındı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  domain:
+                    type: string
+                  virustotal:
+                    type: object
+                    properties:
+                      malicious:
+                        type: integer
+                      suspicious:
+                        type: integer
+                      harmless:
+                        type: integer
+                      reputation:
+                        type: integer
+                      categories:
+                        type: object
+                      creation_date:
+                        type: integer
+                      last_update_date:
+                        type: integer
+        '400':
+          description: Geçersiz istek
+
+  # ====================================
+  # AŞAMA 8: Notifications
+  # ====================================
+  /alert/send:
+    post:
+      summary: Send threat alert
+      description: Email ve/veya Slack üzerinden tehdit uyarısı gönderir
+      operationId: sendAlert
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - severity
+                - threat_data
+                - channels
+              properties:
+                severity:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                  description: Uyarı öncelik seviyesi
+                threat_data:
+                  type: object
+                  description: Tehdit detay bilgileri
+                channels:
+                  type: array
+                  items:
+                    type: string
+                    enum: [email, slack]
+                  description: Bildirim kanalları
+                email_recipients:
+                  type: array
+                  items:
+                    type: string
+                    format: email
+                  description: Email alıcı adresleri
+                slack_channel:
+                  type: string
+                  description: Slack kanal adı (örn. #security-alerts)
+            example:
+              severity: "HIGH"
+              threat_data:
+                type: "Phishing Email"
+                sender: "attacker@fake.com"
+                probability: 0.92
+              channels: ["email", "slack"]
+              email_recipients: ["security@company.com"]
+              slack_channel: "#security-alerts"
+      responses:
+        '200':
+          description: Uyarı başarıyla gönderildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                      slack:
+                        type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Geçersiz istek
+
+  # ====================================
+  # AŞAMA 8: Cache Management
+  # ====================================
+  /cache/stats:
+    get:
+      summary: Get Redis cache statistics
+      description: Redis cache performans istatistiklerini döner
+      operationId: getCacheStats
+      tags:
+        - Caching
+      responses:
+        '200':
+          description: Cache istatistikleri başarıyla alındı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  total_commands_processed:
+                    type: integer
+                  keyspace_hits:
+                    type: integer
+                  keyspace_misses:
+                    type: integer
+                  hit_rate:
+                    type: number
+                    format: float
+                  timestamp:
+                    type: string
+                    format: date-time
+              example:
+                enabled: true
+                total_commands_processed: 2706
+                keyspace_hits: 432
+                keyspace_misses: 120
+                hit_rate: 78.26
+                timestamp: "2025-12-12T11:58:16Z"
+
+  # ====================================
+  # AŞAMA 8: Rate Limiting
+  # ====================================
+  /ratelimit/status:
+    get:
+      summary: Get current rate limit status
+      description: İstemci için rate limit kullanım durumunu döner
+      operationId: getRateLimitStatus
+      tags:
+        - Rate Limiting
+      responses:
+        '200':
+          description: Rate limit durumu başarıyla alındı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  identifier:
+                    type: string
+                    description: İstemci IP adresi
+                  limits:
+                    type: object
+                    properties:
+                      per_minute:
+                        type: integer
+                      per_hour:
+                        type: integer
+                      per_day:
+                        type: integer
+                  usage:
+                    type: object
+                    properties:
+                      minute:
+                        type: integer
+                      hour:
+                        type: integer
+                      day:
+                        type: integer
+                  remaining:
+                    type: object
+                    properties:
+                      minute:
+                        type: integer
+                      hour:
+                        type: integer
+                      day:
+                        type: integer
+              example:
+                enabled: true
+                identifier: "172.18.0.1"
+                limits:
+                  per_minute: 60
+                  per_hour: 1000
+                  per_day: 10000
+                usage:
+                  minute: 15
+                  hour: 234
+                  day: 1523
+                remaining:
+                  minute: 45
+                  hour: 766
+                  day: 8477
+
 components:
   schemas:
     EmailPrediction:
@@ -680,3 +992,5 @@ components:
 
 security:
   - ApiKeyAuth: []
+
+# AŞAMA 8: New endpoints added below

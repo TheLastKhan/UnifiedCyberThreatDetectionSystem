@@ -4,7 +4,7 @@ Redis caching utilities for API performance optimization
 
 import os
 import json
-import redis
+import redis  # type: ignore[import]
 from typing import Optional, Any
 from functools import wraps
 import hashlib
@@ -18,6 +18,13 @@ class RedisCache:
     """
     Redis cache manager with automatic serialization/deserialization
     """
+    
+    client: Optional[redis.Redis]
+    enabled: bool
+    host: str
+    port: int
+    password: Optional[str]
+    db: int
     
     def __init__(self, 
                  host: Optional[str] = None,
@@ -52,7 +59,7 @@ class RedisCache:
             )
             
             # Test connection
-            self.client.ping()
+            self.client.ping()  # type: ignore[union-attr]
             self.enabled = True
             logger.info(f"Redis cache connected: {self.host}:{self.port}")
             
@@ -75,7 +82,7 @@ class RedisCache:
             return None
         
         try:
-            value = self.client.get(key)
+            value = self.client.get(key)  # type: ignore[union-attr]
             if value:
                 return json.loads(value)
             return None
@@ -100,7 +107,7 @@ class RedisCache:
         
         try:
             serialized = json.dumps(value)
-            self.client.setex(key, ttl, serialized)
+            self.client.setex(key, ttl, serialized)  # type: ignore[union-attr]
             return True
         except Exception as e:
             logger.error(f"Redis SET error for key {key}: {e}")
@@ -120,7 +127,7 @@ class RedisCache:
             return False
         
         try:
-            self.client.delete(key)
+            self.client.delete(key)  # type: ignore[union-attr]
             return True
         except Exception as e:
             logger.error(f"Redis DELETE error for key {key}: {e}")
@@ -140,7 +147,7 @@ class RedisCache:
             return False
         
         try:
-            return bool(self.client.exists(key))
+            return bool(self.client.exists(key))  # type: ignore[union-attr]
         except Exception as e:
             logger.error(f"Redis EXISTS error for key {key}: {e}")
             return False
@@ -160,7 +167,7 @@ class RedisCache:
             return None
         
         try:
-            return self.client.incrby(key, amount)
+            return self.client.incrby(key, amount)  # type: ignore[union-attr]
         except Exception as e:
             logger.error(f"Redis INCRBY error for key {key}: {e}")
             return None
@@ -180,7 +187,7 @@ class RedisCache:
             return False
         
         try:
-            self.client.expire(key, ttl)
+            self.client.expire(key, ttl)  # type: ignore[union-attr]
             return True
         except Exception as e:
             logger.error(f"Redis EXPIRE error for key {key}: {e}")
@@ -197,7 +204,7 @@ class RedisCache:
             return False
         
         try:
-            self.client.flushdb()
+            self.client.flushdb()  # type: ignore[union-attr]
             logger.warning("Redis cache flushed!")
             return True
         except Exception as e:
