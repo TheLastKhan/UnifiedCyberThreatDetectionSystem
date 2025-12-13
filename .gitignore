@@ -59,6 +59,12 @@ logs/
 instance/
 .webassets-cache
 
+# Environment variables (contains sensitive credentials)
+.env
+.env.backup
+.env.*.backup
+*.env.backup
+
 
 
 
