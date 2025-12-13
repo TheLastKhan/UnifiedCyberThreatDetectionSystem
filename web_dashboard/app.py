@@ -38,6 +38,12 @@ def dashboard():
     return render_template('dashboard.html')
 
 
+@app.route('/model-comparison')
+def model_comparison():
+    """Serve model comparison page"""
+    return render_template('model_comparison.html')
+
+
 @app.route('/api/demo/<demo_type>')
 def load_demo_data(demo_type):
     """Provide demo data for testing"""
