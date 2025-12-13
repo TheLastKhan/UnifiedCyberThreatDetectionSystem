@@ -11,14 +11,16 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Import API blueprint
+# Import API blueprints
 from web_dashboard.api import api_bp, load_trained_models
+from src.monitoring.api import monitoring_bp
 
 app = Flask(__name__)
 CORS(app)
 
-# Register API blueprint
+# Register API blueprints
 app.register_blueprint(api_bp)
+app.register_blueprint(monitoring_bp)
 
 # Load models on startup
 print("[Flask] Loading trained models...")
