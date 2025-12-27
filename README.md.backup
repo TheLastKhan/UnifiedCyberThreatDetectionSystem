@@ -1,0 +1,175 @@
+# 🛡️ Unified Cyber Threat Detection Platform
+
+[![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen)](docs/DEPLOYMENT_GUIDE.md)
+[![Tests](https://img.shields.io/badge/tests-105%2F105%20passing-success)](#test-coverage)
+[![Docker](https://img.shields.io/badge/docker-6%20containers-blue)](#-production-deployment)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](requirements.txt)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+> **Enterprise-grade AI-powered threat detection system** combining email phishing detection and web log analysis with explainable AI, real-time monitoring, and production-ready Docker deployment.
+
+## ✨ Key Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 📧 **Email Phishing Detection** | NLP and ML-based phishing detection with 95%+ accuracy | ✅ Production |
+| 🌐 **Web Log Analysis** | Anomaly detection for SQL injection, XSS, and DDoS attacks | ✅ Production |
+| 🔗 **Threat Correlation** | Cross-platform threat correlation and unified analysis | ✅ Production |
+| 🧠 **Explainable AI** | LIME and SHAP for model interpretability | ✅ Production |
+| 🚀 **REST API** | 9 production endpoints with rate limiting and caching | ✅ Production |
+| 💾 **PostgreSQL Integration** | Full database persistence with SQLAlchemy ORM | ✅ Production |
+| 📊 **Monitoring Stack** | Prometheus + Grafana for metrics and visualization | ✅ Production |
+| 🐳 **Docker Deployment** | Complete containerized stack with health checks | ✅ Production |
+| 📈 **Interactive Dashboard** | Real-time threat visualization and reporting | ✅ Production |
+
+## 🎯 Quick Start
+
+### 🐳 Production Deployment (Recommended)
+
+Deploy the entire stack with one command:
+
+```bash
+# Start all 6 containers (API, Database, Cache, Nginx, Prometheus, Grafana)
+docker-compose up -d
+
+# Access services:
+# - API: http://localhost:80
+# - Grafana: http://localhost:3000 (admin/admin)
+# - Prometheus: http://localhost:9090
+```
+
+**Stack includes:**
+- 🌐 Nginx reverse proxy with SSL/TLS support
+- 🚀 Flask API with Gunicorn (4 workers)
+- 💾 PostgreSQL 15 with persistent storage
+- ⚡ Redis cache for rate limiting
+- 📊 Prometheus metrics collection
+- 📈 Grafana dashboards
+
+### 💻 Local Development
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/UnifiedCyberThreatDetectionSystem.git
+cd UnifiedCyberThreatDetectionSystem
+
+# Setup virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run API server
+python -m src.api.app
+```
+
+## 🎯 Proje Hakkında
+
+Bu proje, email phishing tespiti ve web log analizini birleştirerek kapsamlı bir siber güvenlik tehdidi tespit sistemi oluşturur. Makine öğrenimi ve NLP teknolojilerini kullanarak gerçek zamanlı tehdit tespiti sağlar
+
+## � API Endpoints
+
+### Email Analysis
+```bash
+POST /api/email/analyze          # Analyze single email
+POST /api/email/batch            # Batch email analysis
+GET  /api/email/history          # Analysis history
+```
+
+### Web Log Analysis
+```bash
+POST /api/weblog/analyze         # Analyze web logs
+POST /api/weblog/batch           # Batch log analysis
+```
+
+### Threat Intelligence
+```bash
+GET  /api/threats                # List all threats
+POST /api/threats/correlate      # Cross-platform correlation
+GET  /api/threats/stats          # Threat statistics
+GET  /api/reports/{id}           # Get threat report
+```
+
+**Full API Documentation:** [Interactive Swagger UI](docs/api.html) | [OpenAPI Spec](docs/openapi.yaml) | [Examples](docs/API_EXAMPLES.md)
+
+## 🧪 Test Coverage
+
+```
+✅ 105/105 tests passing (100%)
+```
+
+| Test Suite | Tests | Status |
+|------------|-------|--------|
+| API Integration | 22 | ✅ All passing |
+| Database Operations | 17 | ✅ All passing |
+| Email Detection | 21 | ✅ All passing |
+| Web Analysis | 26 | ✅ All passing |
+| Integration | 14 | ✅ All passing |
+| Performance | 4 | ✅ All passing |
+| Improvements | 1 | ✅ All passing |
+
+**Production Quality:** Zero errors, zero warnings, 100% reliability.
+
+```bash
+# Run all tests
+pytest tests/ -v --cov=src --cov-report=html
+
+# Run specific suite
+pytest tests/test_api.py -v
+```
+
+## 📚 Documentation
+
+### 🏗️ Architecture & Design
+- **[System Architecture](docs/architecture.html)** - Complete diagrams (System, Data Flow, Class, Sequence, Component)
+- **[Design Patterns](docs/BEST_PRACTICES.md)** - Software architecture and patterns used
+
+### 🔧 Development Guides
+- **[Usage Scenarios](docs/USAGE_SCENARIOS.md)** - 5 real-world scenarios with code examples
+- **[Best Practices](docs/BEST_PRACTICES.md)** - Data preparation, model training, troubleshooting
+- **[API Examples](docs/API_EXAMPLES.md)** - cURL and Python request examples
+
+### 💾 Database & Persistence
+- **[Database Integration](docs/FAZ4_DATABASE.md)** - SQLAlchemy ORM, models, migrations
+- **Models:** Email, WebLog, ThreatCorrelation, ThreatReport, AuditLog
+- **Features:** Connection pooling, transactions, batch import (4500+ records)
+
+### 🚀 Deployment & Operations
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Docker, Nginx, SSL/TLS, monitoring, backup
+- **[Production Checklist](docs/DEPLOYMENT_GUIDE.md#production-checklist)** - Pre-launch validation
+- **[Monitoring Setup](docs/DEPLOYMENT_GUIDE.md#monitoring)** - Prometheus + Grafana configuration
+
+### Hızlı Genel Bakış
+
+```
+User Input (Email + Web Logs)
+         ↓
+    ┌────┴────┐
+    ↓         ↓
+Email      Web
+Detector   Analyzer
+    ↓         ↓
+    └────┬────┘
+         ↓
+Correlation Engine
+         ↓
+Unified Platform
+         ↓
+Report + Dashboard
+```
+
+## 🚀 Kurulum
+
+### Gereksinimler
+
+- Python 3.8+
+- pip
+- Virtual environment (önerilen)
+
+### Adımlar
+
+1. Repository'yi klonla:
+```bash
+git clone <repo-url>
+cd unified_threat_detection

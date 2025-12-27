@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Cyber Threat Detection System - API Documentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .swagger-ui {
+            padding: 0 !important;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .topbar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar-title {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar-title h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .topbar-title p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .topbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .topbar-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .topbar-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .swagger-ui .topbar {
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .swagger-ui .info {
+            margin: 30px 0;
+        }
+
+        .swagger-ui .info .title {
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        .swagger-ui .info description {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .swagger-ui .btn {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .swagger-ui .btn:hover {
+            background: #764ba2;
+            border-color: #764ba2;
+        }
+
+        .swagger-ui .opblock.opblock-get {
+            background: rgba(97, 175, 254, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-post {
+            background: rgba(102, 240, 150, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-put {
+            background: rgba(252, 200, 144, 0.1);
+        }
+
+        .swagger-ui .opblock.opblock-delete {
+            background: rgba(239, 108, 123, 0.1);
+        }
+
+        .swagger-ui .scheme-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .swagger-ui .section {
+            margin: 20px;
+        }
+
+        .custom-header {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .api-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .example-request {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .example-request pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .code-highlight {
+            background: #f0f4ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .quick-navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+
+        .quick-nav-btn {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .quick-nav-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-content">
+            <div class="topbar-title">
+                <div>
+                    <h1>Unified Cyber Threat Detection</h1>
+                    <p>API v1.0.0 - Interactive Documentation</p>
+                </div>
+            </div>
+            <div class="topbar-links">
+                <a href="#" onclick="window.location.href='architecture.html'">Architecture</a>
+                <a href="https://github.com/TheLastKhan/UnifiedCyberThreatDetectionSystem" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-header">
+        <h2>Welcome to the API Documentation</h2>
+        <p>Unified Cyber Threat Detection System'in REST API'sini keşfedin. Email phishing tespiti, web log analizi, ve cross-platform tehdit korelasyonu için endpoints'i görüntüleyin.</p>
+    </div>
+
+    <div class="api-stats">
+        <div class="stat-card">
+            <h3>Email Detection API</h3>
+            <p>Emaillerden phishing ve spam tespit edin. TF-IDF + Random Forest + LIME explanation kullanarak tahmin ve açıklamalar alın.</p>
+        </div>
+        <div class="stat-card">
+            <h3>Web Analysis API</h3>
+            <p>Web loglarındaki anormal davranışları tespit edin. Isolation Forest ve pattern matching ile saldırı desenleri bulun.</p>
+        </div>
+        <div class="stat-card">
+            <h3>Unified Analysis API</h3>
+            <p>Email ve web verilerini birlikte analiz edin. Cross-platform korelasyon ile kapsamlı tehdit analizi yapın.</p>
+        </div>
+        <div class="stat-card">
+            <h3>Reports API</h3>
+            <p>Threat analysis raporlarını yönetin. Raporları alın, PDF/CSV olarak dışa aktarın, veya geçmiş analizleri görüntüleyin.</p>
+        </div>
+    </div>
+
+    <div class="quick-navigation">
+        <a class="quick-nav-btn" href="#/Email%20Detection">Email Detection</a>
+        <a class="quick-nav-btn" href="#/Web%20Analysis">Web Analysis</a>
+        <a class="quick-nav-btn" href="#/Unified%20Analysis">Unified Analysis</a>
+        <a class="quick-nav-btn" href="#/Reports">Reports</a>
+        <a class="quick-nav-btn" href="#/Health">Health</a>
+    </div>
+
+    <div id="swagger-ui"></div>
+
+    <footer>
+        <p>Unified Cyber Threat Detection System | FAZ 3.2 - API Documentation</p>
+        <p>Built with OpenAPI 3.0.0 and Swagger UI</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            // Swagger UI Configuration
+            const ui = SwaggerUIBundle({
+                url: "openapi.yaml",  // OpenAPI spec dosyasının yolu
+                dom_id: '#swagger-ui',
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                deepLinking: true,
+                defaultModelsExpandDepth: 1,
+                defaultModelExpandDepth: 1,
+                requestInterceptor: (request) => {
+                    // Log API requests
+                    console.log('API Request:', request);
+                    return request;
+                },
+                responseInterceptor: (response) => {
+                    // Log API responses
+                    console.log('API Response:', response);
+                    return response;
+                }
+            });
+
+            window.ui = ui;
+        };
+    </script>
+</body>
+</html>

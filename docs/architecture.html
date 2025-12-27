@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Cyber Threat Detection System - Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        nav {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        nav button {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        nav button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        nav button.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .diagram-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .diagram-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .diagram-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .diagram-description {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            line-height: 1.6;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            margin-bottom: 30px;
+        }
+        
+        .legend {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #333;
+        }
+        
+        footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 2px solid #667eea;
+            color: #666;
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #0288d1;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .info-box strong {
+            color: #0288d1;
+        }
+        
+        .component-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .component-card {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .component-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .component-card p {
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Unified Cyber Threat Detection System</h1>
+            <p class="subtitle">Architecture & System Design</p>
+        </header>
+        
+        <nav>
+            <button class="nav-btn active" onclick="switchDiagram('system')">System Architecture</button>
+            <button class="nav-btn" onclick="switchDiagram('dataflow')">Data Flow</button>
+            <button class="nav-btn" onclick="switchDiagram('class')">Class Diagram</button>
+            <button class="nav-btn" onclick="switchDiagram('sequence')">Sequence Diagram</button>
+            <button class="nav-btn" onclick="switchDiagram('component')">Component Diagram</button>
+        </nav>
+        
+        <div class="content">
+            
+            <!-- SYSTEM ARCHITECTURE DIAGRAM -->
+            <div id="system" class="diagram-section active">
+                <div class="diagram-title">System Architecture Overview</div>
+                <div class="diagram-description">
+                    Unified Cyber Threat Detection System'in genel mimarisi. Email ve Web loglarını analiz ederek 
+                    tehdit tespiti yapan, correlation engine ile birbiriyle ilişkilendiren, ve LIME/SHAP ile 
+                    açıklanabilir sonuçlar sunan bir sistemi göstermektedir.
+                </div>
+                
+                <div class="mermaid">
+                    <pre>
+graph TB
+    subgraph Input["Input Layer"]
+        EI["Email Input<br/>CSV/API"]
+        WI["Web Log Input<br/>CSV/API"]
+    end
+    
+    subgraph Processing["Processing Layer"]
+        ED["Email Detector<br/>TF-IDF + Random Forest<br/>+ LIME Explanation"]
+        WA["Web Analyzer<br/>Isolation Forest<br/>+ LIME Explanation"]
+    end
+    
+    subgraph Integration["Integration Layer"]
+        CE["Correlation Engine<br/>Risk Aggregation<br/>Threat Mapping"]
+        UP["Unified Platform<br/>Multi-source Analysis<br/>Decision Making"]
+    end
+    
+    subgraph Output["Output Layer"]
+        REP["Reporting Engine<br/>JSON/Dashboard"]
+        VIZ["Visualization<br/>Web Dashboard"]
+    end
+    
+    subgraph Storage["Storage & Logging"]
+        DB["Data Storage"]
+        LOG["Audit Logs"]
+    end
+    
+    EI --> ED
+    WI --> WA
+    ED --> CE
+    WA --> CE
+    CE --> UP
+    UP --> REP
+    REP --> VIZ
+    REP --> DB
+    UP -.-> LOG
+    WA -.-> LOG
+    ED -.-> LOG
+    
+    style Input fill:#e1f5ff
+    style Processing fill:#f3e5f5
+    style Integration fill:#e8f5e9
+    style Output fill:#fff3e0
+    style Storage fill:#fce4ec
+                    </pre>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-title">Legend & Components</div>
+                    <div class="component-card">
+                        <h3>Email Detector Module</h3>
+                        <p><strong>Algorithm:</strong> TF-IDF + Random Forest Classifier<br/>
+                        <strong>Explainability:</strong> LIME (Local Interpretable Model-agnostic Explanations)<br/>
+                        <strong>Purpose:</strong> Phishing ve spam email'leri tespit eder</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>Web Analyzer Module</h3>
+                        <p><strong>Algorithm:</strong> Isolation Forest (Anomaly Detection)<br/>
+                        <strong>Explainability:</strong> LIME<br/>
+                        <strong>Purpose:</strong> Web loglarındaki anormal davranışları ve saldırı desenleri tespit eder</p>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Key Features:</strong> Modular architecture, explainable AI, real-time analysis capability, 
+                    cross-source correlation, audit logging
+                </div>
+            </div>
+            
+            <!-- DATA FLOW DIAGRAM -->
+            <div id="dataflow" class="diagram-section">
+                <div class="diagram-title">Data Flow Diagram</div>
+                <div class="diagram-description">
+                    Veri akışını adım adım gösterir. Email ve log verilerinin nasıl işlendiği, 
+                    tehdit puanlarının nasıl hesaplandığı ve final raporun nasıl oluşturulduğunu izler.
+                </div>
+                
+                <div class="mermaid">
+                    <pre>
+sequenceDiagram
+    participant User
+    participant API as System API
+    participant ED as Email Detector
+    participant WA as Web Analyzer
+    participant CE as Correlation Engine
+    participant UP as Unified Platform
+    participant DB as Database
+    participant Report as Reporting
+
+    User->>API: Input: Email Data
+    User->>API: Input: Web Logs
+    
+    API->>ED: Extract Features
+    ED->>ED: TF-IDF Vectorization
+    ED->>ED: Risk Scoring
+    ED->>ED: LIME Explanation
+    ED-->>API: Email Threats
+    
+    API->>WA: Extract Behavioral Features
+    WA->>WA: Anomaly Detection
+    WA->>WA: Pattern Matching
+    WA->>WA: LIME Explanation
+    WA-->>API: Web Threats
+    
+    API->>CE: Combine Results
+    CE->>CE: Calculate Correlation Score
+    CE->>CE: Risk Amplification
+    CE-->>UP: Correlated Threats
+    
+    UP->>UP: Unified Risk Calculation
+    UP->>UP: Threat Classification
+    UP->>DB: Store Results
+    
+    UP->>Report: Generate Report
+    Report->>Report: JSON Formatting
+    Report-->>User: Threat Analysis Report
+                    </pre>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Data Processing Pipeline:</strong> Raw Input → Feature Extraction → 
+                    Model Prediction → Explanation Generation → Correlation → Final Report
+                </div>
+            </div>
+            
+            <!-- CLASS DIAGRAM -->
+            <div id="class" class="diagram-section">
+                <div class="diagram-title">Class Architecture Diagram</div>
+                <div class="diagram-description">
+                    Sistem'in OOP yapısını gösterir. Ana sınıflar, miras ilişkileri, 
+                    method'lar ve property'ler arasındaki bağlantıları temsil eder.
+                </div>
+                
+                <div class="mermaid">
+                    <pre>
+classDiagram
+    class EmailDetector {
+        -vectorizer: TfidfVectorizer
+        -model: RandomForestClassifier
+        -explainer: LIME
+        +__init__()
+        +extract_email_features()
+        +train()
+        +predict()
+        +predict_with_explanation()
+        -_identify_risk_factors()
+    }
+    
+    class WebAnalyzer {
+        -vectorizer: TfidfVectorizer
+        -anomaly_detector: IsolationForest
+        -explainer: LIME
+        -ip_reputation: dict
+        +__init__()
+        +parse_log_line()
+        +extract_behavioral_features()
+        +train_anomaly_detector()
+        +analyze_ip_with_explanation()
+        -_calculate_ip_risk()
+    }
+    
+    class CorrelationEngine {
+        -email_results: dict
+        -web_results: dict
+        -risk_thresholds: dict
+        +__init__()
+        +correlate_threats()
+        +calculate_unified_risk()
+        -_find_matching_patterns()
+    }
+    
+    class UnifiedPlatform {
+        -email_detector: EmailDetector
+        -web_analyzer: WebAnalyzer
+        -correlation: CorrelationEngine
+        +__init__()
+        +initialize()
+        +analyze_unified_threat()
+        +generate_report()
+        -_calculate_unified_risk()
+    }
+    
+    class ReportingEngine {
+        -format: str
+        +__init__()
+        +generate_json_report()
+        +generate_html_report()
+        -_format_results()
+    }
+    
+    UnifiedPlatform --> EmailDetector : uses
+    UnifiedPlatform --> WebAnalyzer : uses
+    UnifiedPlatform --> CorrelationEngine : uses
+    UnifiedPlatform --> ReportingEngine : uses
+    CorrelationEngine --> EmailDetector : analyzes
+    CorrelationEngine --> WebAnalyzer : analyzes
+                    </pre>
+                </div>
+                
+                <div class="component-list">
+                    <div class="component-card">
+                        <h3>EmailDetector</h3>
+                        <p>Emaillerden feature'ları çıkar, phishing/spam modeli ile tahmin yapar, 
+                        LIME'ı kullanarak tahminleri açıklar.</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>WebAnalyzer</h3>
+                        <p>Web loglarını parse eder, davranış feature'ları çıkar, 
+                        Isolation Forest ile anomalileri bulur.</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>CorrelationEngine</h3>
+                        <p>Email ve web tehditleri arasındaki ilişkileri bulur, 
+                        unified risk skoru hesaplar.</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>UnifiedPlatform</h3>
+                        <p>Tüm modülleri koordine eder, son karar verimi yapar, 
+                        raporlama başlatır.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SEQUENCE DIAGRAM -->
+            <div id="sequence" class="diagram-section">
+                <div class="diagram-title">Threat Detection Sequence</div>
+                <div class="diagram-description">
+                    Bir tehdit analiz isteğinin başından sonuna kadar olan tüm adımları gösterir. 
+                    Her modülün sırasıyla nasıl çalıştığını ve birbiriyle nasıl etkileştiğini izler.
+                </div>
+                
+                <div class="mermaid">
+                    <pre>
+graph LR
+    A["Client Request<br/>Email + Web Data"] -->|Initialize| B["Unified Platform<br/>System Ready"]
+    
+    B -->|Email Analysis| C["Email Detector<br/>Feature Extraction"]
+    C -->|Train/Predict| D["Random Forest<br/>Classifier"]
+    D -->|Generate| E["LIME Explanation<br/>Risk Factors"]
+    
+    B -->|Web Analysis| F["Web Analyzer<br/>Log Parsing"]
+    F -->|Extract| G["Behavioral Features<br/>IP Reputation"]
+    G -->|Detect| H["Isolation Forest<br/>Anomalies"]
+    
+    E -->|Feed| I["Correlation Engine<br/>Match Threats"]
+    H -->|Feed| I
+    
+    I -->|Calculate| J["Unified Risk<br/>Score"]
+    
+    J -->|Generate| K["Reporting Engine<br/>JSON Output"]
+    K -->|Return| L["Threat Analysis<br/>Report"]
+    
+    L -->|Display| M["Dashboard<br/>Visualization"]
+    
+    E -.->|Explain| N["Risk Factors<br/>& Evidence"]
+    H -.->|Explain| N
+    
+    N -.->|Enhance| K
+                    </pre>
+                </div>
+                
+                <div class="info-box">
+                    <strong>Analysis Pipeline:</strong> Sistem gelen veriye karşı paralel olarak 
+                    email ve web analizlerini çalıştırır, sonuçları correlation engine'de birleştirir 
+                    ve unified risk skoru oluşturur.
+                </div>
+            </div>
+            
+            <!-- COMPONENT DIAGRAM -->
+            <div id="component" class="diagram-section">
+                <div class="diagram-title">Component & Module Structure</div>
+                <div class="diagram-description">
+                    Projenin dosya ve modül yapısını gösterir. Hangi modülün hangi görevlerden sorumlu 
+                    olduğunu ve modüller arasındaki bağımlılıkları temsil eder.
+                </div>
+                
+                <div class="mermaid">
+                    <pre>
+graph TB
+    subgraph SRC["src/ - Source Code"]
+        subgraph ED_MOD["email_detector/"]
+            ED_DET["detector.py<br/>Main Logic"]
+            ED_FEAT["features.py<br/>Feature Extraction"]
+            ED_UTIL["utils.py<br/>Helper Functions"]
+        end
+        
+        subgraph WA_MOD["web_analyzer/"]
+            WA_ANA["analyzer.py<br/>Main Logic"]
+            WA_PAT["patterns.py<br/>Pattern Definitions"]
+            WA_UTIL["utils.py<br/>Helper Functions"]
+        end
+        
+        subgraph UP_MOD["unified_platform/"]
+            UP_PLAT["platform.py<br/>Main Integration"]
+            UP_CORR["correlation.py<br/>Correlation Engine"]
+            UP_REP["reporting.py<br/>Report Generation"]
+        end
+        
+        subgraph UTIL_MOD["utils/"]
+            UTIL_DL["data_loader.py<br/>Data Input"]
+            UTIL_VIZ["visualization.py<br/>Visualization"]
+        end
+    end
+    
+    subgraph WEB["web_dashboard/"]
+        DASH["app.py<br/>Flask Application"]
+        TEMPL["templates/<br/>HTML Files"]
+        STATIC["static/<br/>CSS/JS"]
+    end
+    
+    ED_DET --> ED_FEAT
+    ED_DET --> ED_UTIL
+    
+    WA_ANA --> WA_PAT
+    WA_ANA --> WA_UTIL
+    
+    UP_PLAT --> ED_MOD
+    UP_PLAT --> WA_MOD
+    UP_PLAT --> UP_CORR
+    UP_PLAT --> UP_REP
+    
+    UTIL_DL --> UP_MOD
+    UTIL_VIZ --> DASH
+    
+    DASH --> TEMPL
+    DASH --> STATIC
+    
+    UP_REP -.->|JSON Data| DASH
+    
+    style SRC fill:#e8f5e9
+    style ED_MOD fill:#f3e5f5
+    style WA_MOD fill:#fce4ec
+    style UP_MOD fill:#e1f5ff
+    style UTIL_MOD fill:#fff3e0
+    style WEB fill:#f0f4ff
+                    </pre>
+                </div>
+                
+                <div class="component-list">
+                    <div class="component-card">
+                        <h3>email_detector/</h3>
+                        <p><strong>detector.py:</strong> Ana phishing detection logic<br/>
+                        <strong>features.py:</strong> Email feature extraction<br/>
+                        <strong>utils.py:</strong> Yardımcı fonksiyonlar</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>web_analyzer/</h3>
+                        <p><strong>analyzer.py:</strong> Ana anomaly detection logic<br/>
+                        <strong>patterns.py:</strong> Saldırı desenleri<br/>
+                        <strong>utils.py:</strong> Yardımcı fonksiyonlar</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>unified_platform/</h3>
+                        <p><strong>platform.py:</strong> Ana entegrasyon<br/>
+                        <strong>correlation.py:</strong> Tehdit korelasyonu<br/>
+                        <strong>reporting.py:</strong> Rapor oluşturma</p>
+                    </div>
+                    <div class="component-card">
+                        <h3>web_dashboard/</h3>
+                        <p><strong>app.py:</strong> Flask web application<br/>
+                        <strong>templates/:</strong> HTML sayfaları<br/>
+                        <strong>static/:</strong> CSS ve JavaScript</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <footer>
+            <p>Unified Cyber Threat Detection System | FAZ 3.1 - Architecture Documentation</p>
+            <p>Built with Python, Machine Learning, and Explainable AI</p>
+        </footer>
+    </div>
+    
+    <script>
+        function switchDiagram(diagramId) {
+            // Hide all diagrams
+            const sections = document.querySelectorAll('.diagram-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected diagram
+            document.getElementById(diagramId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+        
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>

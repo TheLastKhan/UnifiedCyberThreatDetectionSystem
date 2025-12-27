@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Cyber Threat Detection System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* THEME_4: Dark, High Contrast, Professional Cyber Security Theme */
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #161616;
+            --primary-accent: #00ff9d; /* Cyber Green */
+            --secondary-accent: #00bcd4; /* Cyan */
+            --text-main: #e0e0e0;
+            --text-muted: #b0b0b0;
+            --font-main: 'Roboto', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #2d2d2d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 40px 0;
+            font-family: var(--font-main);
+            color: var(--text-main);
+        }
+
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background Decoration (Abstract Cyber Lines) */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-accent), var(--secondary-accent));
+            z-index: 10;
+        }
+        
+        .slide-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0,255,157,0.05) 0%, rgba(0,0,0,0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h1 { font-size: 56px; line-height: 1.1; margin-bottom: 20px; }
+        h2 { font-size: 42px; margin-bottom: 30px; color: var(--primary-accent); }
+        h3 { font-size: 24px; margin-bottom: 15px; color: var(--secondary-accent); border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h4 { font-size: 18px; color: var(--primary-accent); margin-bottom: 5px; margin-top: 15px; }
+
+        p, li { font-size: 18px; line-height: 1.5; color: var(--text-muted); margin-bottom: 10px; }
+        
+        .mono { font-family: var(--font-mono); color: var(--secondary-accent); font-size: 0.9em;}
+        .highlight { color: #fff; font-weight: bold; }
+
+        /* Layout: Title Slide */
+        .title-layout {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+            z-index: 1;
+        }
+        
+        .title-layout h1 {
+            font-size: 64px;
+            background: -webkit-linear-gradient(45deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .title-info {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            text-align: left;
+            border-top: 1px solid #333;
+            padding-top: 40px;
+        }
+
+        /* Layout: Two Column Text Heavy */
+        .two-col-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+            padding: 0 60px 40px 60px; /* Top padding removed to fit header */
+            gap: 40px;
+            z-index: 1;
+            overflow-y: auto;
+        }
+        
+        .content-col {
+            display: flex;
+            flex-direction: column;
+            /* justify-content: flex-start; */
+        }
+
+        .detail-box {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Layout: List Styling */
+        ul { list-style: none; }
+        ul li { position: relative; padding-left: 20px; }
+        ul li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--primary-accent);
+            font-family: var(--font-mono);
+            font-weight: bold;
+        }
+
+        /* Layout: Table */
+        .table-wrapper {
+            padding: 0 60px 40px 60px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #222;
+            color: var(--primary-accent);
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--secondary-accent);
+            font-family: var(--font-mono);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+            color: #ddd;
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            font-weight: bold;
+            color: white;
+            background-color: rgba(0, 255, 157, 0.1);
+        }
+
+        /* Layout: Tiled Content */
+        .tiled-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 60px 40px 60px;
+            height: 100%;
+            align-content: center;
+        }
+
+        .tile {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: 100%;
+        }
+        
+        .tile i {
+            font-size: 32px;
+            color: var(--secondary-accent);
+            margin-bottom: 15px;
+        }
+
+        .tile h3 { font-size: 20px; color: white; border: none; padding: 0; }
+
+        /* Formula Styling */
+        .formula-box {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-accent);
+            margin: 10px 0;
+            font-family: var(--font-mono);
+            font-size: 20px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slide Title */
+        .slide-header {
+            padding: 40px 60px 20px 60px;
+            z-index: 5;
+            flex-shrink: 0;
+        }
+
+        .slide-content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .small-text { font-size: 14px; color: #888; }
+
+    </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title Slide -->
+<div class="slide-container" id="slide1">
+    <div class="title-layout">
+        <h1>Unified Cyber Threat Detection System</h1>
+        <h2 style="font-size: 28px; font-weight: 400; color: var(--secondary-accent); margin-top: 10px;">AI-Powered Phishing & Web Anomaly Analysis with Explainable AI (XAI)</h2>
+        
+        <div class="title-info">
+            <div>
+                <p style="color:white; font-weight:bold;">Student</p>
+                <p class="mono">[Your Name]</p>
+                <p style="color:white; font-weight:bold; margin-top:20px;">Supervisor</p>
+                <p class="mono">[Advisor Name]</p>
+            </div>
+            <div>
+                <p style="color:white; font-weight:bold;">Course</p>
+                <p class="mono">Graduation Project I - Fall 2025</p>
+                <p style="color:white; font-weight:bold; margin-top:20px;">Department</p>
+                <p class="mono">Computer Engineering</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 2: Agenda -->
+<div class="slide-container" id="slide2">
+    <div class="slide-header"><h2>Detailed Agenda</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Part I: Foundation</h3>
+                <ul>
+                    <li><strong>Problem Definition:</strong>
+                        <p class="small-text">Siloed security tools, coordinated attacks, and the "Black Box" AI dilemma.</p>
+                    </li>
+                    <li><strong>Literature Review:</strong>
+                        <p class="small-text">Gap analysis of existing Phishing (NLP) and Web Anomaly (Isolation Forest) studies.</p>
+                    </li>
+                    <li><strong>System Architecture:</strong>
+                        <p class="small-text">Data flow from input ingestion to the unified dashboard presentation.</p>
+                    </li>
+                    <li><strong>UML Design Models:</strong>
+                        <p class="small-text">Detailed Use Case actors and Class Diagram relationships.</p>
+                    </li>
+                </ul>
+            </div>
+            <div class="content-col">
+                <h3>Part II: Implementation & Results</h3>
+                <ul>
+                    <li><strong>Methodology - Email:</strong>
+                        <p class="small-text">Random Forest, TF-IDF vectorization (5015 features), and LIME integration.</p>
+                    </li>
+                    <li><strong>Methodology - Web:</strong>
+                        <p class="small-text">Unsupervised Isolation Forest, behavioral feature extraction, and signature matching.</p>
+                    </li>
+                    <li><strong>Unified Correlation Engine:</strong>
+                        <p class="small-text">Risk scoring logic, IP/Temporal correlation rules, and unified reporting.</p>
+                    </li>
+                    <li><strong>Demonstration & Impact:</strong>
+                        <p class="small-text">Live scenario, Sustainability (SDG 9), and Roadmap.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 3: Problem Statement -->
+<div class="slide-container" id="slide3">
+    <div class="slide-header"><h2>Problem Statement & Motivation</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Core Challenges</h3>
+                <h4>1. Siloed Security Infrastructure</h4>
+                <p>Email gateways and Web Application Firewalls (WAF) operate in isolation. Cross-vector attacks (Email -> Web) are often missed because no single system sees the full picture.</p>
+                
+                <h4>2. The "Black Box" Trust Issue</h4>
+                <p>Advanced Deep Learning models (LSTM, CNN) offer high accuracy but zero transparency. Security analysts cannot trust "magic" decisions without knowing <em>why</em> an alert was triggered.</p>
+                
+                <h4>3. Reactive vs. Proactive</h4>
+                <p>Traditional systems rely on signatures of <em>known</em> attacks. They fail against zero-day exploits or subtle behavioral anomalies.</p>
+            </div>
+            <div class="content-col detail-box">
+                <h3>Impact & Motivation</h3>
+                <ul>
+                    <li><strong>Surging Phishing Attacks:</strong> <span class="highlight">202% increase</span> in phishing attacks in H2 2024 (SlashNext Report).</li>
+                    <li><strong>Dwell Time:</strong> The time between compromise and detection remains critical. Disconnected tools increase this delay.</li>
+                    <li><strong>Alert Fatigue:</strong> Analysts are overwhelmed by false positives. Without context (XAI), investigating every alert is impossible.</li>
+                </ul>
+                <h4 style="margin-top: 30px;">Project Objectives:</h4>
+                <ul>
+                    <li>Develop a <strong>Unified Platform</strong> correlating Email & Web data.</li>
+                    <li>Implement <strong>Explainable AI (LIME/SHAP)</strong> for transparency.</li>
+                    <li>Achieve <strong>>90% Accuracy</strong> in phishing detection.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 4: Literature Review -->
+<div class="slide-container" id="slide4">
+    <div class="slide-header"><h2>Literature Review & Gap Analysis</h2></div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Study</th>
+                    <th style="width: 20%;">Technique</th>
+                    <th style="width: 30%;">Focus & Results</th>
+                    <th style="width: 30%;">Gap / Limitation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bergholz et al. (2010)</td>
+                    <td>Heuristics / Rules</td>
+                    <td>Early phishing detection. Analysis of headers & content.</td>
+                    <td>High false positive rate. Fails against new/zero-day attacks.</td>
+                </tr>
+                <tr>
+                    <td>Hiransha et al. (2018)</td>
+                    <td>Deep Learning (LSTM)</td>
+                    <td>Sequential email text analysis. High accuracy (94%).</td>
+                    <td><strong>"Black Box" model.</strong> No explainability provided to analysts.</td>
+                </tr>
+                <tr>
+                    <td>Zhang et al. (2019)</td>
+                    <td>Isolation Forest</td>
+                    <td>Web application firewall rule generation.</td>
+                    <td><strong>Isolated Scope.</strong> Only analyzes web logs, ignores email context.</td>
+                </tr>
+                <tr>
+                    <td>Ghafir et al. (2018)</td>
+                    <td>Hidden Markov Models</td>
+                    <td>APT detection via correlation.</td>
+                    <td>Focused on network layer only; missed application layer/email vectors.</td>
+                </tr>
+                <tr>
+                    <td><strong>This Project (2025)</strong></td>
+                    <td><strong>RF + IF + LIME</strong></td>
+                    <td><strong>Multi-Vector Correlation.</strong></td>
+                    <td><strong>Addresses integration gap + Adds XAI layer.</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SLIDE 5: System Architecture -->
+<div class="slide-container" id="slide5">
+    <div class="slide-header"><h2>System Architecture & Data Flow</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>1. Data Ingestion Layer</h3>
+                <ul>
+                    <li><strong>Email Input:</strong> Raw text including Subject, Body, and Sender address.</li>
+                    <li><strong>Web Logs:</strong> Apache/Nginx Common Log Format (CLF). Parsed for IP, Timestamp, Method, Path, Status, and User-Agent.</li>
+                </ul>
+
+                <h3 style="margin-top: 20px;">2. Processing Layer (Python/Backend)</h3>
+                <ul>
+                    <li><strong>Email Module:</strong> Preprocessing -> TF-IDF Vectorization -> Random Forest Classifier.</li>
+                    <li><strong>Web Module:</strong> Feature Extraction (Statistical) -> Isolation Forest (Anomaly Detection).</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>3. Intelligence & Presentation</h3>
+                
+                <h4>Correlation Engine</h4>
+                <p>The core "brain" that receives outputs from both modules. It applies:</p>
+                <ul>
+                    <li>Risk Scoring Logic (Weighted Average)</li>
+                    <li>Rule-Based Correlation (IP matching, Time windows)</li>
+                </ul>
+
+                <h4 style="margin-top: 20px;">Output / Dashboard</h4>
+                <p>A <strong>Flask-based Web Application</strong> serving:</p>
+                <ul>
+                    <li>Real-time Risk Score (0-100)</li>
+                    <li>LIME Visualizations (Feature Contribution)</li>
+                    <li>JSON Reports for SIEM integration</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 6: Use Case Model -->
+<div class="slide-container" id="slide6">
+    <div class="slide-header"><h2>Detailed Use Case Model</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Primary Actor: Security Analyst</h3>
+                <p>The main user responsible for monitoring threats and investigating alerts.</p>
+                
+                <h4 style="margin-top:20px;">Core Use Cases:</h4>
+                <ul>
+                    <li><strong>UC-1 Analyze Suspicious Email:</strong> Input email text to detect phishing probability and view "trigger words".</li>
+                    <li><strong>UC-2 Analyze Web Logs:</strong> Upload log files to identify traffic anomalies and attack patterns (SQLi, XSS).</li>
+                    <li><strong>UC-3 Perform Unified Analysis:</strong> Trigger the correlation engine to check for multi-vector attacks (e.g., Phishing + Web Brute Force).</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>Secondary Actors & Admin Cases</h3>
+                
+                <h4>Actor: System Administrator</h4>
+                <ul>
+                    <li><strong>UC-5 Configure System:</strong> Manage detection thresholds, update correlation rules, and system maintenance.</li>
+                </ul>
+
+                <h4>Actor: External SIEM System</h4>
+                <ul>
+                    <li><strong>UC-6 Generate Report:</strong> The system outputs structured JSON reports consumed by external logging systems.</li>
+                </ul>
+
+                <h4>Actor: Threat Intelligence Feed</h4>
+                <ul>
+                    <li>(Future) Provides real-time IP reputation data to enhance detection accuracy.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 7: Object Model (Class Details) -->
+<div class="slide-container" id="slide7">
+    <div class="slide-header"><h2>Object Model & Class Structure</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Controller & Engine</h3>
+                <ul style="font-size: 18px;">
+                    <li><span class="mono" style="color:var(--primary-accent)">UnifiedThreatPlatform</span>
+                        <ul>
+                            <li><em>Responsibilities:</em> Main orchestrator. Facade pattern.</li>
+                            <li><em>Methods:</em> <code>initialize()</code>, <code>analyze_unified_threat()</code></li>
+                        </ul>
+                    </li>
+                    <li style="margin-top:15px;"><span class="mono" style="color:var(--secondary-accent)">CorrelationEngine</span>
+                        <ul>
+                            <li><em>Responsibilities:</em> Applies rules to combine scores.</li>
+                            <li><em>Attributes:</em> <code>correlation_rules</code>, <code>confidence_threshold</code></li>
+                            <li><em>Methods:</em> <code>calculate_risk_score()</code>, <code>detect_campaign()</code></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>Worker Classes</h3>
+                <ul style="font-size: 18px;">
+                    <li><span class="mono">EmailPhishingDetector</span>
+                        <ul>
+                            <li><em>Attributes:</em> <code>vectorizer</code> (TF-IDF), <code>model</code> (RandomForest), <code>lime_explainer</code>.</li>
+                            <li><em>Methods:</em> <code>extract_features()</code>, <code>predict_with_explanation()</code>.</li>
+                        </ul>
+                    </li>
+                    <li style="margin-top:15px;"><span class="mono">WebLogAnalyzer</span>
+                        <ul>
+                            <li><em>Attributes:</em> <code>detector</code> (IsolationForest), <code>scaler</code>.</li>
+                            <li><em>Methods:</em> <code>train_anomaly_detector()</code>, <code>detect_attack_patterns()</code> (Regex).</li>
+                        </ul>
+                    </li>
+                    <li style="margin-top:15px;"><span class="mono">Data Transfer Objects (DTOs)</span>
+                        <ul>
+                            <li><code>PredictionResult</code>, <code>AnalysisResult</code>, <code>UnifiedThreatReport</code>.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 8: Methodology: Email -->
+<div class="slide-container" id="slide8">
+    <div class="slide-header"><h2>Methodology: Email Phishing Detection</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>1. Feature Engineering (5,015 Features)</h3>
+                <p>We extract a rich set of features to capture both semantic and structural properties:</p>
+                <ul>
+                    <li><strong>Content-Based:</strong> 5000 TF-IDF (Term Frequency-Inverse Document Frequency) features (N-grams).</li>
+                    <li><strong>Keyword Features:</strong> Counts of "Urgent" words (e.g., "Immediate", "Expire"), Financial terms ("Bank", "Verify").</li>
+                    <li><strong>Structural Features:</strong> Capital letter ratio, HTML tag density, Punctuation counts.</li>
+                    <li><strong>URL Features:</strong> IP in URL, Suspicious TLDs (.tk, .ml), URL shorteners.</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>2. Algorithm: Random Forest</h3>
+                <ul>
+                    <li><strong>Ensemble Learning:</strong> Uses 100 Decision Trees (<code>n_estimators=100</code>).</li>
+                    <li><strong>Why RF?</strong> Robust against overfitting on high-dimensional text data. Provides feature importance natively.</li>
+                </ul>
+
+                <h3 style="margin-top: 20px; color:var(--primary-accent)">3. Explainability (LIME)</h3>
+                <p><strong>Local Interpretable Model-agnostic Explanations:</strong></p>
+                <ul>
+                    <li>Perturbs the input text (removes words) to see how prediction changes.</li>
+                    <li><strong>Output:</strong> "The word <em>'Account'</em> contributed +0.15 to Phishing score."</li>
+                    <li>Provides actionable insights to the analyst.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 9: Methodology: Web -->
+<div class="slide-container" id="slide9">
+    <div class="slide-header"><h2>Methodology: Web Anomaly Detection</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>1. Behavioral Feature Extraction</h3>
+                <p>We aggregate raw logs by IP address to create a behavioral profile:</p>
+                <ul>
+                    <li><strong>Volume Metrics:</strong> Request count, Request rate (req/min).</li>
+                    <li><strong>Error Metrics:</strong> Ratio of 4xx (Client Error) and 5xx (Server Error) status codes.</li>
+                    <li><strong>Temporal Metrics:</strong> Variance in time between requests (detects automated bots).</li>
+                    <li><strong>Diversity:</strong> Number of unique User-Agents, Paths accessed.</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>2. Algorithm: Isolation Forest</h3>
+                <ul>
+                    <li><strong>Unsupervised Learning:</strong> Does not require labeled "attack" data.</li>
+                    <li><strong>Logic:</strong> Anomalies are rare and distinct. They are "isolated" earlier in the random decision trees.</li>
+                    <li><strong>Scoring:</strong> Returns an anomaly score. Negative values indicate high anomaly.</li>
+                </ul>
+
+                <h3 style="margin-top: 20px; color:var(--secondary-accent)">3. Signature Matching</h3>
+                <p>Layered defense using Regex for known patterns:</p>
+                <ul>
+                    <li><strong>SQL Injection:</strong> <code>UNION SELECT</code>, <code>OR 1=1</code>.</li>
+                    <li><strong>XSS:</strong> <code>&lt;script&gt;</code>, <code>javascript:</code> alerts.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 10: Correlation -->
+<div class="slide-container" id="slide10">
+    <div class="slide-header"><h2>Unified Correlation Logic</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Risk Scoring Formula</h3>
+                <div class="formula-box" style="font-size: 18px;">
+                    Score = min(100, (EmailRisk * 0.4) + (WebRisk * 0.4) + CorrelationBonus)
+                </div>
+                <p>This weighted formula ensures that a high risk in one vector alerts the system, but a correlation between vectors pushes the score to CRITICAL.</p>
+                
+                <h4 style="margin-top:20px;">Components:</h4>
+                <ul>
+                    <li><strong>Email Risk (0-40):</strong> Based on RF Probability.</li>
+                    <li><strong>Web Risk (0-40):</strong> Based on Anomaly Score & Patterns.</li>
+                    <li><strong>Correlation Bonus (0-20):</strong> Added only if rules trigger.</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box">
+                <h3>Correlation Rules</h3>
+                
+                <h4>1. IP Coincidence Rule</h4>
+                <p><strong>Logic:</strong> Triggers if the Sender IP (from email headers) matches a Source IP in Web Logs targeting the server.</p>
+                <p><strong>Impact:</strong> Strong indicator of a targeted campaign.</p>
+
+                <h4>2. Temporal Proximity Rule</h4>
+                <p><strong>Logic:</strong> Triggers if a High-Risk Email and a Web Anomaly occur within a 1-hour window.</p>
+                
+                <h4>3. Pattern Similarity</h4>
+                <p><strong>Logic:</strong> Detects if Email Subject ("Password Reset") aligns with Web Target Path (<code>/admin/login</code> brute force).</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 11: Demo -->
+<div class="slide-container" id="slide11">
+    <div class="slide-header"><h2>Demonstration Scenario</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Scenario: Coordinated Attack</h3>
+                <p>We simulate a multi-stage attack to test the correlation engine.</p>
+                
+                <h4 style="margin-top:20px;">Step 1: Phishing Delivery</h4>
+                <ul>
+                    <li><strong>Input:</strong> Email with subject "Urgent: Password Expiry" containing a malicious link.</li>
+                    <li><strong>System:</strong> RF Model detects "Urgent" keywords. Confidence: 88%.</li>
+                </ul>
+
+                <h4 style="margin-top:20px;">Step 2: Web Intrusion</h4>
+                <ul>
+                    <li><strong>Input:</strong> Log entries showing <code>401 Unauthorized</code> bursts on <code>/login</code> from IP <code>192.168.1.X</code>.</li>
+                    <li><strong>System:</strong> Isolation Forest detects high error rate. Anomaly Score: -0.75.</li>
+                </ul>
+            </div>
+            <div class="content-col detail-box" style="background: #000; border: 1px solid var(--primary-accent);">
+                <h3 style="color:var(--primary-accent); border-bottom:none;">Expected System Output</h3>
+                <div class="mono" style="font-size: 16px; line-height: 1.4;">
+                    > Analyzing Email... [DONE]<br>
+                    > Risk: HIGH (Trigger: "Urgent")<br>
+                    > Analyzing Web Logs... [DONE]<br>
+                    > Anomaly: YES (Error Rate > 90%)<br>
+                    <br>
+                    > CORRELATION ENGINE STARTED...<br>
+                    > <span style="color:var(--secondary-accent)">[MATCH]</span> IP Address 192.168.1.105<br>
+                    > <span style="color:var(--secondary-accent)">[MATCH]</span> Temporal Window < 10 mins<br>
+                    <br>
+                    > <strong>FINAL VERDICT:</strong><br>
+                    > Unified Score: <span style="color:#f44336; font-weight:bold;">95/100 (CRITICAL)</span><br>
+                    > Action: Block IP & Quarantine Email
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 12: Impact & Sustainability -->
+<div class="slide-container" id="slide12">
+    <div class="slide-header"><h2>Impact & Sustainability (SDG 9)</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="two-col-layout">
+            <div class="content-col">
+                <h3>Alignment with SDG 9</h3>
+                <p><strong>"Industry, Innovation, and Infrastructure"</strong></p>
+                
+                <h4 style="margin-top:20px;">1. Democratizing Security</h4>
+                <p>Making advanced, AI-driven security accessible to SMEs and developing regions. Reduces the "Security Divide".</p>
+
+                <h4 style="margin-top:20px;">2. Resource Efficiency</h4>
+                <p>Using <strong>Random Forest</strong> (lightweight) instead of Deep Learning reduces computational cost and energy consumption (Green Computing).</p>
+            </div>
+            <div class="content-col detail-box">
+                <h3>Societal & Educational Impact</h3>
+                
+                <h4>Capacity Building</h4>
+                <p>The <strong>Explainable AI (XAI)</strong> features act as a teaching tool. Junior analysts learn <em>why</em> an attack is flagged, bridging the cybersecurity skills gap.</p>
+
+                <h4 style="margin-top:20px;">Resilient Infrastructure</h4>
+                <p>By detecting multi-vector attacks early, the system prevents cascading failures in critical digital infrastructure.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 13: Future Work & Conclusion -->
+<div class="slide-container" id="slide13">
+    <div class="slide-header"><h2>Roadmap & Future Work</h2></div>
+    <div class="slide-content-wrapper">
+        <div class="tiled-grid">
+            <div class="tile">
+                <i class="fa-solid fa-server"></i>
+                <h3>1. Infrastructure & Scalability</h3>
+                <ul>
+                    <li><strong>Model Persistence:</strong> Save trained models (pickle) to avoid retraining on restart.</li>
+                    <li><strong>Containerization:</strong> Dockerize the Flask app, Redis (caching), and Worker nodes.</li>
+                    <li><strong>Database:</strong> Migrate from in-memory to PostgreSQL for persistent reporting.</li>
+                </ul>
+            </div>
+            <div class="tile">
+                <i class="fa-solid fa-shield-virus"></i>
+                <h3>2. Advanced Detection</h3>
+                <ul>
+                    <li><strong>Threat Intel API:</strong> Integrate VirusTotal / AbuseIPDB for real-time IP reputation.</li>
+                    <li><strong>Scope Expansion:</strong> Add Network Traffic Analysis (PCAP) module.</li>
+                    <li><strong>Adversarial Defense:</strong> Hardening models against evasion attacks.</li>
+                </ul>
+            </div>
+            <div class="tile">
+                <i class="fa-solid fa-lock"></i>
+                <h3>3. Security & UI</h3>
+                <ul>
+                    <li><strong>API Security:</strong> Implement API Keys & Rate Limiting (prevent DoS).</li>
+                    <li><strong>Visualization:</strong> Add Time-Series graphs for trend analysis.</li>
+                    <li><strong>Auth:</strong> Role-Based Access Control (RBAC) for analysts vs admins.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

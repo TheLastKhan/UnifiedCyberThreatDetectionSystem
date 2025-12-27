@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard - Unified Threat Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lime_breakdown.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.css">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>CyberGuard</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#email-analysis" class="nav-item" data-page="email-analysis">
+                    <i class="fas fa-envelope"></i>
+                    <span>Email Analysis</span>
+                </a>
+                <a href="#web-analysis" class="nav-item" data-page="web-analysis">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Web Analysis</span>
+                </a>
+                <a href="#correlation-analysis" class="nav-item" data-page="correlation-analysis">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Correlation Analysis</span>
+                </a>
+                <a href="#model-comparison" class="nav-item" data-page="model-comparison">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Model Comparison</span>
+                </a>
+                <a href="#reports" class="nav-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#settings" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="lang-toggle" id="langToggle">
+                    <span>TR</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1 id="page-title-text">Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-success" id="generateDemoBtn" onclick="generateDemoData()"
+                        title="Generate realistic test data for demonstration">
+                        <i class="fas fa-vial"></i> Generate Demo Data
+                    </button>
+                    <button class="btn btn-danger" id="clearHistoryBtn" onclick="clearPredictionHistory()"
+                        title="Clear all prediction history">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                </div>
+            </header>
+
+            <!-- Pages Container -->
+            <div class="pages-container">
+                <!-- Dashboard Page -->
+                <div class="page active" id="page-dashboard">
+                    <div class="dashboard-grid">
+                        <!-- Key Metrics -->
+                        <div class="metrics-row">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>System Status</h3>
+                                    <span class="status-badge healthy">Active</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value">100%</div>
+                                    <div class="metric-label">Operational</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check"></i> All models loaded</span>
+                                        <span><i class="fas fa-check"></i> API responding</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Email Detection</h3>
+                                    <span class="status-badge">Random Forest</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="emailPredictionsCount">0</div>
+                                    <div class="metric-label">Predictions</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-envelope"></i> <span id="emailAnalyzedCount">0</span>
+                                            analyzed</span>
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span
+                                                id="emailPhishingCount">0</span> phishing detected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Web Anomaly Detection</h3>
+                                    <span class="status-badge">Isolation Forest</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="webPredictionsCount">0</div>
+                                    <div class="metric-label">Predictions</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-network-wired"></i> <span id="webAnalyzedCount">0</span>
+                                            analyzed</span>
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span
+                                                id="webAnomaliesCount">0</span> anomalies detected</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Total Threats</h3>
+                                    <span class="status-badge warning" id="totalThreatsCount">0</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="totalThreatsValue">0</div>
+                                    <div class="metric-label">All Time</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span
+                                                id="totalPhishingCount">0</span> phishing detected</span>
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span
+                                                id="totalAnomaliesCount">0</span> anomalies detected</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts -->
+                        <div class="chart-row">
+                            <div class="chart-card">
+                                <h3>Threat Distribution</h3>
+                                <canvas id="threatChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Model Performance</h3>
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recent Alerts -->
+                        <div class="alerts-card">
+                            <h3>Recent Alerts</h3>
+                            <div class="alerts-list">
+                                <div class="alert-item alert-high">
+                                    <div class="alert-icon">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Phishing Email Detected</div>
+                                        <div class="alert-description">Credential harvesting attempt from malicious
+                                            domain</div>
+                                        <div class="alert-time">2 minutes ago</div>
+                                    </div>
+                                    <div class="alert-confidence">97.3%</div>
+                                </div>
+
+                                <div class="alert-item alert-medium">
+                                    <div class="alert-icon">
+                                        <i class="fas fa-warning"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Suspicious Web Activity</div>
+                                        <div class="alert-description">Multiple failed login attempts detected</div>
+                                        <div class="alert-time">15 minutes ago</div>
+                                    </div>
+                                    <div class="alert-confidence">73.2%</div>
+                                </div>
+
+                                <div class="alert-item alert-low">
+                                    <div class="alert-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <div class="alert-content">
+                                        <div class="alert-title">Spam Email</div>
+                                        <div class="alert-description">Marketing email with suspicious links</div>
+                                        <div class="alert-time">1 hour ago</div>
+                                    </div>
+                                    <div class="alert-confidence">62.1%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Analysis Page -->
+                <div class="page" id="page-email-analysis">
+                    <div class="page-content">
+                        <h2>Email Analysis & Phishing Detection</h2>
+
+                        <div class="analysis-form">
+                            <div class="form-group">
+                                <label for="emailSubject">Email Subject</label>
+                                <input type="text" id="emailSubject" placeholder="Email subject line">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="emailSender">Sender Email</label>
+                                <input type="email" id="emailSender" placeholder="phishing@example.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="senderIP">Sender IP Address (Optional)</label>
+                                <input type="text" id="senderIP" placeholder="192.168.1.100"
+                                    pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                                    title="Valid IPv4 address">
+                                <small style="color: var(--text-secondary); font-size: 0.85rem;">
+                                    Used for coordinated attack detection
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="emailBody">Email Body</label>
+                                <textarea id="emailBody" placeholder="Paste email content here..." rows="10"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="analyzeEmailBtn">
+                                    <i class="fas fa-search"></i> Analyze Email
+                                </button>
+                                <button class="btn btn-secondary" id="clearEmailBtn">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Loading Indicator -->
+                        <div class="loading-indicator" id="emailLoading" style="display:none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Analyzing with 3 models...</span>
+                        </div>
+
+                        <!-- Analysis Results - Three Models Side by Side -->
+                        <div class="analysis-results" id="emailResults" style="display:none;">
+                            <h3 style="margin-bottom: 20px; color: #0066cc;">Model Comparison Results</h3>
+
+                            <!-- Ensemble Result - Highlighted! -->
+                            <div class="ensemble-result-card" id="ensembleCard"
+                                style="display:none; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);">
+                                <div
+                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                                    <h2 style="margin: 0; color: white;">
+                                        <i class="fas fa-vote-yea"></i> Ensemble Prediction
+                                        <span
+                                            style="font-size: 0.6em; opacity: 0.9; font-weight: normal; margin-left: 10px;">(Weighted
+                                            Voting)</span>
+                                    </h2>
+                                    <span class="result-badge" id="ensembleResultBadge"
+                                        style="font-size: 1.2em; padding: 8px 16px;"></span>
+                                </div>
+
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                                    <div
+                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Prediction
+                                        </div>
+                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensemblePrediction">-
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Confidence
+                                        </div>
+                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensembleConfidence">-
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Risk Level
+                                        </div>
+                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensembleRiskLevel">-</div>
+                                    </div>
+                                    <div
+                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Models Used
+                                        </div>
+                                        <div style="font-size: 1.1em; font-weight: bold;" id="ensembleModelsUsed">-
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    style="font-size: 0.85em; opacity: 0.85; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>Weights:</strong> <span id="ensembleWeights">BERT 50%, FastText 30%, TF-IDF
+                                        20%</span>
+                                </div>
+                            </div>
+
+                            <div class="model-results-grid">
+                                <!-- BERT Model Result -->
+                                <div class="result-card model-card">
+                                    <div class="result-header">
+                                        <h3><i class="fas fa-brain"></i> BERT (Fine-tuned)</h3>
+                                        <span class="result-badge" id="bertResultBadge"></span>
+                                    </div>
+
+                                    <div class="result-body">
+                                        <div class="result-metric">
+                                            <span>Prediction</span>
+                                            <span class="metric-value" id="bertPrediction">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Confidence</span>
+                                            <span class="metric-value" id="bertConfidence">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Risk Level</span>
+                                            <span class="metric-value" id="bertRisk">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Processing Time</span>
+                                            <span class="metric-value" id="bertTime">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-details">
+                                        <h4>Key Indicators</h4>
+                                        <div id="bertIndicators"></div>
+                                    </div>
+
+                                    <!-- LIME Explanation Breakdown -->
+                                    <div class="result-details" id="bertLimeBreakdownSection" style="display:none;">
+                                        <h4>
+                                            <i class="fas fa-lightbulb"></i> Feature Importance (XAI)
+                                            <span class="info-icon"
+                                                title="Shows which features contributed to the prediction">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        </h4>
+                                        <div id="bertLimeBreakdown"></div>
+                                    </div>
+                                </div>
+
+                                <!-- FastText Model Result -->
+                                <div class="result-card model-card">
+                                    <div class="result-header">
+                                        <h3><i class="fas fa-bolt"></i> FastText</h3>
+                                        <span class="result-badge" id="fasttextResultBadge"></span>
+                                    </div>
+
+                                    <div class="result-body">
+                                        <div class="result-metric">
+                                            <span>Prediction</span>
+                                            <span class="metric-value" id="fasttextPrediction">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Confidence</span>
+                                            <span class="metric-value" id="fasttextConfidence">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Risk Level</span>
+                                            <span class="metric-value" id="fasttextRisk">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Processing Time</span>
+                                            <span class="metric-value" id="fasttextTime">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-details">
+                                        <h4>Key Indicators</h4>
+                                        <div id="fasttextIndicators"></div>
+                                    </div>
+
+                                    <!-- LIME Explanation Breakdown -->
+                                    <div class="result-details" id="fasttextLimeBreakdownSection" style="display:none;">
+                                        <h4>
+                                            <i class="fas fa-lightbulb"></i> Feature Importance (XAI)
+                                            <span class="info-icon"
+                                                title="Shows which features contributed to the prediction">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        </h4>
+                                        <div id="fasttextLimeBreakdown"></div>
+                                    </div>
+                                </div>
+
+                                <!-- TF-IDF Model Result -->
+                                <div class="result-card model-card">
+                                    <div class="result-header">
+                                        <h3><i class="fas fa-chart-bar"></i> TF-IDF Ensemble</h3>
+                                        <span class="result-badge" id="tfidfResultBadge"></span>
+                                    </div>
+
+                                    <div class="result-body">
+                                        <div class="result-metric">
+                                            <span>Prediction</span>
+                                            <span class="metric-value" id="tfidfPrediction">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Confidence</span>
+                                            <span class="metric-value" id="tfidfConfidence">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Risk Level</span>
+                                            <span class="metric-value" id="tfidfRisk">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Processing Time</span>
+                                            <span class="metric-value" id="tfidfTime">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-details">
+                                        <h4>Key Indicators</h4>
+                                        <div id="tfidfIndicators"></div>
+                                    </div>
+
+                                    <!-- TF-IDF LIME Breakdown -->
+                                    <div class="result-details" id="tfidfLimeBreakdown" style="display:none;">
+                                        <h4>
+                                            <i class="fas fa-lightbulb"></i> Feature Importance (XAI)
+                                            <span class="info-icon"
+                                                title="Shows which features contributed to the prediction">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        </h4>
+                                        <div id="tfidfLimeContent"></div>
+                                    </div>
+
+                                    <!-- LIME Explanation Breakdown -->
+                                    <div class="result-details" id="limeBreakdownSection" style="display:none;">
+                                        <h4>
+                                            <i class="fas fa-lightbulb"></i> Feature Importance Breakdown
+                                            <span class="info-icon"
+                                                title="Shows which features contributed to the prediction">
+                                                <i class="fas fa-info-circle"></i>
+                                            </span>
+                                        </h4>
+                                        <div id="limeBreakdown"></div>
+                                    </div>
+                                </div>
+
+                                <!-- VirusTotal Domain Reputation -->
+                                <div class="result-card model-card" id="virusTotalEmailCard" style="display:none;">
+                                    <div class="result-header">
+                                        <h3><i class="fas fa-shield-alt"></i> VirusTotal Reputation</h3>
+                                        <span class="result-badge" id="vtEmailBadge"></span>
+                                    </div>
+
+                                    <div class="result-body">
+                                        <div class="result-metric">
+                                            <span>Domain</span>
+                                            <span class="metric-value" id="vtEmailDomain">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Reputation</span>
+                                            <span class="metric-value" id="vtEmailReputation">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Malicious Detections</span>
+                                            <span class="metric-value" id="vtEmailMalicious">-</span>
+                                        </div>
+                                        <div class="result-metric">
+                                            <span>Suspicious Detections</span>
+                                            <span class="metric-value" id="vtEmailSuspicious">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-details">
+                                        <h4>Analysis Details</h4>
+                                        <div id="vtEmailDetails">Checking domain reputation...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Web Analysis Page -->
+                <div class="page" id="page-web-analysis">
+                    <div class="page-content">
+                        <h2>Web Log Analysis & Anomaly Detection</h2>
+
+                        <div class="analysis-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="logIP">Source IP</label>
+                                    <input type="text" id="logIP" placeholder="192.168.1.100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logMethod">HTTP Method</label>
+                                    <select id="logMethod">
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>DELETE</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="logPath">Request Path</label>
+                                    <input type="text" id="logPath" placeholder="/admin/login">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="logStatus">HTTP Status</label>
+                                    <input type="text" id="logStatus" placeholder="200">
+                                </div>
+                                <div class="form-group">
+                                    <label for="logSize">Response Size (bytes)</label>
+                                    <input type="text" id="logSize" placeholder="4567">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="logAgent">User Agent</label>
+                                <input type="text" id="logAgent" placeholder="Mozilla/5.0...">
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="analyzeLogBtn">
+                                    <i class="fas fa-search"></i> Analyze Log
+                                </button>
+                                <button class="btn btn-secondary" id="clearLogBtn">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Results -->
+                        <div class="analysis-results" id="webResults" style="display:none;">
+                            <div class="result-card">
+                                <div class="result-header">
+                                    <h3>Analysis Result</h3>
+                                    <span class="result-badge" id="webResultBadge"></span>
+                                </div>
+
+                                <div class="result-body">
+                                    <div class="result-metric">
+                                        <span>Status</span>
+                                        <span class="metric-value" id="webStatus">-</span>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>Anomaly Score</span>
+                                        <span class="metric-value" id="webAnomalyScore">-</span>
+                                    </div>
+                                </div>
+
+                                <!-- Additional Info: Patterns and Request Frequency -->
+                                <div class="result-details" id="webAdditionalInfo" style="display:none;">
+                                    <h4>Detection Details</h4>
+                                    <div id="webAdditionalInfoContent"></div>
+                                </div>
+                            </div>
+
+                            <!-- VirusTotal IP Reputation -->
+                            <div class="result-card" id="virusTotalWebCard" style="display:none;">
+                                <div class="result-header">
+                                    <h3><i class="fas fa-shield-alt"></i> VirusTotal Reputation</h3>
+                                    <span class="result-badge" id="vtWebBadge"></span>
+                                </div>
+
+                                <div class="result-body">
+                                    <div class="result-metric">
+                                        <span>IP Address</span>
+                                        <span class="metric-value" id="vtWebIP">-</span>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>Reputation</span>
+                                        <span class="metric-value" id="vtWebReputation">-</span>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>Malicious Detections</span>
+                                        <span class="metric-value" id="vtWebMalicious">-</span>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>Country</span>
+                                        <span class="metric-value" id="vtWebCountry">-</span>
+                                    </div>
+                                    <div class="result-metric">
+                                        <span>ASN</span>
+                                        <span class="metric-value" id="vtWebASN">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="result-details">
+                                    <h4>Analysis Details</h4>
+                                    <div id="vtWebDetails">Checking IP reputation...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correlation Analysis Page -->
+                <div class="page" id="page-correlation-analysis">
+                    <div class="page-content">
+                        <h2>Correlation Analysis</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Analyze correlations between email
+                            threats and web anomalies to detect coordinated attacks</p>
+
+                        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Correlation Status</h3>
+                                    <span class="status-badge" id="correlationStatusBadge">Analyzing</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="correlationScore">0.00</div>
+                                    <div class="metric-label">Correlation Score</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-chart-line"></i> <span id="correlationStrength">No
+                                                Data</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Coordinated Attacks</h3>
+                                    <span class="status-badge warning" id="coordinatedAttacksBadge">0</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="coordinatedAttacksCount">0</div>
+                                    <div class="metric-label">Detected Patterns</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span
+                                                id="lastCoordinatedAttack">No recent attacks</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container" style="margin-top: 2rem;">
+                            <div class="chart-card">
+                                <h3>Threat Timeline Correlation</h3>
+                                <canvas id="correlationTimelineChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-container"
+                            style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div class="chart-card">
+                                <h3>Email vs Web Threats Comparison</h3>
+                                <canvas id="emailWebScatterChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Correlation Heatmap</h3>
+                                <div id="correlationHeatmap" style="padding: 2rem; text-align: center;">
+                                    <p style="color: var(--text-secondary);">Loading correlation data...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <div class="report-card">
+                                <h3>Recent Correlated Events</h3>
+                                <div id="correlatedEventsList">
+                                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No
+                                        correlated events detected</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Comparison Page -->
+                <div class="page" id="page-model-comparison">
+                    <div class="page-content">
+                        <h2>Model Comparison</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Compare performance metrics of
+                            different machine learning models</p>
+
+                        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Random Forest</h3>
+                                    <span class="status-badge success">Active</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="rfAccuracy">94.5%</div>
+                                    <div class="metric-label">Accuracy</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check-circle"></i> Precision: <span
+                                                id="rfPrecision">93.2%</span></span>
+                                        <span><i class="fas fa-check-circle"></i> Recall: <span
+                                                id="rfRecall">95.8%</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>SVM</h3>
+                                    <span class="status-badge success">Active</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="svmAccuracy">92.3%</div>
+                                    <div class="metric-label">Accuracy</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check-circle"></i> Precision: <span
+                                                id="svmPrecision">91.5%</span></span>
+                                        <span><i class="fas fa-check-circle"></i> Recall: <span
+                                                id="svmRecall">93.1%</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Naive Bayes</h3>
+                                    <span class="status-badge success">Active</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="nbAccuracy">89.7%</div>
+                                    <div class="metric-label">Accuracy</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check-circle"></i> Precision: <span
+                                                id="nbPrecision">88.9%</span></span>
+                                        <span><i class="fas fa-check-circle"></i> Recall: <span
+                                                id="nbRecall">90.5%</span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Isolation Forest</h3>
+                                    <span class="status-badge success">Active</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="iforestAccuracy">87.5%</div>
+                                    <div class="metric-label">Anomaly Detection</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check-circle"></i> Precision: <span
+                                                id="iforestPrecision">86.3%</span></span>
+                                        <span><i class="fas fa-check-circle"></i> Recall: <span
+                                                id="iforestRecall">88.7%</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container"
+                            style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div class="chart-card">
+                                <h3>Model Accuracy Comparison</h3>
+                                <canvas id="modelAccuracyChart"></canvas>
+                            </div>
+                            <div class="chart-card">
+                                <h3>Precision vs Recall</h3>
+                                <canvas id="precisionRecallChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-container" style="margin-top: 2rem;">
+                            <div class="chart-card">
+                                <h3>F1 Score Comparison</h3>
+                                <canvas id="f1ScoreChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <div class="report-card">
+                                <h3>Performance Summary</h3>
+                                <table class="performance-table" id="modelPerformanceTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Accuracy</th>
+                                            <th>Precision</th>
+                                            <th>Recall</th>
+                                            <th>F1 Score</th>
+                                            <th>Training Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Random Forest</td>
+                                            <td>94.5%</td>
+                                            <td>93.2%</td>
+                                            <td>95.8%</td>
+                                            <td>94.5%</td>
+                                            <td>2.3s</td>
+                                        </tr>
+                                        <tr>
+                                            <td>SVM</td>
+                                            <td>92.3%</td>
+                                            <td>91.5%</td>
+                                            <td>93.1%</td>
+                                            <td>92.3%</td>
+                                            <td>4.1s</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Naive Bayes</td>
+                                            <td>89.7%</td>
+                                            <td>88.9%</td>
+                                            <td>90.5%</td>
+                                            <td>89.7%</td>
+                                            <td>0.8s</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Isolation Forest</td>
+                                            <td>87.5%</td>
+                                            <td>86.3%</td>
+                                            <td>88.7%</td>
+                                            <td>87.5%</td>
+                                            <td>1.5s</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Page -->
+                <div class="page" id="page-reports">
+                    <div class="page-content">
+                        <h2>Threat Reports & Analytics</h2>
+
+                        <div class="metrics-grid"
+                            style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-bottom: 2rem;">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Report Summary</h3>
+                                    <span class="status-badge" id="reportTotalBadge">0</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="reportTotalThreats">0</div>
+                                    <div class="metric-label">Total Threats</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-envelope"></i> <span id="reportPhishing">0</span>
+                                            phishing</span>
+                                        <span><i class="fas fa-network-wired"></i> <span id="reportAnomalies">0</span>
+                                            anomalies</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <h3>Detection Rate</h3>
+                                    <span class="status-badge success" id="reportDetectionBadge">High</span>
+                                </div>
+                                <div class="metric-content">
+                                    <div class="metric-value" id="reportDetectionRate">94.5%</div>
+                                    <div class="metric-label">Average Confidence</div>
+                                    <div class="metric-details">
+                                        <span><i class="fas fa-check-circle"></i> <span id="reportCritical">0</span>
+                                            critical</span>
+                                        <span><i class="fas fa-exclamation-triangle"></i> <span id="reportHigh">0</span>
+                                            high risk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-card" style="margin-bottom: 2rem;">
+                            <h3>Export / Import Data</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1rem;">
+                                <div>
+                                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Export Reports</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                        <button class="btn btn-primary" onclick="exportToExcel()">
+                                            <i class="fas fa-file-excel"></i> Export to Excel
+                                        </button>
+                                        <button class="btn btn-primary" onclick="exportToJSON()">
+                                            <i class="fas fa-file-code"></i> Export to JSON
+                                        </button>
+                                        <button class="btn btn-primary" onclick="exportToPDF()">
+                                            <i class="fas fa-file-pdf"></i> Export to PDF
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Import Data</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                        <input type="file" id="excelImportInput" accept=".xlsx,.xls"
+                                            style="display: none;" onchange="importFromExcel(event)">
+                                        <button class="btn btn-primary"
+                                            onclick="document.getElementById('excelImportInput').click()">
+                                            <i class="fas fa-file-excel"></i> Import from Excel
+                                        </button>
+                                        <input type="file" id="jsonImportInput" accept=".json" style="display: none;"
+                                            onchange="importFromJSON(event)">
+                                        <button class="btn btn-primary"
+                                            onclick="document.getElementById('jsonImportInput').click()">
+                                            <i class="fas fa-file-code"></i> Import from JSON
+                                        </button>
+                                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+                                            <i class="fas fa-info-circle"></i> Import bulk threat data for analysis
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-card">
+                            <h3>Recent Predictions</h3>
+                            <div id="reportPredictionsList" style="max-height: 400px; overflow-y: auto;">
+                                <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">Loading
+                                    predictions...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div class="page" id="page-settings">
+                    <div class="page-content">
+                        <h2>System Settings</h2>
+
+                        <div class="settings-container">
+                            <div class="settings-section">
+                                <h3>Display Settings</h3>
+                                <div class="setting-item">
+                                    <label>Dark Mode</label>
+                                    <input type="checkbox" class="toggle" id="darkModeToggle">
+                                </div>
+                                <div class="setting-item">
+                                    <label>Language (TR/EN)</label>
+                                    <input type="checkbox" class="toggle" id="languageToggle">
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Model Settings</h3>
+                                <div class="setting-item">
+                                    <label>Email Detection Threshold</label>
+                                    <input type="range" min="0" max="100" value="50" id="thresholdSlider">
+                                    <span id="thresholdValue">0.50</span>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Auto-reload Models</label>
+                                    <input type="checkbox" class="toggle" id="autoReloadToggle" checked>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Notifications</h3>
+                                <div class="setting-item">
+                                    <label>High Risk Alerts</label>
+                                    <input type="checkbox" class="toggle" id="highRiskToggle" checked>
+                                </div>
+                                <div class="setting-item">
+                                    <label>Daily Reports</label>
+                                    <input type="checkbox" class="toggle" id="dailyReportsToggle" checked>
+                                </div>
+                            </div>
+
+                            <div class="settings-actions">
+                                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                                <button class="btn btn-secondary" onclick="resetSettings()">Reset to Default</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

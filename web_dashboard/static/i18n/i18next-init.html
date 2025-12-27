@@ -1,0 +1,60 @@
+// i18n initialization script
+// Include this in your main dashboard HTML
+
+<script src="https://cdn.jsdelivr.net/npm/i18next@23.7.6/dist/umd/i18next.min.js"></script>
+<script>
+    // Initialize i18next
+    i18next
+        .init({
+            lng: localStorage.getItem('language') || 'en',
+            fallbackLng: 'en',
+            debug: false,
+            resources: {
+                en: {
+                    translation: {}
+                },
+                tr: {
+                    translation: {}
+                }
+            }
+        })
+        .then(() => {
+            console.log('✅ i18next initialized');
+            updatePageLanguage();
+        })
+        .catch(err => {
+            console.error('❌ i18next initialization failed:', err);
+        });
+
+    // Update all elements with data-i18n attribute
+    function updatePageLanguage() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.textContent = i18next.t(key);
+        });
+    }
+
+    // Language switcher
+    function setLanguage(lang) {
+        i18next.changeLanguage(lang, () => {
+            localStorage.setItem('language', lang);
+            updatePageLanguage();
+            console.log(`Language changed to: ${lang}`);
+        });
+    }
+
+    // Listen to language changes
+    i18next.on('languageChanged', () => {
+        updatePageLanguage();
+    });
+</script>
+
+<!-- Language Switcher Button -->
+<div class="language-switcher">
+    <button onclick="setLanguage('en')">English</button>
+    <button onclick="setLanguage('tr')">Türkçe</button>
+</div>
+
+<!-- Usage Example -->
+<!-- Instead of: <h1>Dashboard</h1> -->
+<!-- Use: <h1 data-i18n="header.title"></h1> -->

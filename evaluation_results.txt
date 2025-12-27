@@ -1,0 +1,166 @@
+﻿python : C:\Users\hakan\UnifiedCyberTh
+reatDetectionSystem\evaluate_models.py
+:7: DeprecationWarning: 
+At line:1 char:1
++ python evaluate_models.py 2>&1 | Out
+-File -FilePath evaluation_result ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: (C:\Users\hakan\...cationW  
+  arning: :String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+Pyarrow will become a required depende
+ncy of pandas in the next major releas
+e of pandas (pandas 3.0),
+(to allow more performant data types, 
+such as the Arrow string type, and bet
+ter interoperability with other librar
+ies)
+but was not found to be installed on y
+our system.
+If this would cause problems for you,
+please provide us feedback at https://
+github.com/pandas-dev/pandas/issues/54
+466
+        
+  import pandas as pd
+2025-12-23 00:01:21,254 - INFO - =====
+======================================
+===========================
+2025-12-23 00:01:21,254 - INFO - MODEL
+ EVALUATION & WEIGHT VALIDATION
+2025-12-23 00:01:21,254 - INFO - =====
+======================================
+===========================
+2025-12-23 00:01:21,254 - INFO - Loadi
+ng test data...
+2025-12-23 00:01:21,893 - INFO -    \u
+2705 Loaded 500 test samples
+2025-12-23 00:01:21,893 - INFO -    \U
+0001f4ca Phishing: 260, Legitimate: 24
+0
+2025-12-23 00:01:21,894 - INFO - 
+1\ufe0f\u20e3 Evaluating TF-IDF...
+[Parallel(n_jobs=20)]: Using backend T
+hreadingBackend with 20 concurrent wor
+kers.
+[Parallel(n_jobs=20)]: Done  10 tasks 
+     | elapsed:    0.0s
+[Parallel(n_jobs=20)]: Done 100 out of
+ 100 | elapsed:    0.0s finished
+[Parallel(n_jobs=20)]: Using backend T
+hreadingBackend with 20 concurrent wor
+kers.
+[Parallel(n_jobs=20)]: Done  10 tasks 
+     | elapsed:    0.0s
+[Parallel(n_jobs=20)]: Done 100 out of
+ 100 | elapsed:    0.0s finished
+2025-12-23 00:01:22,165 - INFO -    \u
+2705 TF-IDF Evaluated
+2025-12-23 00:01:22,169 - INFO - 
+2\ufe0f\u20e3 Evaluating BERT...
+2025-12-23 00:01:25,915 - INFO - Using
+ device: cpu
+2025-12-23 00:01:25,915 - INFO - Loadi
+ng pre-trained model: distilbert-base-
+uncased
+Some weights of DistilBertForSequenceC
+lassification were not initialized fro
+m the model checkpoint at distilbert-b
+ase-uncased and are newly initialized:
+ ['classifier.bias', 'classifier.weigh
+t', 'pre_classifier.bias', 'pre_classi
+fier.weight']
+You should probably TRAIN this model o
+n a down-stream task to be able to use
+ it for predictions and inference.
+Device set to use cpu
+2025-12-23 00:01:27,382 - INFO - LIME 
+explainer initialized
+2025-12-23 00:01:27,382 - INFO - Model
+ loaded successfully
+2025-12-23 00:01:27,382 - ERROR -    \
+u274c BERT Error: 'BertEmailDetector' 
+object has no attribute 'load_model'
+Traceback (most recent call last):
+  File "C:\Users\hakan\UnifiedCyberThr
+eatDetectionSystem\evaluate_models.py"
+, line 75, in evaluate_bert
+    detector.load_model('models/bert_p
+hishing_detector')
+AttributeError: 'BertEmailDetector' ob
+ject has no attribute 'load_model'
+2025-12-23 00:01:27,384 - INFO - 
+3\ufe0f\u20e3 Evaluating FastText...
+2025-12-23 00:01:28,558 - INFO - \u270
+5 Model loaded from models/fasttext_em
+ail_detector.bin
+2025-12-23 00:01:28,558 - INFO - LIME 
+explainer initialized
+2025-12-23 00:01:28,558 - ERROR -    \
+u274c FastText Error: 'FastTextEmailDe
+tector' object has no attribute 'load_
+model'
+Traceback (most recent call last):
+  File "C:\Users\hakan\UnifiedCyberThr
+eatDetectionSystem\evaluate_models.py"
+, line 110, in evaluate_fasttext
+    detector.load_model('models/fastte
+xt_email.bin')
+AttributeError: 'FastTextEmailDetector
+' object has no attribute 'load_model'
+2025-12-23 00:01:28,614 - INFO - 
+======================================
+================================
+2025-12-23 00:01:28,614 - INFO - MODEL
+ PERFORMANCE COMPARISON
+2025-12-23 00:01:28,614 - INFO - =====
+======================================
+===========================
+2025-12-23 00:01:28,614 - INFO - 
+======================================
+================================
+2025-12-23 00:01:28,614 - INFO - 
+4\ufe0f\u20e3 Validating Weighted Voti
+ng Weights...
+2025-12-23 00:01:28,614 - INFO -    Pr
+oposed: BERT=0.5, FastText=0.3, TF-IDF
+=0.2
+2025-12-23 00:01:28,614 - INFO - 
+   \U0001f4ca Recommended (F1-based):
+2025-12-23 00:01:28,614 - INFO -      
+ BERT: 0.00
+2025-12-23 00:01:28,614 - INFO -      
+ FASTTEXT: 0.00
+2025-12-23 00:01:28,614 - INFO -      
+ TFIDF: 1.00
+2025-12-23 00:01:28,614 - INFO - 
+   \U0001f50d Comparison:
+2025-12-23 00:01:28,614 - INFO -      
+ BERT: Proposed=0.50, Recommended=0.00
+, Diff=0.50 \u26a0\ufe0f
+2025-12-23 00:01:28,614 - INFO -      
+ FASTTEXT: Proposed=0.30, Recommended=
+0.00, Diff=0.30 \u26a0\ufe0f
+2025-12-23 00:01:28,614 - INFO -      
+ TFIDF: Proposed=0.20, Recommended=1.0
+0, Diff=0.80 \u26a0\ufe0f
+2025-12-23 00:01:28,614 - INFO - 
+======================================
+================================
+2025-12-23 00:01:28,614 - INFO - \u270
+5 EVALUATION COMPLETE
+2025-12-23 00:01:28,614 - INFO - =====
+======================================
+===========================
+
+Metric          BERT         FastText     TF-IDF      
+-------------------------------------------------------
+ACCURACY              0.00%        0.00%       97.60%
+PRECISION             0.00%        0.00%       95.93%
+RECALL                0.00%        0.00%       99.62%
+F1                    0.00%        0.00%       97.74%
+ROC_AUC               0.00%        0.00%       99.83%

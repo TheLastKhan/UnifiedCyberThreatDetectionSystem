@@ -1,0 +1,54 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'threat-detection'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Threat Detection API
+  - job_name: 'threat-detection-api'
+    static_configs:
+      - targets: ['api:5000']
+        labels:
+          service: 'api'
+          component: 'flask'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    
+  # PostgreSQL Database
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['db:5432']
+        labels:
+          service: 'database'
+          component: 'postgresql'
+    scrape_interval: 60s
+    
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['cache:6379']
+        labels:
+          service: 'cache'
+          component: 'redis'
+    scrape_interval: 30s
+    
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'monitoring'
+          component: 'prometheus'

@@ -1,0 +1,580 @@
+/* Dark/Light Mode Theme System */
+
+:root {
+    /* Light Mode (Default) */
+    
+    /* Primary Colors */
+    --color-primary: #007bff;
+    --color-primary-dark: #0056b3;
+    --color-primary-light: #0d6efd;
+    
+    /* Risk Level Colors */
+    --color-critical: #dc3545;
+    --color-high: #fd7e14;
+    --color-medium: #ffc107;
+    --color-low: #28a745;
+    --color-info: #17a2b8;
+    
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    
+    /* Text Colors */
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #9ca3af;
+    --text-light: #f8f9fa;
+    
+    /* Border Colors */
+    --border-color: #dee2e6;
+    --border-light: #e9ecef;
+    --border-dark: #adb5bd;
+    
+    /* Component Colors */
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+    
+    --input-bg: #ffffff;
+    --input-border: #ced4da;
+    --input-focus: #007bff;
+    
+    --button-bg: #f8f9fa;
+    --button-border: #dee2e6;
+    --button-text: #212529;
+    --button-hover-bg: #e2e6ea;
+    
+    /* Chart Colors */
+    --chart-bg: #ffffff;
+    --chart-grid: #e9ecef;
+    --chart-text: #212529;
+    
+    /* Navbar */
+    --navbar-bg: #ffffff;
+    --navbar-border: #dee2e6;
+    --navbar-text: #212529;
+    
+    /* Sidebar */
+    --sidebar-bg: #f8f9fa;
+    --sidebar-border: #dee2e6;
+    --sidebar-text: #212529;
+    --sidebar-hover: #e9ecef;
+    
+    /* Transitions */
+    --transition-duration: 0.3s;
+}
+
+/* Dark Mode */
+html[data-theme="dark"],
+body.dark-mode {
+    /* Primary Colors */
+    --color-primary: #0d6efd;
+    --color-primary-dark: #0dcaf0;
+    --color-primary-light: #31d0fc;
+    
+    /* Risk Level Colors (adjusted for dark) */
+    --color-critical: #ff6b6b;
+    --color-high: #ffa940;
+    --color-medium: #ffd666;
+    --color-low: #52c41a;
+    --color-info: #13c2c2;
+    
+    /* Background Colors */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #2d2d2d;
+    
+    /* Text Colors */
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1a1;
+    --text-muted: #52525b;
+    --text-light: #27272a;
+    
+    /* Border Colors */
+    --border-color: #404040;
+    --border-light: #3a3a3a;
+    --border-dark: #52525b;
+    
+    /* Component Colors */
+    --card-bg: #242424;
+    --card-border: #404040;
+    --card-shadow: rgba(0, 0, 0, 0.5);
+    
+    --input-bg: #2d2d2d;
+    --input-border: #404040;
+    --input-focus: #0d6efd;
+    
+    --button-bg: #333333;
+    --button-border: #404040;
+    --button-text: #e4e4e7;
+    --button-hover-bg: #3a3a3a;
+    
+    /* Chart Colors */
+    --chart-bg: #242424;
+    --chart-grid: #404040;
+    --chart-text: #e4e4e7;
+    
+    /* Navbar */
+    --navbar-bg: #1a1a1a;
+    --navbar-border: #404040;
+    --navbar-text: #e4e4e7;
+    
+    /* Sidebar */
+    --sidebar-bg: #242424;
+    --sidebar-border: #404040;
+    --sidebar-text: #e4e4e7;
+    --sidebar-hover: #333333;
+}
+
+/* ============================================================================
+   GENERAL STYLES
+   ============================================================================ */
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+}
+
+p, span, div {
+    color: var(--text-primary);
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-primary-dark);
+}
+
+/* Secondary text */
+.text-secondary,
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+/* ============================================================================
+   CARDS & CONTAINERS
+   ============================================================================ */
+
+.card,
+.panel,
+.box,
+[class*="card"] {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 1px 3px var(--card-shadow);
+    transition: background-color var(--transition-duration),
+                border-color var(--transition-duration),
+                box-shadow var(--transition-duration);
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+/* ============================================================================
+   FORMS & INPUTS
+   ============================================================================ */
+
+input,
+textarea,
+select,
+.form-control {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration),
+                border-color var(--transition-duration);
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+button,
+.btn,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--button-border);
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration),
+                border-color var(--transition-duration);
+}
+
+button:hover,
+.btn:hover,
+[type="button"]:hover,
+[type="submit"]:hover,
+[type="reset"]:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* Primary Button */
+.btn-primary,
+button.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+
+/* ============================================================================
+   RISK LEVELS & THREAT INDICATORS
+   ============================================================================ */
+
+.risk-critical,
+.threat-critical,
+.severity-critical {
+    background-color: var(--color-critical);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.risk-high,
+.threat-high,
+.severity-high {
+    background-color: var(--color-high);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.risk-medium,
+.threat-medium,
+.severity-medium {
+    background-color: var(--color-medium);
+    color: #212529;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.risk-low,
+.threat-low,
+.severity-low {
+    background-color: var(--color-low);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+/* ============================================================================
+   NAVBAR & NAVIGATION
+   ============================================================================ */
+
+.navbar,
+nav,
+header {
+    background-color: var(--navbar-bg);
+    border-bottom: 1px solid var(--navbar-border);
+    color: var(--navbar-text);
+}
+
+.navbar a,
+nav a {
+    color: var(--navbar-text);
+}
+
+.navbar a:hover,
+nav a:hover {
+    color: var(--color-primary);
+}
+
+.navbar-active,
+nav .active {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+}
+
+/* ============================================================================
+   SIDEBAR & MENU
+   ============================================================================ */
+
+.sidebar,
+.menu,
+aside {
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    color: var(--sidebar-text);
+}
+
+.sidebar a,
+.menu a {
+    color: var(--sidebar-text);
+    padding: 10px 15px;
+    display: block;
+    transition: background-color var(--transition-duration),
+                color var(--transition-duration);
+}
+
+.sidebar a:hover,
+.menu a:hover {
+    background-color: var(--sidebar-hover);
+    color: var(--color-primary);
+}
+
+/* ============================================================================
+   TABLES
+   ============================================================================ */
+
+table,
+.table {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-collapse: collapse;
+}
+
+thead,
+.table thead {
+    background-color: var(--bg-tertiary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-duration);
+}
+
+tbody tr:hover {
+    background-color: var(--bg-secondary);
+}
+
+td, th {
+    border-color: var(--border-color);
+    padding: 12px;
+}
+
+/* ============================================================================
+   MODALS & DIALOGS
+   ============================================================================ */
+
+.modal,
+.dialog,
+[role="dialog"] {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+}
+
+.modal-header,
+.dialog-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body,
+.dialog-body {
+    background-color: var(--card-bg);
+}
+
+.modal-footer,
+.dialog-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============================================================================
+   CHARTS & GRAPHS
+   ============================================================================ */
+
+.chart,
+canvas {
+    background-color: var(--chart-bg);
+}
+
+.chart-legend {
+    color: var(--chart-text);
+}
+
+/* ============================================================================
+   ALERTS & NOTIFICATIONS
+   ============================================================================ */
+
+.alert,
+.notification {
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.alert-danger,
+.alert-error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: var(--color-critical);
+    color: var(--color-critical);
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: var(--color-medium);
+    color: var(--color-medium);
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: var(--color-low);
+    color: var(--color-low);
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-color: var(--color-info);
+    color: var(--color-info);
+}
+
+/* ============================================================================
+   SCROLLBAR STYLING
+   ============================================================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-dark);
+}
+
+/* ============================================================================
+   THEME TOGGLE BUTTON
+   ============================================================================ */
+
+.theme-toggle,
+.dark-mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 100px;
+    z-index: 999;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid var(--button-border);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    cursor: pointer;
+    transition: all var(--transition-duration);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.theme-toggle:hover,
+.dark-mode-toggle:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+    * {
+        transition: background-color var(--transition-duration),
+                    color var(--transition-duration),
+                    border-color var(--transition-duration);
+    }
+}
+
+/* ============================================================================
+   UTILITIES
+   ============================================================================ */
+
+.bg-primary {
+    background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+    background-color: var(--bg-secondary);
+}
+
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.border {
+    border-color: var(--border-color) !important;
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background-color: white;
+        color: #000;
+    }
+    
+    .theme-toggle,
+    .dark-mode-toggle {
+        display: none;
+    }
+}
+
+/* Accessibility */
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] {
+        --color-primary: #0d6efd;
+        --bg-primary: #1a1a1a;
+        --text-primary: #e4e4e7;
+        /* ... other dark variables ... */
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: more) {
+    :root {
+        --border-color: #000;
+        --text-secondary: #333;
+    }
+    
+    html[data-theme="dark"] {
+        --border-color: #fff;
+        --text-secondary: #ccc;
+    }
+}

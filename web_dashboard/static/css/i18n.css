@@ -1,0 +1,97 @@
+/* i18n CSS Support */
+
+:root {
+    /* Default (LTR) CSS Custom Properties */
+    --dir: ltr;
+    --text-align-start: left;
+    --text-align-end: right;
+    --float-start: left;
+    --float-end: right;
+    --margin-start: margin-left;
+    --margin-end: margin-right;
+    --padding-start: padding-left;
+    --padding-end: padding-right;
+    --border-start: border-left;
+    --border-end: border-right;
+}
+
+/* RTL Support (when needed for future languages) */
+html[lang="ar"],
+html[lang="he"],
+html[lang="fa"] {
+    --dir: rtl;
+    --text-align-start: right;
+    --text-align-end: left;
+    --float-start: right;
+    --float-end: left;
+    --margin-start: margin-right;
+    --margin-end: margin-left;
+    --padding-start: padding-right;
+    --padding-end: padding-left;
+    --border-start: border-right;
+    --border-end: border-left;
+}
+
+/* Language-specific font stacks */
+body[lang="tr"],
+body[lang="en"] {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Component styling */
+.language-switcher {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+}
+
+.language-switcher button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.language-switcher button:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.language-switcher button.active {
+    background: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+/* Text directionality */
+.text-start {
+    text-align: var(--text-align-start);
+}
+
+.text-end {
+    text-align: var(--text-align-end);
+}
+
+/* Margin shortcuts */
+.ms-auto {
+    margin-inline-start: auto;
+}
+
+.me-auto {
+    margin-inline-end: auto;
+}
+
+/* Padding shortcuts */
+.ps-2 {
+    padding-inline-start: 0.5rem;
+}
+
+.pe-2 {
+    padding-inline-end: 0.5rem;
+}

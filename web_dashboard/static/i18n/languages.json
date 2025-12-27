@@ -1,0 +1,14 @@
+{
+  "en": {
+    "name": "English",
+    "native": "English",
+    "direction": "ltr",
+    "code": "en"
+  },
+  "tr": {
+    "name": "Turkish",
+    "native": "Türkçe",
+    "direction": "ltr",
+    "code": "tr"
+  }
+}
