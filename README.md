@@ -1,465 +1,467 @@
-# 🛡️ Unified Cyber Threat Detection Platform
+# 🛡️ CyberGuard - Unified Cyber Threat Detection Platform
 
 [![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen)](docs/DEPLOYMENT_GUIDE.md)
-[![Tests](https://img.shields.io/badge/tests-105%2F105%20passing-success)](#-test-coverage)
-[![Docker](https://img.shields.io/badge/docker-6%20containers-blue)](#-production-deployment)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](requirements.txt)
+[![Docker](https://img.shields.io/badge/docker-6%20containers-blue)](#docker-deployment)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> **Enterprise-grade AI-powered threat detection system** combining email phishing detection and web log analysis with explainable AI, real-time monitoring, and production-ready Docker deployment.
-
-## ✨ Key Features
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 📧 **Email Phishing Detection** | Multiple NLP models (TF-IDF, FastText, BERT) with 95%+ accuracy | ✅ Production |
-| 🤖 **Advanced NLP Models** | BERT (DistilBERT), FastText, and Hybrid ensemble | ✅ Ready |
-| 🌐 **Web Log Analysis** | Anomaly detection for SQL injection, XSS, and DDoS attacks | ✅ Production |
-| 🔗 **Threat Correlation** | Cross-platform threat correlation and unified analysis | ✅ Production |
-| 🧠 **Explainable AI** | LIME and SHAP for model interpretability | ✅ Production |
-| 🚀 **REST API** | 12 production endpoints with rate limiting and caching | ✅ Production |
-| 💾 **PostgreSQL Integration** | Full database persistence with SQLAlchemy ORM | ✅ Production |
-| 📊 **Monitoring Stack** | Prometheus + Grafana for metrics and visualization | ✅ Production |
-| 🐳 **Docker Deployment** | Complete containerized stack with health checks | ✅ Production |
-| 📈 **Interactive Dashboard** | Real-time threat visualization and reporting | ✅ Production |
-
-## 🎯 Quick Start
-
-### 🐳 Production Deployment (Recommended)
-
-Deploy the entire stack with one command:
-
-```bash
-# Start all 6 containers (API, Database, Cache, Nginx, Prometheus, Grafana)
-docker-compose up -d
-
-# Access services:
-# - API: http://localhost:80
-# - Grafana: http://localhost:3000 (admin/admin)
-# - Prometheus: http://localhost:9090
-```
-
-**Stack includes:**
-- 🌐 Nginx reverse proxy with SSL/TLS support
-- 🚀 Flask API with Gunicorn (4 workers)
-- 💾 PostgreSQL 15 with persistent storage
-- ⚡ Redis cache for rate limiting
-- 📊 Prometheus metrics collection
-- 📈 Grafana dashboards
-
-### 💻 Local Development
-
-```bash
-# Clone repository
-git clone https://github.com/yourusername/UnifiedCyberThreatDetectionSystem.git
-cd UnifiedCyberThreatDetectionSystem
-
-# Setup virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run API server
-python -m src.api.app
-```
-
-## 🏗️ System Architecture
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        User Interface Layer                       │
-│  Web Dashboard | REST API | CLI Tools | Grafana Dashboards       │
-└────────────────────────────┬─────────────────────────────────────┘
-                             ↓
-┌──────────────────────────────────────────────────────────────────┐
-│                      Application Layer                            │
-│  ┌─────────────────┐  ┌──────────────────┐  ┌─────────────────┐ │
-│  │ Email Detector  │  │  Web Analyzer    │  │  Correlation    │ │
-│  │  - NLP Pipeline │  │  - Log Parser    │  │  - Threat Intel │ │
-│  │  - ML Models    │  │  - Anomaly Det   │  │  - Risk Scoring │ │
-│  └────────┬────────┘  └─────────┬────────┘  └────────┬────────┘ │
-└───────────┼──────────────────────┼────────────────────┼──────────┘
-            │                      │                    │
-            └──────────┬───────────┴─────────┬──────────┘
-                       ↓                     ↓
-┌──────────────────────────────────────────────────────────────────┐
-│                       Data Layer                                  │
-│  ┌──────────────┐  ┌───────────┐  ┌────────────┐  ┌──────────┐  │
-│  │ PostgreSQL   │  │   Redis   │  │ Prometheus │  │ ML Models│  │
-│  │ - Threats    │  │ - Cache   │  │ - Metrics  │  │ - Trained│  │
-│  │ - Reports    │  │ - Sessions│  │ - Alerts   │  │ - Joblib │  │
-│  └──────────────┘  └───────────┘  └────────────┘  └──────────┘  │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-**Data Flow:**
-1. **Input:** Email/Web logs received via API or batch import
-2. **Analysis:** ML models detect threats with 95%+ accuracy
-3. **Correlation:** Cross-platform threat correlation and scoring
-4. **Storage:** PostgreSQL persistence with full audit trail
-5. **Monitoring:** Real-time metrics via Prometheus/Grafana
-6. **Output:** JSON reports, dashboard visualization, alerts
-
-## 🛠️ Technology Stack
-
-| Layer | Technologies |
-|-------|-------------|
-| **Backend** | Python 3.8+, Flask, Gunicorn |
-| **ML/AI** | scikit-learn, NLTK, spaCy, PyTorch, Transformers |
-| **NLP Models** | BERT (DistilBERT), FastText, TF-IDF |
-| **Database** | PostgreSQL 15, SQLAlchemy ORM |
-| **Cache** | Redis 7 |
-| **API** | RESTful, OpenAPI 3.1, Swagger UI |
-| **Monitoring** | Prometheus, Grafana |
-| **Deployment** | Docker, Docker Compose, Nginx |
-| **Testing** | pytest, coverage.py |
-| **Security** | Rate limiting, JWT, SSL/TLS |
-
-## 📊 API Endpoints
-
-### Email Analysis
-```bash
-POST /api/email/analyze          # Analyze single email (TF-IDF + RF)
-POST /api/email/analyze/bert     # Analyze with BERT (advanced NLP)
-POST /api/email/analyze/fasttext # Analyze with FastText (fast)
-POST /api/email/analyze/hybrid   # Hybrid: All models combined
-POST /api/email/batch            # Batch email analysis
-GET  /api/email/history          # Analysis history
-```
-
-### Web Log Analysis
-```bash
-POST /api/weblog/analyze         # Analyze web logs
-POST /api/weblog/batch           # Batch log analysis
-```
-
-### Threat Intelligence
-```bash
-GET  /api/threats                # List all threats
-POST /api/threats/correlate      # Cross-platform correlation
-GET  /api/threats/stats          # Threat statistics
-GET  /api/reports/{id}           # Get threat report
-```
-
-**Full API Documentation:** [Interactive Swagger UI](docs/api.html) | [OpenAPI Spec](docs/openapi.yaml) | [Examples](docs/API_EXAMPLES.md)
-
-## 💡 Use Cases
-
-### 1. 📧 Phishing Campaign Detection
-Analyze thousands of emails to detect coordinated phishing campaigns:
-```python
-import requests
-
-response = requests.post('http://localhost/api/email/batch', json={
-    'emails': email_list,
-    'detect_campaign': True
-})
-```
-
-### 2. 🌐 Web Attack Monitoring
-Real-time web log analysis for SQL injection, XSS, and DDoS:
-```python
-response = requests.post('http://localhost/api/weblog/analyze', json={
-    'logs': access_logs,
-    'enable_anomaly_detection': True
-})
-```
-
-### 3. 🔗 Cross-Platform Threat Hunting
-Correlate email and web threats for APT detection:
-```python
-response = requests.post('http://localhost/api/threats/correlate', json={
-    'time_window': '24h',
-    'min_risk_score': 7.0
-})
-```
-
-### 4. 📊 Security Dashboard Integration
-Integrate with existing SOC dashboards via REST API:
-```bash
-curl -X GET "http://localhost/api/threats/stats?period=7d"
-```
-
-**More Examples:** See [Usage Scenarios](docs/USAGE_SCENARIOS.md) for detailed tutorials
-
-## � Advanced NLP Models
-
-### Available Models
-
-| Model | Accuracy | Speed | Use Case |
-|-------|----------|-------|----------|
-| **TF-IDF + RF** | 85-92% | ~25ms | General baseline, production-ready |
-| **FastText** | 90-94% | <1ms | High-volume processing, real-time |
-| **BERT (DistilBERT)** | 94-97% | ~45ms | High-accuracy requirements |
-| **Hybrid Ensemble** | 92-96% | ~70ms | Best balance (recommended) |
-
-### Quick Start
-
-```python
-# BERT Analysis
-response = requests.post('http://localhost/api/email/analyze/bert', json={
-    'email_content': 'URGENT! Verify your account...',
-    'email_subject': 'Account Security Alert'
-})
-
-# FastText Analysis (Ultra-fast)
-response = requests.post('http://localhost/api/email/analyze/fasttext', json={
-    'email_content': 'Suspicious email content...'
-})
-
-# Hybrid Ensemble (All models combined)
-response = requests.post('http://localhost/api/email/analyze/hybrid', json={
-    'email_content': 'Email content...',
-    'email_sender': 'sender@example.com'
-})
-```
-
-### Model Details
-
-- **TF-IDF + Random Forest**: Baseline model, fast and reliable
-- **FastText**: Trained on 31,323 emails, 885 MB model, <1ms inference
-- **BERT**: Pre-trained DistilBERT (fine-tuning recommended for production)
-- **Hybrid**: Weighted ensemble (30% TF-IDF + 30% FastText + 40% BERT)
-
-**Documentation:** [Advanced NLP Integration Guide](docs/ADVANCED_NLP_INTEGRATION.md)
-
-## �🧪 Test Coverage
-
-```
-✅ 105/105 tests passing (100%)
-```
-
-| Test Suite | Tests | Status |
-|------------|-------|--------|
-| API Integration | 22 | ✅ All passing |
-| Database Operations | 17 | ✅ All passing |
-| Email Detection | 21 | ✅ All passing |
-| Web Analysis | 26 | ✅ All passing |
-| Integration | 14 | ✅ All passing |
-| Performance | 4 | ✅ All passing |
-| Improvements | 1 | ✅ All passing |
-
-**Production Quality:** Zero errors, zero warnings, 100% reliability.
-
-```bash
-# Run all tests
-pytest tests/ -v --cov=src --cov-report=html
-
-# Run specific suite
-pytest tests/test_api.py -v
-```
-
-## 📚 Documentation
-
-### 🏗️ Architecture & Design
-- **[System Architecture](docs/architecture.html)** - Complete diagrams (System, Data Flow, Class, Sequence, Component)
-- **[Design Patterns](docs/BEST_PRACTICES.md)** - Software architecture and patterns used
-
-### 🤖 Advanced NLP & AI
-- **[Advanced NLP Integration](docs/ADVANCED_NLP_INTEGRATION.md)** - BERT, FastText, Hybrid ensemble setup
-- **[Next Steps & Roadmap](docs/NEXT_STEPS_DETAILED.md)** - Fine-tuning, deployment, optimization guide
-
-### 🔧 Development Guides
-- **[Usage Scenarios](docs/USAGE_SCENARIOS.md)** - 5 real-world scenarios with code examples
-- **[Best Practices](docs/BEST_PRACTICES.md)** - Data preparation, model training, troubleshooting
-- **[API Examples](docs/API_EXAMPLES.md)** - cURL and Python request examples
-
-### 💾 Database & Persistence
-- **[Database Integration](docs/FAZ4_DATABASE.md)** - SQLAlchemy ORM, models, migrations
-- **Models:** Email, WebLog, ThreatCorrelation, ThreatReport, AuditLog
-- **Features:** Connection pooling, transactions, batch import (4500+ records)
-
-### 🚀 Deployment & Operations
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Docker, Nginx, SSL/TLS, monitoring, backup
-- **[Production Checklist](docs/DEPLOYMENT_GUIDE.md#production-checklist)** - Pre-launch validation
-- **[Monitoring Setup](docs/DEPLOYMENT_GUIDE.md#monitoring)** - Prometheus + Grafana configuration
-
-## 🚀 Installation & Setup
-
-### System Requirements
-
-| Component | Requirement |
-|-----------|-------------|
-| OS | Linux, macOS, Windows (WSL recommended) |
-| Python | 3.8 or higher |
-| RAM | 4GB minimum, 8GB recommended |
-| Storage | 2GB for application + models |
-| Docker | 20.10+ (for containerized deployment) |
-
-### Method 1: Docker Deployment (Recommended)
-
-```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/UnifiedCyberThreatDetectionSystem.git
-cd UnifiedCyberThreatDetectionSystem
-
-# 2. Configure environment
-cp .env.example .env
-# Edit .env with your configuration
-
-# 3. Start all services
-docker-compose up -d
-
-# 4. Verify containers
-docker-compose ps
-# Expected: 6/6 containers running (api, db, cache, nginx, prometheus, grafana)
-
-# 5. Test API
-curl http://localhost/api/health
-```
-
-### Method 2: Manual Installation
-
-```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/UnifiedCyberThreatDetectionSystem.git
-cd UnifiedCyberThreatDetectionSystem
-
-# 2. Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure PostgreSQL (optional)
-# Set DATABASE_URL in .env
-
-# 5. Start API server
-python -m src.api.app
-```
-
-### Service Access Points
-
-After deployment, services are available at:
-
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| REST API | http://localhost:80 | - |
-| API Docs (Swagger) | http://localhost:80/api/docs | - |
-| Grafana Dashboard | http://localhost:3000 | admin/admin |
-| Prometheus | http://localhost:9090 | - |
-| PostgreSQL | localhost:5432 | postgres/postgres |
-| Redis | localhost:6379 | - |
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create `.env` file with:
-
-```bash
-# Database
-DATABASE_URL=postgresql://postgres:postgres@db:5432/threat_detection
-
-# Redis Cache
-REDIS_URL=redis://cache:6379/0
-
-# API Keys (Optional)
-VIRUSTOTAL_API_KEY=your_api_key_here
-
-# Flask
-FLASK_ENV=production
-SECRET_KEY=your-secret-key-here
-
-# Logging
-LOG_LEVEL=INFO
-```
-
-### Docker Compose Services
-
-```yaml
-services:
-  api:          # Flask API with Gunicorn
-  db:           # PostgreSQL 15
-  cache:        # Redis 7
-  nginx:        # Reverse proxy
-  prometheus:   # Metrics collection
-  grafana:      # Visualization
-```
-
-## 🎯 Project Details
-
-This project creates a comprehensive cybersecurity threat detection system by combining email phishing detection and web log analysis. It provides real-time threat detection using machine learning and NLP technologies.
-
-### Features and Capabilities
-
-**Email Phishing Detection:**
-- NLP-based text analysis with TF-IDF and word embeddings
-- Header analysis (SPF, DKIM, sender reputation)
-- URL analysis with VirusTotal integration
-- Attachment scanning for malicious content
-- Campaign detection across multiple emails
-
-**Web Log Analysis:**
-- Real-time log parsing and normalization
-- SQL injection detection using pattern matching
-- XSS attack identification
-- DDoS attack detection via rate analysis
-- Bot traffic identification
-
-**Threat Correlation:**
-- Cross-platform threat linking
-- Risk score calculation (0-10 scale)
-- Temporal correlation analysis
-- IP address and domain tracking
-- Automated threat reporting
-
-**Explainable AI:**
-- LIME explanations for individual predictions
-- SHAP values for feature importance
-- Decision reasoning in API responses
-- Model performance metrics
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our contributing guidelines and code of conduct.
-
-```bash
-# Fork the repository
-# Create a feature branch
-git checkout -b feature/amazing-feature
-
-# Make your changes and commit
-git commit -m "Add amazing feature"
-
-# Push to your fork
-git push origin feature/amazing-feature
-
-# Open a Pull Request
-```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 📧 Contact & Support
-
-- **Issues:** [GitHub Issues](https://github.com/yourusername/UnifiedCyberThreatDetectionSystem/issues)
-- **Documentation:** [Full Documentation](docs/)
-- **Email:** your.email@example.com
-
-## 🙏 Acknowledgments
-
-- CEAS 2008 Dataset for email training data
-- Enron Email Dataset for model validation
-- Various open-source ML libraries and frameworks
-- Security research community for threat intelligence
-
-## 🔖 Version History
-
-**v1.0.0** (Current)
-- ✅ Production-ready deployment
-- ✅ 105/105 tests passing
-- ✅ Complete Docker stack (6 containers)
-- ✅ PostgreSQL integration
-- ✅ Prometheus + Grafana monitoring
-- ✅ Comprehensive documentation (200+ pages)
+> **Yapay zeka destekli kurumsal siber tehdit tespit platformu.** E-posta phishing tespiti ve web log analizi yaparak koordineli saldırıları gerçek zamanlı olarak tespit eder.
 
 ---
 
-**⭐ If you find this project useful, please consider giving it a star!**
+## 📋 İçindekiler
 
-Built with ❤️ for cybersecurity professionals and researchers
+- [Özellikler](#-özellikler)
+- [Ekran Görüntüleri](#-ekran-görüntüleri)
+- [Hızlı Başlangıç](#-hızlı-başlangıç)
+- [Sistem Mimarisi](#-sistem-mimarisi)
+- [Yapay Zeka Modelleri](#-yapay-zeka-modelleri)
+- [API Referansı](#-api-referansı)
+- [Dashboard Kullanımı](#-dashboard-kullanımı)
+- [Konfigürasyon](#-konfigürasyon)
+- [Geliştirme](#-geliştirme)
+- [Lisans](#-lisans)
+
+---
+
+## ✨ Özellikler
+
+### 🎯 Temel Yetenekler
+
+| Özellik | Açıklama | Teknoloji |
+|---------|----------|-----------|
+| 📧 **E-posta Phishing Tespiti** | Üç farklı AI modeli ile phishing e-postalarını tespit eder | BERT, FastText, TF-IDF |
+| 🌐 **Web Log Analizi** | SQL Injection, XSS, DDoS saldırılarını tespit eder | Isolation Forest |
+| 🔗 **Korelasyon Analizi** | E-posta ve web tehditlerini ilişkilendirerek koordineli saldırıları bulur | Pearson Correlation |
+| 📊 **Gerçek Zamanlı Dashboard** | İnteraktif grafikler ve anlık istatistikler | Chart.js |
+| 🌍 **Çoklu Dil Desteği** | Türkçe ve İngilizce arayüz | i18next |
+| 🌙 **Tema Desteği** | Karanlık ve aydınlık mod, tercih kalıcı olarak kaydedilir | CSS + LocalStorage + API |
+| 📥 **Import/Export** | Excel ve JSON formatında veri aktarımı | pandas, openpyxl |
+| 🐳 **Docker Deployment** | 6 container ile hazır dağıtım | Docker Compose |
+
+### 📈 Performans Metrikleri
+
+| Model | Doğruluk | Hız | Kullanım Alanı |
+|-------|----------|-----|----------------|
+| **BERT (DistilBERT)** | %94-97 | ~45ms | Yüksek doğruluk gereken durumlar |
+| **FastText** | %90-94 | <1ms | Yüksek hacimli gerçek zamanlı işleme |
+| **TF-IDF + Random Forest** | %89.75 | ~25ms | Açıklanabilir sonuçlar |
+| **Isolation Forest** | %92+ | ~15ms | Web anomali tespiti |
+
+---
+
+## 📸 Ekran Görüntüleri
+
+### Ana Dashboard
+<img src="docs/professor_report/screenshots/01_dashboard.png" alt="Dashboard" width="800"/>
+
+Dashboard, sistemin merkezi kontrol panelidir:
+- **İstatistik Kartları:** E-posta analizi, Web anomali, Toplam tehdit, Sistem durumu
+- **Tehdit Dağılımı:** Donut chart ile görsel tehdit dağılımı
+- **Model Performans:** Bar chart ile model karşılaştırması
+- **Son Uyarılar:** En güncel tehdit bildirimleri
+
+### E-posta Analizi
+<img src="docs/professor_report/screenshots/02_email_analysis.png" alt="Email Analysis" width="800"/>
+
+- Üç model aynı anda analiz yapar (BERT, FastText, TF-IDF)
+- Her model için ayrı güven skoru ve risk seviyesi
+- Öne çıkan özellikler ve LIME açıklamaları
+
+### Web Log Analizi
+<img src="docs/professor_report/screenshots/03_web_analysis.png" alt="Web Analysis" width="800"/>
+
+- IP adresi, HTTP method, path, status code, user-agent girişi
+- Isolation Forest ile anomali tespiti
+- SQL Injection, XSS, Bot activity tespiti
+
+### Korelasyon Analizi
+<img src="docs/professor_report/screenshots/04_correlation_analysis.png" alt="Correlation" width="800"/>
+
+- E-posta ve web tehditlerinin zaman ve IP bazlı ilişkilendirilmesi
+- Koordineli saldırı tespiti
+- Korelasyon heatmap ve timeline grafikleri
+
+### Model Karşılaştırma
+<img src="docs/professor_report/screenshots/05_model_comparison.png" alt="Model Comparison" width="800"/>
+
+- Accuracy, Precision, Recall, F1-Score karşılaştırması
+- Model bazlı performans grafikleri
+
+---
+
+## 🚀 Hızlı Başlangıç
+
+### Gereksinimler
+
+| Bileşen | Minimum | Önerilen |
+|---------|---------|----------|
+| **İşletim Sistemi** | Windows 10, Linux, macOS | - |
+| **Python** | 3.8 | 3.10+ |
+| **RAM** | 4GB | 8GB |
+| **Disk** | 2GB | 5GB |
+| **Docker** | 20.10+ | 24.0+ |
+
+### 🐳 Docker ile Kurulum (Önerilen)
+
+```bash
+# 1. Projeyi klonlayın
+git clone https://github.com/TheLastKhan/UnifiedCyberThreatDetectionSystem.git
+cd UnifiedCyberThreatDetectionSystem
+
+# 2. Docker container'ları başlatın
+docker-compose up -d
+
+# 3. Durumu kontrol edin
+docker-compose ps
+
+# 4. Dashboard'a erişin
+# http://localhost:5000
+```
+
+### Servis Erişim Noktaları
+
+| Servis | URL | Kimlik Bilgileri |
+|--------|-----|------------------|
+| **Web Dashboard** | http://localhost:5000 | - |
+| **Grafana** | http://localhost:3000 | admin / admin |
+| **Prometheus** | http://localhost:9090 | - |
+| **PostgreSQL** | localhost:5432 | postgres / postgres |
+| **Redis** | localhost:6379 | - |
+
+### 💻 Manuel Kurulum
+
+```bash
+# 1. Virtual environment oluşturun
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 2. Bağımlılıkları yükleyin
+pip install -r requirements.txt
+
+# 3. Dashboard'u başlatın
+python run_dashboard.py
+
+# 4. Tarayıcıda açın
+# http://localhost:5000
+```
+
+---
+
+## 🏗️ Sistem Mimarisi
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         KULLANICI ARAYÜZÜ                               │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │
+│  │  Dashboard  │ │   Email     │ │   Web Log   │ │    Raporlar     │   │
+│  │   Paneli    │ │   Analizi   │ │   Analizi   │ │   & Ayarlar     │   │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └────────┬────────┘   │
+└─────────┼───────────────┼───────────────┼─────────────────┼────────────┘
+          │               │               │                 │
+          └───────────────┼───────────────┼─────────────────┘
+                          ▼               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          FLASK REST API                                  │
+│  /api/email/*  │  /api/predict/*  │  /api/correlation/*  │  /api/*     │
+└─────────────────────────────────────────────────────────────────────────┘
+                          │               │
+          ┌───────────────┼───────────────┼───────────────┐
+          ▼               ▼               ▼               ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│    BERT     │  │  FastText   │  │  TF-IDF+RF  │  │  Isolation  │
+│ (DistilBERT)│  │   Model     │  │   Model     │  │   Forest    │
+│   %94-97    │  │   %90-94    │  │   %89.75    │  │    %92+     │
+└─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘
+                          │               │
+                          ▼               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          VERİ KATMANI                                    │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐        │
+│  │ PostgreSQL │  │   Redis    │  │ Prometheus │  │  Grafana   │        │
+│  │ (Veritabanı)│  │  (Cache)   │  │ (Metrikler)│  │ (Dashboard)│        │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘        │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Docker Container Yapısı
+
+| Container | Port | İşlev | Teknoloji |
+|-----------|------|-------|-----------|
+| `threat-detection-api` | 5000 | Ana API + ML Modelleri | Flask, Gunicorn |
+| `threat-db` | 5432 | Veritabanı | PostgreSQL 15 |
+| `cache` | 6379 | Önbellek | Redis 7 |
+| `nginx` | 80, 443 | Reverse Proxy | Nginx |
+| `prometheus` | 9090 | Metrik Toplama | Prometheus |
+| `grafana` | 3000 | Görselleştirme | Grafana |
+
+---
+
+## 🤖 Yapay Zeka Modelleri
+
+### 1. BERT (DistilBERT)
+
+```python
+# Kullanım
+POST /api/email/analyze/bert
+{
+    "subject": "URGENT: Verify your account now!",
+    "sender": "security@bank-fake.com",
+    "body": "Click here to verify your account immediately..."
+}
+```
+
+- **Mimari:** Transformer tabanlı, bidirectional encoder
+- **Eğitim Verisi:** 31,000+ e-posta
+- **Doğruluk:** %94-97
+- **Avantaj:** Bağlamsal anlam çıkarımı
+
+### 2. FastText
+
+```python
+# Kullanım
+POST /api/email/analyze/fasttext
+{
+    "body": "You have won $1,000,000! Click here to claim..."
+}
+```
+
+- **Mimari:** Word embedding + Linear classifier
+- **Model Boyutu:** 881 MB
+- **Doğruluk:** %90-94
+- **Avantaj:** Çok hızlı (<1ms)
+
+### 3. TF-IDF + Random Forest
+
+```python
+# Kullanım
+POST /api/email/analyze
+{
+    "subject": "Meeting tomorrow",
+    "sender": "colleague@company.com",
+    "body": "Hi, let's meet tomorrow at 3pm."
+}
+```
+
+- **Mimari:** TF-IDF vektörizasyon + Random Forest ensemble
+- **Doğruluk:** %89.75
+- **ROC-AUC:** %97.50
+- **Avantaj:** Açıklanabilir sonuçlar
+
+### 4. Isolation Forest (Web Analizi)
+
+```python
+# Kullanım
+POST /api/predict/web
+{
+    "ip": "45.142.212.61",
+    "method": "POST",
+    "path": "/admin/login",
+    "status": 401,
+    "user_agent": "sqlmap/1.0"
+}
+```
+
+- **Mimari:** Isolation Forest anomali tespiti
+- **Tespit:** SQL Injection, XSS, DDoS, Bot traffic
+
+---
+
+## 📡 API Referansı
+
+### Sağlık Kontrolü
+
+```bash
+GET /api/health
+# Response: {"status": "healthy", "version": "1.0.0"}
+```
+
+### E-posta Analizi
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/email/analyze` | POST | TF-IDF ile analiz |
+| `/api/email/analyze/bert` | POST | BERT ile analiz |
+| `/api/email/analyze/fasttext` | POST | FastText ile analiz |
+| `/api/email/analyze/hybrid` | POST | Tüm modeller ile analiz |
+
+### Web Log Analizi
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/predict/web` | POST | Web log anomali analizi |
+
+### Korelasyon
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/correlation/analyze` | GET | Tehdit korelasyonu |
+
+### Dashboard
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/dashboard/stats` | GET | İstatistikler |
+| `/api/models/status` | GET | Model durumları |
+
+### Raporlar
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/reports/export/excel` | GET | Excel dışa aktarma |
+| `/api/reports/export/json` | GET | JSON dışa aktarma |
+
+### Ayarlar
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/settings` | GET | Ayarları getir |
+| `/api/settings` | POST | Ayarları kaydet |
+
+### Demo & Yönetim
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/api/demo/generate` | POST | Demo veri oluştur |
+| `/api/database/clear` | POST | Verileri temizle |
+
+---
+
+## 🖥️ Dashboard Kullanımı
+
+### Navigasyon
+
+| Sayfa | İşlev |
+|-------|-------|
+| **Dashboard** | Genel durum ve istatistikler |
+| **Email Analysis** | E-posta phishing analizi |
+| **Web Analysis** | Web log anomali analizi |
+| **Correlation Analysis** | Tehdit korelasyonu |
+| **Model Comparison** | Model performans karşılaştırması |
+| **Reports** | Dışa/İçe aktarma |
+| **Settings** | Sistem ayarları |
+
+### Üst Menü Butonları
+
+| Buton | İşlev |
+|-------|-------|
+| **Generate Demo Data** | Test için örnek veri oluşturur |
+| **Clear History** | Tüm verileri siler |
+| **☀/🌙 (Tema)** | Aydınlık/Karanlık mod değiştirir |
+| **TR/EN (Dil)** | Arayüz dilini değiştirir |
+
+### Tema ve Dil Kalıcılığı
+
+- Tema ve dil tercihleri hem `localStorage`'a hem de veritabanına kaydedilir
+- Tarayıcı kapatılıp açılsa bile tercihler korunur
+- Varsayılan tema: Aydınlık mod
+
+---
+
+## ⚙️ Konfigürasyon
+
+### Ortam Değişkenleri
+
+```bash
+# .env dosyası oluşturun
+DATABASE_URL=postgresql://postgres:postgres@db:5432/threat_detection
+REDIS_URL=redis://cache:6379/0
+FLASK_ENV=production
+SECRET_KEY=your-secret-key-here
+LOG_LEVEL=INFO
+
+# Opsiyonel
+VIRUSTOTAL_API_KEY=your_api_key_here
+```
+
+### Ayarlar Sayfası
+
+| Ayar | Tür | Açıklama |
+|------|-----|----------|
+| **Dark Mode** | Toggle | Karanlık tema |
+| **Language** | Checkbox | Türkçe/İngilizce |
+| **Detection Threshold** | Slider | Phishing eşiği (0.0-1.0) |
+| **High Risk Alerts** | Toggle | Yüksek risk bildirimi |
+| **Daily Reports** | Toggle | Günlük özet rapor |
+
+---
+
+## 🛠️ Geliştirme
+
+### Proje Yapısı
+
+```
+UnifiedCyberThreatDetectionSystem/
+├── web_dashboard/           # Web arayüzü
+│   ├── api.py              # Flask API endpoints
+│   ├── static/             # CSS, JS dosyaları
+│   └── templates/          # HTML şablonları
+├── src/
+│   ├── email_detector/     # E-posta modelleri
+│   ├── web_analyzer/       # Web log analizi
+│   └── unified_platform/   # Korelasyon
+├── models/                 # Eğitilmiş modeller
+├── training/               # Model eğitim scriptleri
+├── tests/                  # Test dosyaları
+├── docs/                   # Dokümantasyon
+│   └── professor_report/   # Proje raporu ve ekran görüntüleri
+├── docker-compose.yml      # Docker konfigürasyonu
+└── requirements.txt        # Python bağımlılıkları
+```
+
+### Test Çalıştırma
+
+```bash
+# Tüm testleri çalıştır
+pytest tests/ -v
+
+# Belirli bir test dosyasını çalıştır
+pytest tests/test_api.py -v
+```
+
+### API Geliştirme
+
+```bash
+# Development modda çalıştır
+python run_dashboard.py
+
+# veya
+flask run --debug
+```
+
+---
+
+## 📄 Dokümantasyon
+
+| Dosya | İçerik |
+|-------|--------|
+| [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Dağıtım rehberi |
+| [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | API detayları |
+| [ADVANCED_NLP_INTEGRATION.md](docs/ADVANCED_NLP_INTEGRATION.md) | NLP modelleri |
+| [professor_report/](docs/professor_report/) | Proje raporu ve ekran görüntüleri |
+
+---
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+
+---
+
+## 🙏 Teşekkürler
+
+- CEAS 2008 Dataset - E-posta eğitim verisi
+- Enron Email Dataset - Model validasyonu
+- Hugging Face - Transformers kütüphanesi
+- Facebook Research - FastText
+
+---
+
+## 📧 İletişim
+
+- **GitHub:** [TheLastKhan](https://github.com/TheLastKhan)
+- **Proje:** [UnifiedCyberThreatDetectionSystem](https://github.com/TheLastKhan/UnifiedCyberThreatDetectionSystem)
+
+---
+
+**⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!**
