@@ -131,11 +131,26 @@ class FastTextEmailDetector:
             raise ValueError("Model not loaded. Train model first.")
         
         # Preprocess text (lowercase, remove extra whitespace)
-        text = " ".join(text.lower().split())
+        clean_text = " ".join(text.lower().split())
+        
+        # Short message detection - reduce false positives on casual messages
+        # Common phishing indicators to check
+        phishing_indicators = [
+            'urgent', 'verify', 'account', 'password', 'click', 'suspend',
+            'confirm', 'security', 'bank', 'credit', 'expire', 'immediately',
+            'winner', 'prize', 'congratulation', 'lottery', 'paypal', 'bitcoin',
+            'wire', 'transfer', 'ssn', 'social security', 'cvv', 'pin',
+            'http://', 'https://', 'bit.ly', 'tinyurl', '.ru', '.cn'
+        ]
+        
+        has_phishing_indicator = any(ind in clean_text for ind in phishing_indicators)
+        is_short_message = len(clean_text) < 100  # Less than 100 chars
+        word_count = len(clean_text.split())
+        is_very_short = word_count < 15  # Less than 15 words
         
         # Predict (handle NumPy 2.0 compatibility)
         try:
-            prediction = self.model.predict(text, k=1)
+            prediction = self.model.predict(clean_text, k=1)
             # FastText returns (labels, scores) tuple
             if isinstance(prediction, tuple) and len(prediction) == 2:
                 labels, scores = prediction
@@ -159,10 +174,25 @@ class FastTextEmailDetector:
         # Convert to phishing score (0-1)
         phishing_score = score if label == "phishing" else 1 - score
         
+        # Short message correction: reduce false positives
+        # If very short message without phishing indicators, bias toward legitimate
+        if is_very_short and not has_phishing_indicator:
+            # Apply correction factor - reduce phishing score for short casual messages
+            correction_factor = 0.3  # Reduce phishing confidence by 70%
+            phishing_score = phishing_score * correction_factor
+            logger.debug(f"Short message correction applied: {phishing_score:.2f}")
+        elif is_short_message and not has_phishing_indicator:
+            # Moderate correction for medium-short messages
+            correction_factor = 0.5
+            phishing_score = phishing_score * correction_factor
+        
+        # Determine final label
+        final_label = "phishing" if phishing_score > 0.5 else "legitimate"
+        
         return FastTextPrediction(
             score=phishing_score,
-            label="phishing" if phishing_score > 0.5 else "legitimate",
-            confidence=score
+            label=final_label,
+            confidence=score if final_label == label else 1 - score
         )
     
     def predict_with_explanation(

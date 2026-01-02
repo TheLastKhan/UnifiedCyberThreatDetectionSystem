@@ -558,30 +558,46 @@ function displayEmailResults(results) {
 
     // Normalize FastText confidence to be between BERT and TF-IDF
     if (results.fasttext && results.bert && results.tfidf) {
-        // TF-IDF confidence is nested in model_confidence object
-        let bertConf = results.bert.confidence || results.bert.phishing_score || 0;
-        let tfidfConf = results.tfidf.model_confidence?.confidence || results.tfidf.confidence || results.tfidf.phishing_score || 0;
+        // Get PHISHING SCORES (not confidence) for risk level calculation
+        // For legitimate predictions, phishing_score should be low
+        let bertPhishingScore = results.bert.phishing_score || results.bert.score || 0;
+        let tfidfPhishingScore = results.tfidf.model_confidence?.phishing_probability ||
+            results.tfidf.phishing_score ||
+            results.tfidf.score || 0;
 
-        console.log('BERT confidence:', bertConf);
-        console.log('TF-IDF confidence:', tfidfConf);
-        console.log('FastText original confidence:', results.fasttext.confidence);
+        // Get confidence values for display
+        let bertConf = results.bert.confidence || 0;
+        let tfidfConf = results.tfidf.model_confidence?.confidence || results.tfidf.confidence || 0;
+
+        console.log('BERT phishing_score:', bertPhishingScore, 'confidence:', bertConf);
+        console.log('TF-IDF phishing_score:', tfidfPhishingScore, 'confidence:', tfidfConf);
+        console.log('FastText original score:', results.fasttext.score, 'confidence:', results.fasttext.confidence);
 
         // Normalize to 0-1 range if values are > 1 (percentage format)
+        if (bertPhishingScore > 1) bertPhishingScore = bertPhishingScore / 100;
+        if (tfidfPhishingScore > 1) tfidfPhishingScore = tfidfPhishingScore / 100;
         if (bertConf > 1) bertConf = bertConf / 100;
         if (tfidfConf > 1) tfidfConf = tfidfConf / 100;
 
+        // For RISK LEVEL: use phishing scores (how likely to be phishing)
+        const normalizedPhishingScore = (bertPhishingScore + tfidfPhishingScore) / 2;
+
+        // For CONFIDENCE: use confidence values  
         const normalizedConf = (bertConf + tfidfConf) / 2;
 
-        console.log('Normalized FastText confidence:', normalizedConf, `(${(normalizedConf * 100).toFixed(1)}%)`);
+        console.log('Normalized phishing_score for risk:', normalizedPhishingScore, `(${(normalizedPhishingScore * 100).toFixed(1)}%)`);
+        console.log('Normalized confidence:', normalizedConf, `(${(normalizedConf * 100).toFixed(1)}%)`);
 
-        // Create adjusted FastText result with normalized confidence AND risk level
+        // Create adjusted FastText result with normalized values
+        // CRITICAL FIX: score should be phishing_score for risk calculation
         const adjustedFasttext = {
             ...results.fasttext,
-            confidence: normalizedConf,
-            score: normalizedConf,  // CRITICAL: displayModelResult uses score for risk percentage
-            phishing_score: normalizedConf,
-            risk_level: normalizedConf >= 0.9 ? 'critical' : normalizedConf >= 0.7 ? 'high' : normalizedConf >= 0.5 ? 'medium' : 'low',
-            original_confidence: results.fasttext.confidence
+            confidence: normalizedConf,  // How confident the model is
+            score: normalizedPhishingScore,  // PHISHING SCORE for risk percentage
+            phishing_score: normalizedPhishingScore,
+            risk_level: normalizedPhishingScore >= 0.9 ? 'critical' : normalizedPhishingScore >= 0.7 ? 'high' : normalizedPhishingScore >= 0.5 ? 'medium' : 'low',
+            original_confidence: results.fasttext.confidence,
+            original_score: results.fasttext.score
         };
 
         displayModelResult('fasttext', adjustedFasttext, results.keywords);

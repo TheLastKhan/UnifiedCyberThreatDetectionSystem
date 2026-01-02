@@ -100,6 +100,21 @@ class TFIDFEmailDetector:
         if not self.model or not self.vectorizer:
             raise ValueError("Model not loaded. Initialize detector first.")
         
+        # Short message detection - reduce false positives on casual messages
+        clean_text = " ".join(text.lower().split())
+        phishing_indicators = [
+            'urgent', 'verify', 'account', 'password', 'click', 'suspend',
+            'confirm', 'security', 'bank', 'credit', 'expire', 'immediately',
+            'winner', 'prize', 'congratulation', 'lottery', 'paypal', 'bitcoin',
+            'wire', 'transfer', 'ssn', 'social security', 'cvv', 'pin',
+            'http://', 'https://', 'bit.ly', 'tinyurl', '.ru', '.cn'
+        ]
+        
+        has_phishing_indicator = any(ind in clean_text for ind in phishing_indicators)
+        word_count = len(clean_text.split())
+        is_very_short = word_count < 15
+        is_short_message = len(clean_text) < 100
+        
         # Vectorize text
         text_vec = self.vectorizer.transform([text])
         
@@ -111,8 +126,19 @@ class TFIDFEmailDetector:
         phishing_score = probabilities[1]  # Probability of class 1 (phishing)
         confidence = max(probabilities)
         
-        # Determine label
-        label = "phishing" if prediction == 1 else "legitimate"
+        # Short message correction: reduce false positives
+        if is_very_short and not has_phishing_indicator:
+            # Apply correction factor for short casual messages
+            correction_factor = 0.3
+            phishing_score = phishing_score * correction_factor
+            logger.info(f"TF-IDF short message correction applied: {phishing_score:.2f}")
+        elif is_short_message and not has_phishing_indicator:
+            correction_factor = 0.5
+            phishing_score = phishing_score * correction_factor
+        
+        # Determine label based on corrected score
+        label = "phishing" if phishing_score > 0.5 else "legitimate"
+        confidence = max(phishing_score, 1 - phishing_score)
         
         return TFIDFPrediction(
             label=label,
