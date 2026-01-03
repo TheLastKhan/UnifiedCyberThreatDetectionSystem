@@ -1,0 +1,1284 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\section{CyberGuard}\label{cyberguard}
+
+\subsection{Birleşik Siber Tehdit Tespit
+Sistemi}\label{birleux15fik-siber-tehdit-tespit-sistemi}
+
+\subsubsection{Proje Final Raporu}\label{proje-final-raporu}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Versiyon:} 2.0.0\\
+\textbf{Tarih:} Ocak 2026
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{İÇİNDEKİLER}\label{iuxe7indekiler}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Bölüm & Sayfa \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1. YÖNETİCİ ÖZETİ & 3 \\
+2. SİSTEM GENEL BAKIŞ & 4 \\
+2.1 Amaç ve Hedefler & 4 \\
+2.2 Kapsam & 4 \\
+2.3 Teknoloji Yığını & 5 \\
+3. YAZILIM MİMARİSİ VE TASARIM & 6 \\
+3.1 Mimari Karakterizasyon & 6 \\
+3.2 Mimari Kararların Gerekçeleri & 7 \\
+3.3 Katman Ayrımı ve Sorumluluklar & 8 \\
+4. MİMARİ KALIPLAR VE TASARIM DESENLERİ & 9 \\
+4.1 Pattern-Mapping Tablosu & 9 \\
+4.2 Kalıp Seçim Gerekçeleri & 10 \\
+5. SİSTEM ÖZELLİKLERİ VE KULLANICI ARAYÜZÜ & 11 \\
+5.1 Ana Panel (Dashboard) & 11 \\
+5.2 E-posta Analizi & 12 \\
+5.3 Web Log Analizi & 13 \\
+5.4 Korelasyon Analizi & 14 \\
+5.5 Model Karşılaştırma & 15 \\
+5.6 Raporlar ve Ayarlar & 16 \\
+6. YAPAY ZEKA MODELLERİ & 17 \\
+6.1 BERT (DistilBERT) & 17 \\
+6.2 FastText & 17 \\
+6.3 TF-IDF + Random Forest & 18 \\
+6.4 Isolation Forest (Web Analizi) & 18 \\
+7. TEST METODOLOJİSİ VE SONUÇLARI & 19 \\
+7.1 Test Stratejisi ve Amacı & 19 \\
+7.2 Neden Bu Testler Seçildi? & 20 \\
+7.3 Fonksiyonel Test Sonuçları & 21 \\
+7.4 Performans Metrikleri & 21 \\
+8. MODEL KARŞILAŞTIRMASI VE TRADE-OFF ANALİZİ & 22 \\
+8.1 Performans Karşılaştırması & 22 \\
+8.2 BERT Neden Daha İyi Performans Gösterdi? & 23 \\
+8.3 Hız vs Doğruluk Trade-off & 24 \\
+8.4 False Positive / False Negative Analizi & 25 \\
+8.5 Concept Drift Riski ve Çözüm Stratejileri & 26 \\
+9. API REFERANSI & 27 \\
+10. KURULUM VE YAPILANDIRMA & 28 \\
+11. SONUÇ & 29 \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1. YÖNETİCİ ÖZETİ}\label{yuxf6netici-uxf6zeti}
+
+CyberGuard, kurumsal siber güvenlik ihtiyaçlarına yönelik geliştirilmiş,
+yapay zeka destekli bir tehdit tespit platformudur. Sistem, e-posta
+tabanlı phishing saldırıları ile web tabanlı saldırıları (SQL Injection,
+XSS, DDoS) gerçek zamanlı olarak tespit etme kapasitesine sahiptir.
+
+\subsubsection{Temel Özellikler}\label{temel-uxf6zellikler}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3462}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3846}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2692}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Özellik
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Durum
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+E-posta Phishing Tespiti & 3 farklı AI modeli (BERT, FastText, TF-IDF)
+ile ensemble analiz & ✅ Çalışıyor \\
+Web Log Analizi & Isolation Forest ile SQL Injection, XSS, DDoS tespiti
+& ✅ Çalışıyor \\
+Korelasyon Analizi & E-posta ve web tehditlerinin zaman/IP bazlı
+ilişkilendirilmesi & ✅ Çalışıyor \\
+Gerçek Zamanlı Dashboard & Chart.js ile interaktif grafikler ve anlık
+istatistikler & ✅ Çalışıyor \\
+Çoklu Dil Desteği & Türkçe ve İngilizce kullanıcı arayüzü & ✅
+Çalışıyor \\
+Docker Deployment & 6 container ile hazır production dağıtımı & ✅
+Çalışıyor \\
+REST API & 15+ endpoint ile tam entegrasyon imkanı & ✅ Çalışıyor \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2. SİSTEM GENEL BAKIŞ}\label{sistem-genel-bakiux15f}
+
+\subsubsection{2.1 Amaç ve Hedefler}\label{amauxe7-ve-hedefler}
+
+\textbf{Birincil Amaç:} Kurumsal ortamlarda e-posta ve web tabanlı siber
+tehditleri yapay zeka teknolojileri kullanarak otomatik olarak tespit
+etmek ve raporlamak.
+
+\textbf{Hedefler:} - Phishing e-postalarını \%90+ doğrulukla tespit
+etmek - Web saldırı girişimlerini gerçek zamanlı olarak belirlemek -
+Farklı vektörlerden gelen tehditleri ilişkilendirmek (korelasyon) -
+Güvenlik analistlerine kullanımı kolay bir arayüz sunmak - Mevcut
+güvenlik altyapılarına API üzerinden entegre olmak
+
+\subsubsection{2.2 Kapsam}\label{kapsam}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Kapsam İçi & Kapsam Dışı \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+E-posta phishing tespiti & Ağ trafiği analizi \\
+Web log anomali analizi & Endpoint koruma \\
+Tehdit korelasyonu & Malware analizi \\
+Raporlama ve export & Otomatik müdahale \\
+\end{longtable}
+}
+
+\subsubsection{2.3 Teknoloji
+Yığını}\label{teknoloji-yux131ux11fux131nux131}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Katman & Teknoloji & Versiyon \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Backend & Python, Flask, Gunicorn & 3.8+, 2.0+, 21.0+ \\
+Frontend & HTML5, CSS3, JavaScript, Chart.js & ES6+, 4.0+ \\
+Veritabanı & PostgreSQL, SQLAlchemy & 15.0, 2.0+ \\
+Önbellek & Redis & 7.0+ \\
+AI/ML & scikit-learn, PyTorch, Transformers & 1.0+, 2.0+, 4.0+ \\
+NLP & NLTK, spaCy, FastText & 3.8+, 3.0+, - \\
+Konteynerizasyon & Docker, Docker Compose & 24.0+, 2.0+ \\
+İzleme & Prometheus, Grafana & 2.45+, 10.0+ \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3. YAZILIM MİMARİSİ VE
+TASARIM}\label{yazilim-mimarisi-ve-tasarim}
+
+\subsubsection{3.1 Mimari Karakterizasyon}\label{mimari-karakterizasyon}
+
+CyberGuard, \textbf{modüler, servis-odaklı bir mimari} üzerine inşa
+edilmiştir. Sistemin mimari karakteri şu şekilde tanımlanabilir:
+
+\begin{quote}
+\emph{``CyberGuard is designed as a modular, service-oriented
+architecture where the sensing logic and presentation layers are
+separated, which allows machine learning models to develop
+independently.''}
+\end{quote}
+
+\paragraph{Mimari Tipi: Request-Response + Event-Driven
+Hybrid}\label{mimari-tipi-request-response-event-driven-hybrid}
+
+Sistem temel olarak \textbf{request-response} paradigmasını kullanmakla
+birlikte, tehdit tespiti ve korelasyon analizi bileşenlerinde
+\textbf{event-driven} yaklaşımı benimser:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Bileşen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Paradigma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dashboard → API & Request-Response & Kullanıcı istekleri synchronous
+olarak işlenir \\
+Email/Web Log → Detection & Event-Driven & Gelen veriler event olarak
+işlenir \\
+Detection → Correlation & Publisher-Subscriber & Tehditler korelasyon
+motoruna publish edilir \\
+Correlation → Alerts & Event-Driven & Koordineli saldırılarda alert
+event'leri oluşur \\
+\end{longtable}
+}
+
+\paragraph{Mimari Diyagram}\label{mimari-diyagram}
+
+\begin{verbatim}
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         KULLANICI ARAYÜZÜ                               │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐   │
+│  │  Dashboard  │ │   Email     │ │   Web Log   │ │    Raporlar     │   │
+│  │   Paneli    │ │   Analizi   │ │   Analizi   │ │   & Ayarlar     │   │
+│  └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └────────┬────────┘   │
+└─────────┼───────────────┼───────────────┼─────────────────┼────────────┘
+          │               │               │                 │
+          └───────────────┼───────────────┼─────────────────┘
+                          ▼               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          FLASK REST API                                  │
+│  /api/email/*  │  /api/predict/*  │  /api/correlation/*  │  /api/*     │
+└─────────────────────────────────────────────────────────────────────────┘
+                          │               │
+          ┌───────────────┼───────────────┼───────────────┐
+          ▼               ▼               ▼               ▼
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│    BERT     │  │  FastText   │  │  TF-IDF+RF  │  │  Isolation  │
+│ (DistilBERT)│  │   Model     │  │   Model     │  │   Forest    │
+└─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘
+                          │               │
+                          ▼               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          VERİ KATMANI                                    │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐        │
+│  │ PostgreSQL │  │   Redis    │  │ Prometheus │  │  Grafana   │        │
+│  │ (Veritabanı)│ │  (Cache)   │  │ (Metrikler)│  │ (Dashboard)│        │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘        │
+└─────────────────────────────────────────────────────────────────────────┘
+\end{verbatim}
+
+\subsubsection{3.2 Mimari Kararların
+Gerekçeleri}\label{mimari-kararlarux131n-gerekuxe7eleri}
+
+\paragraph{Neden Phishing ve Web Log Aynı
+Backend'de?}\label{neden-phishing-ve-web-log-aynux131-backendde}
+
+\textbf{Karar:} E-posta phishing tespiti ve web log analizi tek bir
+Flask API backend'inde birleştirilmiştir.
+
+\textbf{Gerekçe:} - \textbf{Korelasyon Avantajı:} Aynı IP adresinden
+gelen phishing e-postası ve web saldırısı, paylaşımlı veri katmanı
+sayesinde hızlıca ilişkilendirilebilir - \textbf{Kaynak Verimliliği:}
+Tek container, düşük memory footprint (küçük/orta ölçekli kurumlar için
+ideal) - \textbf{Deployment Basitliği:} Tek docker image, kolay bakım ve
+güncelleme - \textbf{Veri Tutarlılığı:} Merkezi PostgreSQL veritabanı,
+tüm tehdit verileri için single source of truth
+
+\textbf{Alternatif Değerlendirme:} Microservice mimarisine geçiş, yüksek
+ölçeklenebilirlik için düşünülebilir ancak mevcut kullanım senaryosu
+için overengineering olarak değerlendirilmiştir.
+
+\paragraph{Neden Model Inference API
+İçinde?}\label{neden-model-inference-api-iuxe7inde}
+
+\textbf{Karar:} ML modelleri (BERT, FastText, TF-IDF) doğrudan Flask API
+container'ı içinde çalıştırılmaktadır.
+
+\textbf{Gerekçe:} - \textbf{Latency Optimizasyonu:} Model → API arası
+network hop'u elimine edilmiştir (\textasciitilde5-10ms tasarruf) -
+\textbf{Session State:} Modeller bir kez yüklenir ve memory'de tutulur
+(cold start yok) - \textbf{Debugging Kolaylığı:} End-to-end tracing tek
+process'te yapılabilir - \textbf{Resource Isolation:} Docker container
+zaten izolasyon sağlar
+
+\textbf{Trade-off:} Bu yaklaşım horizontal scaling'i zorlaştırır. Yüksek
+throughput senaryolarında TensorFlow Serving veya TorchServe gibi
+dedicated inference server'lara geçiş önerilir.
+
+\subsubsection{3.3 Katman Ayrımı ve
+Sorumluluklar}\label{katman-ayrux131mux131-ve-sorumluluklar}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2581}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3548}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3871}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Katman
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Teknoloji
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Sorumluluk
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Presentation Layer (View)} & Flask Dashboard + Jinja2 +
+JavaScript & Kullanıcı etkileşimi, form handling, data visualization \\
+\textbf{Application Layer (Controller)} & Flask REST API Routes &
+Business logic orchestration, input sanitization, response formatting \\
+\textbf{Domain Layer (Model)} & Email Detector, Web Analyzer,
+Correlation Engine & ML inference, feature extraction, risk scoring \\
+\textbf{Data Layer (Persistence)} & PostgreSQL + Redis + File System &
+Data persistence, caching, model storage \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{4. MİMARİ KALIPLAR VE TASARIM
+DESENLERİ}\label{mimari-kaliplar-ve-tasarim-desenleri}
+
+CyberGuard sistemi, bilinen birçok mimari ve tasarım modelini örtük
+olarak benimser. Sistem açıkça tek bir model etrafında tasarlanmamış
+olsa da, modüler yapısı doğal olarak MVC ve olay odaklı prensiplerle
+uyumludur. Bu yaklaşım, sistemin \textbf{bakım kolaylığını},
+\textbf{ölçeklenebilirliğini} ve \textbf{genişletilebilirliğini}
+artırır.
+
+\subsubsection{4.1 Pattern-Mapping
+Tablosu}\label{pattern-mapping-tablosu}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5345}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4655}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Mimari Kalıp / Tasarım Deseni
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+CyberGuard'daki Karşılığı
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Model-View-Controller (MVC)} & Dashboard (View), Flask API
+(Controller), PostgreSQL + ML Models (Model) \\
+\textbf{Event-Driven / Publisher-Subscriber} & Email/Web log ingestion →
+Detection → Correlation → Alert zinciri \\
+\textbf{Ensemble Learning Pattern} & BERT, FastText ve TF-IDF
+sonuçlarının weighted voting ile birleştirilmesi (ağırlıklar: 0.5, 0.3,
+0.2) \\
+\textbf{Cache-Aside Pattern} & Redis ile sık erişilen dashboard
+istatistiklerinin cachelenmesi (TTL: 60s) \\
+\textbf{Repository Pattern} & SQLAlchemy ORM ile database abstraction \\
+\textbf{Factory Pattern} & \texttt{get\_bert\_detector()},
+\texttt{get\_fasttext\_detector()} singleton-like instance'lar \\
+\textbf{Strategy Pattern} & Tüm detectorlar \texttt{predict()} ve
+\texttt{predict\_with\_explanation()} metodlarını implement eder \\
+\textbf{Façade Pattern} & \texttt{/api/email/analyze/hybrid} endpoint'i
+3 modeli tek interface arkasında gizler \\
+\textbf{Circuit Breaker Pattern} & VirusTotal API erişilemezse ML-based
+detection ile devam \\
+\end{longtable}
+}
+
+\subsubsection{4.2 Kalıp Seçim
+Gerekçeleri}\label{kalux131p-seuxe7im-gerekuxe7eleri}
+
+\paragraph{Neden MVC?}\label{neden-mvc}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Separation of concerns:} Frontend geliştiricisi API'yi
+  bilmeden UI değiştirebilir
+\item
+  \textbf{Testability:} Controller logic unit test edilebilir
+\item
+  \textbf{Reusability:} Aynı API farklı frontend'lerden kullanılabilir
+  (web, mobile, CLI)
+\end{itemize}
+
+\paragraph{Neden Ensemble Learning?}\label{neden-ensemble-learning}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Single point of failure yok:} Bir model başarısız olsa
+  diğerleri çalışır
+\item
+  \textbf{Accuracy boost:} Ensemble genellikle tek modelden daha iyi
+  performans gösterir
+\item
+  \textbf{Explainability:} Hangi modelin nasıl karar verdiği görülebilir
+  (XAI/LIME)
+\end{itemize}
+
+\paragraph{Neden Cache-Aside?}\label{neden-cache-aside}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Dashboard yükleme hızı:} \textasciitilde1s →
+  \textasciitilde200ms improvement
+\item
+  \textbf{Database load reduction:} Sık sorgular cache'ten karşılanır
+\item
+  \textbf{Simplicity:} Daha karmaşık write-through pattern'lere gerek
+  yok
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{5. SİSTEM ÖZELLİKLERİ VE KULLANICI
+ARAYÜZÜ}\label{sistem-uxf6zellikleri-ve-kullanici-arayuxfczuxfc}
+
+\subsubsection{5.1 Ana Panel (Dashboard)}\label{ana-panel-dashboard}
+
+\textbf{Amaç:} Sistemin genel durumunu ve tehdit istatistiklerini tek
+bakışta görüntülemek.
+
+\textbf{Dashboard Bileşenleri:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3913}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3043}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3043}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Bileşen
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Konum
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+İşlev
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+E-posta Analizi Kartı & Sol üst & Toplam analiz edilen e-posta ve
+phishing oranı \\
+Web Anomali Kartı & Orta üst & Web log analiz sayısı ve anomali oranı \\
+Toplam Tehdit Kartı & Sağ üst & Tüm vektörlerden tespit edilen tehdit
+sayısı \\
+Sistem Durumu Kartı & Sağ üst & API ve model yükleme durumu (\%
+olarak) \\
+Tehdit Dağılımı Grafiği & Sol alt & Donut chart: Phishing vs Legitimate
+dağılımı \\
+Model Performans Grafiği & Sağ alt & Bar chart: Model bazlı doğruluk
+oranları \\
+\end{longtable}
+}
+
+\textbf{Üst Menü Butonları:} - \textbf{Generate Demo Data:} Test amaçlı
+örnek veri seti oluşturur (30 e-posta + 30 web log + 5 koordineli
+saldırı) - \textbf{Clear History:} Tüm geçmiş verileri siler ve
+istatistikleri sıfırlar - \textbf{Tema Değiştir (☀/🌙):}
+Aydınlık/Karanlık mod arasında geçiş yapar - \textbf{Dil Değiştir
+(TR/EN):} Arayüz dilini değiştirir
+
+\subsubsection{5.2 E-posta Analizi}\label{e-posta-analizi}
+
+\textbf{Amaç:} E-posta içeriklerini üç farklı yapay zeka modeli ile
+analiz ederek phishing tespiti yapmak.
+
+\textbf{Giriş Alanları:} - \textbf{Email Subject (Konu):} E-postanın
+konu satırı. Phishing e-postaları genellikle aciliyet içeren konular
+kullanır. - \textbf{From Address (Gönderen):} Gönderen e-posta adresi.
+Şüpheli domain'ler tespit edilir. - \textbf{Email Body (İçerik):}
+E-postanın tam metin içeriği. Ana analiz bu alan üzerinde yapılır.
+
+\textbf{Analiz Sonuç Bölümü:} Her üç model için ayrı ayrı sonuçlar
+gösterilir: - \textbf{BERT Panel:} En yüksek doğruluklu model. Bağlamsal
+anlam çıkarımı yapar. - \textbf{FastText Panel:} En hızlı model. Yüksek
+hacimli işlemler için idealdir. - \textbf{TF-IDF Panel:} Baseline model.
+Açıklanabilir sonuçlar sunar (LIME).
+
+\textbf{Sonuç Gösterimi:} Her model için tahmin (PHISHING/LEGITIMATE),
+güven skoru (0-100\%), risk seviyesi (Critical/High/Medium/Low) ve öne
+çıkan özellikler gösterilir.
+
+\subsubsection{5.3 Web Log Analizi}\label{web-log-analizi}
+
+\textbf{Amaç:} Web sunucu loglarını analiz ederek SQL Injection, XSS ve
+DDoS gibi saldırı girişimlerini tespit etmek.
+
+\textbf{Giriş Alanları:} - \textbf{IP Address:} İstemci IP adresi.
+Bilinen kötü niyetli IP'ler işaretlenir. - \textbf{HTTP Method:} GET,
+POST, PUT, DELETE vb. Anomali tespitinde kullanılır. - \textbf{Request
+Path:} İstenen URL yolu. SQL injection kalıpları aranır. -
+\textbf{Status Code:} HTTP yanıt kodu. Çok sayıda 401/403 şüphelidir. -
+\textbf{User Agent:} Tarayıcı/bot bilgisi. Otomatik araçlar tespit
+edilir (sqlmap, nikto vb.). - \textbf{Response Size:} Yanıt boyutu.
+Anormal boyutlar veri sızıntısına işaret edebilir.
+
+\textbf{Analiz Algoritması:} - \textbf{Kullanılan Model:} Isolation
+Forest algoritması (anomali tespiti için optimize edilmiştir) -
+\textbf{Tespit Edilen Saldırı Türleri:} SQL Injection, Cross-Site
+Scripting (XSS), Path Traversal, Brute Force, Bot/Crawler Activity, DDoS
+Patterns
+
+\subsubsection{5.4 Korelasyon Analizi}\label{korelasyon-analizi}
+
+\textbf{Amaç:} E-posta ve web tehditlerini zaman ve IP bazında
+ilişkilendirerek koordineli saldırıları tespit etmek.
+
+\textbf{Korelasyon Metrikleri:} - \textbf{Korelasyon Skoru:} Pearson
+korelasyon katsayısı (-1 ile +1 arası). Pozitif değerler eş zamanlı
+artışı gösterir. - \textbf{Korelasyon Gücü:} Very Weak / Weak / Moderate
+/ Strong olarak sınıflandırma. - \textbf{Koordineli Saldırı Sayısı:}
+Aynı saat diliminde hem e-posta hem web tehdidi tespit edilen durumlar.
+- \textbf{IP Boost:} Aynı IP'den hem phishing hem web saldırısı
+geldiğinde eklenen bonus skor.
+
+\textbf{Grafikler:} - \textbf{Threat Timeline Correlation:} Saat bazında
+e-posta ve web tehditlerinin çakışma grafiği. - \textbf{Email vs Web
+Comparison:} İki vektörün karşılaştırmalı bar chart'ı. -
+\textbf{Correlation Heatmap:} Tehdit korelasyonunun ısı haritası
+görselleştirmesi.
+
+\subsubsection{5.5 Model
+Karşılaştırma}\label{model-karux15fux131laux15ftux131rma}
+
+\textbf{Amaç:} Tüm yapay zeka modellerinin performans metriklerini
+karşılaştırmalı olarak görüntülemek.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lllll@{}}
+\toprule\noalign{}
+Model & Accuracy & Precision & Recall & F1-Score \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BERT (DistilBERT) & \%94-97 & \%95 & \%93 & \%94 \\
+FastText & \%90-94 & \%92 & \%90 & \%91 \\
+TF-IDF + Random Forest & \%89.75 & \%90 & \%88 & \%89 \\
+Isolation Forest (Web) & \%92+ & N/A & N/A & N/A \\
+\end{longtable}
+}
+
+\subsubsection{5.6 Raporlar ve Ayarlar}\label{raporlar-ve-ayarlar}
+
+\textbf{Raporlar - Dışa Aktarma:} - \textbf{Export to Excel:} Tüm tehdit
+verilerini .xlsx formatında indirir. Pivot tablo oluşturmaya uygun. -
+\textbf{Export to JSON:} API entegrasyonu için JSON formatında dışa
+aktarır.
+
+\textbf{Raporlar - İçe Aktarma:} - \textbf{Import from Excel:} Toplu
+e-posta veya web log verisi yüklemek için. - \textbf{Import from JSON:}
+Programatik veri aktarımı için.
+
+\textbf{Ayar Seçenekleri:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2381}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4762}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Ayar
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tür
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dark Mode & Toggle & Karanlık/Aydınlık tema tercihi. Tarayıcı kapatılsa
+da korunur. \\
+Language & Checkbox & Arayüz dili: İngilizce (varsayılan) veya
+Türkçe. \\
+Detection Threshold & Slider & Phishing tespit eşiği (0.0 - 1.0). Düşük
+değer = daha hassas. \\
+High Risk Alerts & Toggle & Yüksek riskli tehditler için anlık
+bildirim. \\
+\end{longtable}
+}
+
+\textbf{Ayar Kalıcılığı:} Tüm ayarlar hem localStorage (anlık tepki) hem
+de PostgreSQL veritabanına (kalıcı depolama) kaydedilir.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6. YAPAY ZEKA MODELLERİ}\label{yapay-zeka-modelleri}
+
+\subsubsection{6.1 BERT (DistilBERT)}\label{bert-distilbert}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5625}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4375}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Özellik
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Değer
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mimari & Transformer tabanlı, bidirectional encoder \\
+Kaynak & Hugging Face Transformers kütüphanesi \\
+Eğitim Verisi & 31,000+ e-posta (CEAS, Enron, Nigerian Fraud,
+SpamAssassin) \\
+Doğruluk & \%94-97 \\
+İşlem Süresi & \textasciitilde45ms / e-posta \\
+Avantajı & Bağlamsal anlam çıkarımı, kelime ilişkilerini anlama \\
+Dezavantajı & Diğer modellere göre daha yavaş \\
+\end{longtable}
+}
+
+\subsubsection{6.2 FastText}\label{fasttext}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Özellik & Değer \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mimari & Word embedding + Linear classifier \\
+Kaynak & Facebook Research \\
+Model Boyutu & 881 MB \\
+Doğruluk & \%90-94 \\
+İşlem Süresi & \textless1ms / e-posta \\
+Avantajı & Çok hızlı, büyük hacimler için ideal \\
+Dezavantajı & Karmaşık bağlam anlamada BERT'e göre zayıf \\
+\end{longtable}
+}
+
+\subsubsection{6.3 TF-IDF + Random Forest}\label{tf-idf-random-forest}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Özellik & Değer \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mimari & TF-IDF vektörizasyon + Random Forest ensemble \\
+Eğitim & SMOTE ile dengelenmiş veri seti \\
+Doğruluk & \%89.75 \\
+ROC-AUC & \%97.50 \\
+İşlem Süresi & \textasciitilde25ms / e-posta \\
+Avantajı & Açıklanabilir sonuçlar, özellik önem sıralaması (LIME) \\
+Dezavantajı & Deep learning modellere göre düşük doğruluk \\
+\end{longtable}
+}
+
+\subsubsection{6.4 Isolation Forest (Web
+Analizi)}\label{isolation-forest-web-analizi}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Özellik & Değer \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Mimari & Unsupervised anomaly detection \\
+Kullanım & Web log anomali tespiti \\
+Doğruluk & \%92+ \\
+Tespit Edilen Saldırılar & SQL Injection, XSS, DDoS, Brute Force \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{7. TEST METODOLOJİSİ VE
+SONUÇLARI}\label{test-metodolojisi-ve-sonuuxe7lari}
+
+\subsubsection{7.1 Test Stratejisi ve
+Amacı}\label{test-stratejisi-ve-amacux131}
+
+CyberGuard için tasarlanan test stratejisi, sistemin temel güvenlik
+fonksiyonlarının doğruluğunu ve kullanıcı deneyimini öncelikli olarak
+hedeflemiştir.
+
+\textbf{Test Odak Alanları:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4231}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2308}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3462}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Test Tipi
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Amaç
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Öncelik
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Accuracy Testi & ML modellerinin phishing/legitimate ayrımını doğru
+yapması & 🔴 Kritik \\
+Functional Testi & Tüm UI bileşenlerinin ve API endpoint'lerinin
+çalışması & 🔴 Kritik \\
+Integration Testi & Backend-Database-Cache entegrasyonu & 🟡 Yüksek \\
+Usability Testi & Tema, dil, ayar kalıcılığı & 🟢 Orta \\
+\end{longtable}
+}
+
+\subsubsection{7.2 Neden Bu Testler
+Seçildi?}\label{neden-bu-testler-seuxe7ildi}
+
+\paragraph{Neden Accuracy
+Ölçüldü?}\label{neden-accuracy-uxf6luxe7uxfclduxfc}
+
+ML-based siber güvenlik sistemlerinde \textbf{False Positive} ve
+\textbf{False Negative} oranları kritik öneme sahiptir: - \textbf{False
+Negative (kaçırılan phishing):} Güvenlik açığı, potansiyel data breach -
+\textbf{False Positive (yanlış alarm):} Operasyonel verimlilik kaybı,
+user trust azalması
+
+Bu nedenle accuracy, precision, recall ve F1-score metrikleri detaylı
+olarak ölçülmüştür.
+
+\paragraph{Neden Latency Detaylı
+Ölçülmedi?}\label{neden-latency-detaylux131-uxf6luxe7uxfclmedi}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Kullanım Senaryosu:} CyberGuard, real-time stream processing
+  değil, \textbf{on-demand analiz} sistemidir
+\item
+  \textbf{Acceptable Threshold:} 1-2 saniye response time, kullanıcı
+  deneyimi için kabul edilebilir
+\item
+  \textbf{Gelecek Çalışma:} Production deployment'ta P95/P99 latency
+  Grafana ile monitör edilmeli
+\end{itemize}
+
+\paragraph{Neden Load Test
+Yapılmadı?}\label{neden-load-test-yapux131lmadux131}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Hedef Kitle:} Orta ölçekli kurumlar (10-100 concurrent user)
+\item
+  \textbf{Current Capacity:} Flask + Gunicorn (4 worker) bu senaryoyu
+  karşılamaktadır
+\item
+  \textbf{Gelecek Çalışma:} Kurumsal deployment öncesi Apache JMeter ile
+  load test yapılmalı
+\end{itemize}
+
+\subsubsection{7.3 Fonksiyonel Test
+Sonuçları}\label{fonksiyonel-test-sonuuxe7larux131}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Test & Sonuç \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dashboard yükleme ve grafikler & ✅ BAŞARILI \\
+E-posta phishing tespiti (3 model) & ✅ BAŞARILI \\
+E-posta legitimate sınıflandırma & ✅ BAŞARILI \\
+Web log anomali tespiti & ✅ BAŞARILI \\
+Web log normal trafik sınıflandırma & ✅ BAŞARILI \\
+Korelasyon analizi hesaplama & ✅ BAŞARILI \\
+Koordineli saldırı tespiti & ✅ BAŞARILI \\
+Tema değiştirme ve kalıcılık & ✅ BAŞARILI \\
+Dil değiştirme (TR/EN) & ✅ BAŞARILI \\
+Ayar kaydetme ve yükleme & ✅ BAŞARILI \\
+\end{longtable}
+}
+
+\subsubsection{7.4 Performans Metrikleri}\label{performans-metrikleri}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Metrik & Ölçüm \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+API ortalama yanıt süresi & \textasciitilde200ms \\
+BERT analiz süresi & \textasciitilde45ms \\
+FastText analiz süresi & \textless1ms \\
+TF-IDF analiz süresi & \textasciitilde25ms \\
+Dashboard tam yükleme & \textless1 saniye \\
+Demo data oluşturma (60 kayıt) & \textasciitilde2 saniye \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{8. MODEL KARŞILAŞTIRMASI VE TRADE-OFF
+ANALİZİ}\label{model-karux15filaux15ftirmasi-ve-trade-off-analizi}
+
+\subsubsection{8.1 Performans
+Karşılaştırması}\label{performans-karux15fux131laux15ftux131rmasux131}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llllll@{}}
+\toprule\noalign{}
+Model & Accuracy & Precision & Recall & F1-Score & Inference Time \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BERT (DistilBERT) & \%94-97 & \%95 & \%93 & \%94 &
+\textasciitilde45ms \\
+FastText & \%90-94 & \%92 & \%90 & \%91 & \textless1ms \\
+TF-IDF + Random Forest & \%89.75 & \%90 & \%88 & \%89 &
+\textasciitilde25ms \\
+\end{longtable}
+}
+
+\subsubsection{8.2 BERT Neden Daha İyi Performans
+Gösterdi?}\label{bert-neden-daha-iyi-performans-guxf6sterdi}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Contextual Understanding:} BERT, kelimelerin bağlamını anlar.
+  `Bank' kelimesi `river bank' ve `bank account' için farklı embedding
+  üretir.
+\item
+  \textbf{Transfer Learning:} 1.5 milyar kelime üzerinde pre-train
+  edilmiş model, phishing dataset'inde fine-tune edilmiştir.
+\item
+  \textbf{Subword Tokenization:} `PayPaI' (I harfi ile sahte PayPal)
+  gibi typosquatting saldırılarını yakalayabilir.
+\item
+  \textbf{Attention Mechanism:} Hangi kelimelerin phishing tespitinde
+  önemli olduğunu öğrenir (`urgent', `verify', `click').
+\end{enumerate}
+
+\subsubsection{8.3 Hız vs Doğruluk
+Trade-off}\label{hux131z-vs-doux11fruluk-trade-off}
+
+\begin{verbatim}
+    HIZLI ◄────────────────────────────────► YAVAŞ
+       │                                       │
+    FastText                                 BERT
+     (<1ms)                                 (45ms)
+       │                                       │
+       ▼                                       ▼
+    %90-94 Acc                            %94-97 Acc
+               ┌─────────────┐
+               │   TF-IDF    │
+               │   (25ms)    │
+               │ %89.75 Acc  │
+               └─────────────┘
+\end{verbatim}
+
+\textbf{Kullanım Senaryosu Önerileri:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2647}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4706}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2647}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Senaryo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Önerilen Model
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Gerekçe
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Real-time Email Gateway & FastText & Yüksek throughput gerekli,
+\textless1ms latency \\
+Kritik Güvenlik Analizi & BERT & Accuracy kritik, latency kabul
+edilebilir \\
+Balanced / Genel Kullanım & TF-IDF + RF & İyi denge, açıklanabilirlik
+(LIME) \\
+Ensemble (Production) & Üçü birlikte & En yüksek accuracy, weighted
+voting \\
+\end{longtable}
+}
+
+\subsubsection{8.4 False Positive / False Negative
+Analizi}\label{false-positive-false-negative-analizi}
+
+\paragraph{False Positive Senaryoları (Meşru → Phishing Olarak Yanlış
+Tespit)}\label{false-positive-senaryolarux131-meux15fru-phishing-olarak-yanlux131ux15f-tespit}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4737}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5263}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Senaryo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Agresif Marketing E-postaları & `Limited time offer!', `Act now!' gibi
+ifadeler \\
+IT Departmanı Uyarıları & `Your password will expire' gibi legitimate
+sistem mesajları \\
+Kısa Mesajlar & `Hey, how are you?' gibi çok kısa mesajlarda model
+güvensiz olabiliyordu (v2.0'da düzeltildi) \\
+\end{longtable}
+}
+
+\textbf{Mitigation Stratejileri:} - Whitelist domain desteği - Threshold
+ayarı - Human-in-the-loop review süreci
+
+\paragraph{False Negative Senaryoları (Phishing → Meşru Olarak
+Kaçırılan)}\label{false-negative-senaryolarux131-phishing-meux15fru-olarak-kauxe7ux131rux131lan}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4737}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5263}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Senaryo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Hedefli Spear Phishing & Kişiselleştirilmiş, phishing keyword içermeyen
+saldırılar \\
+Zero-Day Phishing & Yeni kampanyalar, training data'da olmayan
+pattern'ler \\
+Homograph Saldırıları & `pаypal.com' (Kiril `а' karakteri) gibi punycode
+saldırıları \\
+\end{longtable}
+}
+
+\textbf{Mitigation Stratejileri:} - VirusTotal API ile URL reputation
+check - Domain age check - Sürekli model retraining
+
+\subsubsection{8.5 Concept Drift Riski ve Çözüm
+Stratejileri}\label{concept-drift-riski-ve-uxe7uxf6zuxfcm-stratejileri}
+
+\textbf{Concept Drift Nedir?} Phishing saldırıları sürekli evrilir.
+2025'te etkili olan phishing pattern'leri 2026'da değişmiş olabilir.
+
+\textbf{Risk Faktörleri:} - Yeni phishing kampanya temaları
+(AI-generated phishing, deepfake) - Yeni sosyal mühendislik teknikleri -
+Değişen e-posta formatları
+
+\textbf{Önerilen Stratejiler:}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3448}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3448}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3103}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Strateji
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Periyot
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Periyodik Retraining & Model güncellemesi & Her 3-6 ayda bir \\
+Active Learning & False positive/negative feedback'lerden öğrenme &
+Sürekli \\
+Ensemble Diversification & Farklı feature'lara dayanan modeller kullanma
+& Initial design \\
+Continuous Monitoring & Accuracy metrikleri düşüşü için alerting &
+Günlük \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{9. API REFERANSI}\label{api-referansi}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3571}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3571}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Endpoint
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Method
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Açıklama
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{/api/health} & GET & Sistem sağlık kontrolü \\
+\texttt{/api/models/status} & GET & Model yükleme durumları \\
+\texttt{/api/email/analyze} & POST & TF-IDF ile e-posta analizi \\
+\texttt{/api/email/analyze/bert} & POST & BERT ile e-posta analizi \\
+\texttt{/api/email/analyze/fasttext} & POST & FastText ile e-posta
+analizi \\
+\texttt{/api/email/analyze/hybrid} & POST & Tüm modeller ile analiz
+(Ensemble) \\
+\texttt{/api/predict/web} & POST & Web log anomali analizi \\
+\texttt{/api/correlation/analyze} & GET & Korelasyon analizi \\
+\texttt{/api/dashboard/stats} & GET & Dashboard istatistikleri \\
+\texttt{/api/reports/export/excel} & GET & Excel dışa aktarma \\
+\texttt{/api/reports/export/json} & GET & JSON dışa aktarma \\
+\texttt{/api/settings} & GET/POST & Ayarları getir/kaydet \\
+\texttt{/api/demo/generate} & POST & Demo veri oluştur \\
+\texttt{/api/database/clear} & POST & Verileri temizle \\
+\texttt{/api/virustotal/check-ip/\textless{}ip\textgreater{}} & GET &
+VirusTotal IP kontrolü \\
+\texttt{/api/virustotal/check-domain/\textless{}domain\textgreater{}} &
+GET & VirusTotal domain kontrolü \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{10. KURULUM VE YAPILANDIRMA}\label{kurulum-ve-yapilandirma}
+
+\subsubsection{10.1 Sistem Gereksinimleri}\label{sistem-gereksinimleri}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Bileşen & Gereksinim \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+İşletim Sistemi & Windows 10+, Linux, macOS \\
+Python & 3.8 veya üzeri \\
+RAM & Minimum 4GB, önerilen 8GB \\
+Disk & 2GB (uygulama + modeller) \\
+Docker & 24.0+ (konteyner dağıtımı için) \\
+\end{longtable}
+}
+
+\subsubsection{10.2 Docker ile Kurulum}\label{docker-ile-kurulum}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# 1. Projeyi klonlayın}
+\FunctionTok{git}\NormalTok{ clone https://github.com/TheLastKhan/UnifiedCyberThreatDetectionSystem.git}
+\BuiltInTok{cd}\NormalTok{ UnifiedCyberThreatDetectionSystem}
+
+\CommentTok{\# 2. Docker container\textquotesingle{}ları başlatın}
+\ExtensionTok{docker{-}compose}\NormalTok{ up }\AttributeTok{{-}d}
+
+\CommentTok{\# 3. Durumu kontrol edin}
+\ExtensionTok{docker{-}compose}\NormalTok{ ps}
+
+\CommentTok{\# 4. Servislere erişin}
+\CommentTok{\# Dashboard: http://localhost:5000}
+\CommentTok{\# Grafana: http://localhost:3000 (admin/admin)}
+\CommentTok{\# Prometheus: http://localhost:9090}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{10.3 Docker Container
+Yapısı}\label{docker-container-yapux131sux131}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+Container & Port & İşlev & Bağımlılık \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+threat-detection-api & 5000 & Flask API + ML Modelleri & db, cache \\
+threat-detection-db & 5432 & PostgreSQL Veritabanı & - \\
+threat-detection-cache & 6379 & Redis Önbellek & - \\
+threat-detection-nginx & 80, 443 & Reverse Proxy, SSL & api \\
+threat-detection-prometheus & 9090 & Metrik Toplama & api \\
+threat-detection-grafana & 3000 & Görselleştirme Paneli & prometheus \\
+\end{longtable}
+}
+
+\subsubsection{10.4 Manuel Kurulum}\label{manuel-kurulum}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# 1. Virtual environment oluşturun}
+\ExtensionTok{python} \AttributeTok{{-}m}\NormalTok{ venv venv}
+\BuiltInTok{source}\NormalTok{ venv/bin/activate  }\CommentTok{\# Windows: venv\textbackslash{}Scripts\textbackslash{}activate}
+
+\CommentTok{\# 2. Bağımlılıkları yükleyin}
+\ExtensionTok{pip}\NormalTok{ install }\AttributeTok{{-}r}\NormalTok{ requirements.txt}
+
+\CommentTok{\# 3. Dashboard\textquotesingle{}u başlatın}
+\ExtensionTok{python}\NormalTok{ run\_dashboard.py}
+
+\CommentTok{\# 4. Tarayıcıda açın: http://localhost:5000}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{11. SONUÇ}\label{sonuuxe7}
+
+CyberGuard, modern yapay zeka teknolojilerini kullanarak kapsamlı bir
+siber güvenlik çözümü sunmaktadır.
+
+\subsubsection{Sistemin Temel
+Başarıları}\label{sistemin-temel-baux15farux131larux131}
+
+✅ \textbf{3 farklı ML modeli} ile yüksek doğrulukta phishing tespiti
+(ensemble: BERT 0.5, FastText 0.3, TF-IDF 0.2)
+
+✅ \textbf{Modüler, servis-odaklı mimari} ile bakım kolaylığı ve
+bağımsız model geliştirme imkanı
+
+✅ \textbf{Bilinen tasarım kalıpları} (MVC, Event-Driven, Ensemble,
+Cache-Aside, Factory, Strategy, Façade, Circuit Breaker) ile sağlam
+altyapı
+
+✅ \textbf{Gerçek zamanlı korelasyon analizi} ile koordineli saldırı
+tespiti (e-posta + web vektörleri)
+
+✅ \textbf{Trade-off bilinci} ile kullanım senaryosuna uygun model
+seçimi önerileri
+
+✅ \textbf{Docker ile kolay dağıtım} ve production-ready altyapı (6
+container: API, DB, Cache, Nginx, Prometheus, Grafana)
+
+✅ \textbf{Açıklanabilir AI (XAI)} - LIME ile model kararlarının
+görselleştirilmesi
+
+✅ \textbf{False positive/negative analizi} ve mitigation stratejileri
+
+✅ \textbf{Concept drift riski} farkındalığı ve periyodik retraining
+planı
+
+\subsubsection{Hedef Kitle ve
+Ölçeklenebilirlik}\label{hedef-kitle-ve-uxf6luxe7eklenebilirlik}
+
+Sistem, özellikle \textbf{orta ölçekli kurumlar} (10-100 concurrent
+user) için optimize edilmiştir. Gerektiğinde: - Horizontal scaling için
+model inference ayrı container'lara taşınabilir - TensorFlow Serving
+veya TorchServe ile dedicated inference server kurulabilir - Kubernetes
+ile container orchestration yapılabilir
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{© 2025-2026 CyberGuard Project Team}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Bu rapor, CyberGuard projesinin teknik dokümantasyonu ve akademik
+değerlendirme amaçlı hazırlanmıştır.}
+
+\end{document}

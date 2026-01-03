@@ -1,0 +1,1005 @@
+\documentclass[12pt,a4paper]{article}
+
+% Türkçe karakter desteği
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Sayfa düzeni
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+
+% Tablolar
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+
+% Görseller ve renkler
+\usepackage{graphicx}
+\usepackage{xcolor}
+\definecolor{primary}{RGB}{0,51,102}
+\definecolor{secondary}{RGB}{0,102,153}
+
+% Bağlantılar
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=secondary
+}
+
+% Başlık formatları
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries\color{primary}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{secondary}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.5em}{}
+
+% Sayfa üstbilgi/altbilgi
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small CyberGuard - Proje Raporu}
+\fancyhead[R]{\small Ocak 2026}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Listeler
+\usepackage{enumitem}
+\setlist{nosep}
+
+% Kod blokları
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10}
+}
+
+\begin{document}
+
+% ==================== KAPAK SAYFASI ====================
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+
+{\Huge\bfseries\color{primary} CyberGuard\par}
+\vspace{0.5cm}
+{\Large\color{secondary} Birleşik Siber Tehdit Tespit Sistemi\par}
+\vspace{1.5cm}
+{\large Proje Final Raporu\par}
+
+\vfill
+
+{\large\bfseries Versiyon: 2.0.0\par}
+\vspace{0.3cm}
+{\large Tarih: Ocak 2026\par}
+
+\vspace{2cm}
+\end{titlepage}
+
+% ==================== İÇİNDEKİLER ====================
+\tableofcontents
+\newpage
+
+% ==================== 1. YÖNETİCİ ÖZETİ ====================
+\section{Yönetici Özeti}
+
+CyberGuard, kurumsal siber güvenlik ihtiyaçlarına yönelik geliştirilmiş, yapay zeka destekli bir tehdit tespit platformudur. Sistem, e-posta tabanlı phishing saldırıları ile web tabanlı saldırıları (SQL Injection, XSS, DDoS) gerçek zamanlı olarak tespit etme kapasitesine sahiptir.
+
+Geleneksel güvenlik sistemleri imza tabanlı tespit yöntemlerine dayanmaktadır ve bu yaklaşım zero-day saldırıları ile sürekli evrilen tehditlere karşı yetersiz kalmaktadır. CyberGuard, yapay zeka teknolojilerini kullanarak bu sorunu çözmektedir.
+
+\subsection{Temel Özellikler}
+
+\begin{tabular}{|l|p{6cm}|l|}
+\hline
+\textbf{Özellik} & \textbf{Açıklama} & \textbf{Durum} \\
+\hline
+E-posta Phishing Tespiti & BERT, FastText ve TF-IDF ile ensemble analiz & Aktif \\
+\hline
+Web Log Analizi & Isolation Forest ile anomali tespiti & Aktif \\
+\hline
+Korelasyon Analizi & E-posta ve web tehditlerinin ilişkilendirilmesi & Aktif \\
+\hline
+Gerçek Zamanlı Dashboard & Chart.js ile interaktif grafikler & Aktif \\
+\hline
+Çoklu Dil Desteği & Türkçe ve İngilizce arayüz & Aktif \\
+\hline
+Docker Deployment & 6 container ile production dağıtım & Aktif \\
+\hline
+REST API & 15+ endpoint ile entegrasyon & Aktif \\
+\hline
+İzleme Altyapısı & Prometheus ve Grafana & Aktif \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 2. GİRİŞ VE MOTİVASYON ====================
+\section{Giriş ve Motivasyon}
+
+\subsection{Problemin Tanımı}
+
+Siber saldırılar her geçen gün daha sofistike hale gelmektedir. Özellikle phishing saldırıları, kurumlara yönelik en yaygın ve etkili tehdit vektörlerinden birini oluşturmaktadır. 2025 yılı itibarıyla, kurumsal veri ihlallerinin \%90'ından fazlası phishing saldırılarıyla başlamaktadır.
+
+Geleneksel güvenlik çözümleri şu kısıtlamalarla karşı karşıyadır:
+\begin{itemize}
+\item \textbf{İmza tabanlı tespit:} Yeni ve bilinmeyen tehditlerde yetersiz kalır
+\item \textbf{Yüksek false positive:} Güvenlik ekiplerinin iş yükünü artırır
+\item \textbf{Tek vektör analizi:} Koordineli saldırıları tespit edemez
+\item \textbf{Açıklanamayan kararlar:} Neden tehdit olarak işaretlendiği anlaşılamaz
+\end{itemize}
+
+\subsection{Çözüm Yaklaşımı}
+
+CyberGuard, bu problemleri çözmek için yapay zeka tabanlı bir yaklaşım benimsemektedir:
+\begin{enumerate}
+\item \textbf{Örüntü öğrenimi:} Geçmiş verilerden öğrenerek yeni tehditleri tespit eder
+\item \textbf{Çoklu model kullanımı:} Ensemble yaklaşım ile yüksek doğruluk
+\item \textbf{Tehdit korelasyonu:} Farklı saldırı vektörlerini ilişkilendirir
+\item \textbf{Açıklanabilir sonuçlar:} LIME ile model kararlarının gerekçesi
+\end{enumerate}
+
+\subsection{Hedef Kitle}
+
+CyberGuard aşağıdaki kullanıcı grupları için tasarlanmıştır:
+\begin{itemize}
+\item Güvenlik Operasyon Merkezi (SOC) ekipleri
+\item IT güvenlik profesyonelleri
+\item Küçük ve orta ölçekli işletmeler
+\item Siber güvenlik alanında araştırma yapan akademisyenler ve öğrenciler
+\end{itemize}
+
+\newpage
+
+% ==================== 3. SİSTEM GENEL BAKIŞ ====================
+\section{Sistem Genel Bakış}
+
+\subsection{Amaç ve Hedefler}
+
+\textbf{Birincil Amaç:} Kurumsal ortamlarda e-posta ve web tabanlı siber tehditleri yapay zeka teknolojileri kullanarak otomatik olarak tespit etmek ve raporlamak.
+
+\textbf{Hedefler:}
+\begin{itemize}
+\item Phishing e-postalarını \%90 ve üzeri doğrulukla tespit etmek
+\item Web saldırı girişimlerini gerçek zamanlı olarak belirlemek
+\item Farklı vektörlerden gelen tehditleri ilişkilendirmek
+\item Güvenlik analistlerine kullanımı kolay bir arayüz sunmak
+\item Mevcut güvenlik altyapılarına API üzerinden entegre olmak
+\end{itemize}
+
+\subsection{Kapsam}
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Kapsam İçi} & \textbf{Kapsam Dışı} \\
+\hline
+E-posta phishing tespiti & Ağ trafiği analizi \\
+\hline
+Web log anomali analizi & Endpoint koruma \\
+\hline
+Tehdit korelasyonu & Malware analizi \\
+\hline
+Raporlama ve dışa aktarma & Otomatik müdahale \\
+\hline
+Çoklu dil desteği & Mobil uygulama \\
+\hline
+\end{tabular}
+
+\subsection{Sistem Gereksinimleri}
+
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Bileşen} & \textbf{Minimum} & \textbf{Önerilen} \\
+\hline
+İşletim Sistemi & Windows 10, Linux, macOS & Windows 11, Ubuntu 22.04 \\
+\hline
+Python & 3.8 & 3.10+ \\
+\hline
+RAM & 4GB & 8GB+ \\
+\hline
+Disk Alanı & 2GB & 5GB+ \\
+\hline
+Docker & 20.10+ & 24.0+ \\
+\hline
+Docker Compose & 1.29+ & 2.0+ \\
+\hline
+\end{tabular}
+
+\subsection{Teknoloji Yığını}
+
+\begin{tabular}{|l|l|l|p{4cm}|}
+\hline
+\textbf{Katman} & \textbf{Teknoloji} & \textbf{Versiyon} & \textbf{Kullanım Amacı} \\
+\hline
+Backend & Python, Flask & 3.8+, 2.0+ & REST API ve iş mantığı \\
+\hline
+Frontend & HTML5, CSS3, JS & ES6+ & Kullanıcı arayüzü \\
+\hline
+Görselleştirme & Chart.js & 4.0+ & İnteraktif grafikler \\
+\hline
+Veritabanı & PostgreSQL & 15.0 & Kalıcı veri depolama \\
+\hline
+Önbellek & Redis & 7.0+ & Performans iyileştirme \\
+\hline
+AI/ML & scikit-learn, PyTorch & 1.0+, 2.0+ & Makine öğrenimi \\
+\hline
+NLP & Transformers & 4.0+ & Doğal dil işleme \\
+\hline
+Konteynerizasyon & Docker & 24.0+ & Deployment \\
+\hline
+İzleme & Prometheus, Grafana & 2.45+, 10.0+ & Monitoring \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 4. YAZILIM MİMARİSİ ====================
+\section{Yazılım Mimarisi ve Tasarım}
+
+\subsection{Mimari Karakterizasyon}
+
+CyberGuard, modüler ve servis-odaklı bir mimari üzerine inşa edilmiştir. Bu yaklaşım, sistemin farklı bileşenlerinin bağımsız olarak geliştirilmesine ve ölçeklenmesine olanak tanımaktadır.
+
+Sistemin mimari karakteri şu şekilde özetlenebilir: Tehdit algılama mantığı ile sunum katmanları birbirinden ayrılmıştır ve bu ayrım, makine öğrenimi modellerinin bağımsız olarak geliştirilmesini mümkün kılmaktadır.
+
+\subsection{Mimari Paradigma}
+
+Sistem, temel olarak istek-yanıt (request-response) paradigmasını kullanmaktadır. Ancak tehdit tespiti ve korelasyon analizi bileşenlerinde olay-güdümlü (event-driven) yaklaşım benimsenmiştir.
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Bileşen} & \textbf{Paradigma} & \textbf{Açıklama} \\
+\hline
+Dashboard - API & Request-Response & Kullanıcı istekleri senkron işlenir \\
+\hline
+Email/Web Log - Detection & Event-Driven & Gelen veriler event olarak işlenir \\
+\hline
+Detection - Correlation & Publisher-Subscriber & Tehditler publish edilir \\
+\hline
+Correlation - Alerts & Event-Driven & Alert event'leri oluşur \\
+\hline
+\end{tabular}
+
+\subsection{Katmanlı Mimari}
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Katman} & \textbf{Teknoloji} & \textbf{Sorumluluk} \\
+\hline
+Sunum (View) & Flask + Jinja2 + JS & Kullanıcı etkileşimi, görselleştirme \\
+\hline
+Uygulama (Controller) & Flask REST API & İş mantığı, girdi doğrulama \\
+\hline
+İş Mantığı (Model) & Detectors, Analyzers & ML inference, risk skorlama \\
+\hline
+Veri (Persistence) & PostgreSQL + Redis & Veri kalıcılığı, önbellekleme \\
+\hline
+\end{tabular}
+
+\subsection{Tasarım Kararları ve Gerekçeleri}
+
+\subsubsection{E-posta ve Web Log Analizinin Birleştirilmesi}
+
+Sistemde e-posta phishing tespiti ve web log analizi tek bir Flask API backend'inde birleştirilmiştir. Bu tasarım kararının gerekçeleri:
+
+\begin{itemize}
+\item \textbf{Korelasyon Avantajı:} Aynı IP'den gelen phishing ve web saldırısı hızlıca ilişkilendirilebilir
+\item \textbf{Kaynak Verimliliği:} Tek container, düşük bellek ayak izi
+\item \textbf{Deployment Basitliği:} Tek docker image ile kolay bakım
+\item \textbf{Veri Tutarlılığı:} Merkezi veritabanı, single source of truth
+\end{itemize}
+
+Alternatif olarak mikroservis mimarisine geçiş düşünülmüştür; ancak mevcut kullanım senaryosu için bu yaklaşım aşırı mühendislik olarak değerlendirilmiştir.
+
+\subsubsection{Model Inference'ın API İçinde Çalıştırılması}
+
+ML modelleri doğrudan Flask API container'ı içinde çalıştırılmaktadır:
+
+\begin{itemize}
+\item \textbf{Gecikme Optimizasyonu:} Ağ atlaması elimine edilmiştir (5-10ms tasarruf)
+\item \textbf{Oturum Durumu:} Modeller bellekte tutulur, cold start yok
+\item \textbf{Hata Ayıklama:} Uçtan uca izleme tek process'te yapılabilir
+\end{itemize}
+
+\textbf{Trade-off:} Bu yaklaşım yatay ölçeklemeyi zorlaştırır. Yüksek throughput için TensorFlow Serving gibi ayrı inference sunucuları önerilir.
+
+\subsection{Veri Akışı}
+
+Sistemdeki veri akışı şu adımları takip etmektedir:
+
+\begin{enumerate}
+\item \textbf{Kullanıcı Girdisi:} Kullanıcı, dashboard üzerinden e-posta veya web log gönderir
+\item \textbf{API İşleme:} Flask API isteği alır ve doğrular
+\item \textbf{Model Çıkarımı:} Uygun ML modeli/modelleri girdiyi analiz eder
+\item \textbf{Sonuç Depolama:} Tahminler PostgreSQL veritabanına kaydedilir
+\item \textbf{Yanıt:} Sonuçlar güven skorları ile birlikte kullanıcıya döndürülür
+\item \textbf{Korelasyon:} Arka plan işlemi ilgili tehditleri ilişkilendirir
+\item \textbf{İzleme:} Prometheus metrikleri toplar, Grafana dashboard'ları görüntüler
+\end{enumerate}
+
+\newpage
+
+% ==================== 5. MİMARİ KALIPLAR ====================
+\section{Mimari Kalıplar ve Tasarım Desenleri}
+
+\subsection{Genel Yaklaşım}
+
+CyberGuard sistemi, yazılım mühendisliğinde bilinen birçok mimari ve tasarım kalıbını uygulamaktadır. Modüler yapısı doğal olarak Model-View-Controller ve olay-güdümlü prensiplerle uyumludur. Bu yaklaşım, sistemin bakım kolaylığını, ölçeklenebilirliğini ve genişletilebilirliğini artırmaktadır.
+
+\subsection{Pattern-Mapping Tablosu}
+
+\begin{tabular}{|p{4cm}|p{8cm}|}
+\hline
+\textbf{Kalıp} & \textbf{CyberGuard'daki Uygulama} \\
+\hline
+Model-View-Controller & Dashboard (View), Flask API (Controller), PostgreSQL + ML (Model) \\
+\hline
+Event-Driven / Pub-Sub & Email/Web log alımı - Tespit - Korelasyon - Alert zinciri \\
+\hline
+Ensemble Learning & BERT, FastText, TF-IDF weighted voting (0.5, 0.3, 0.2) \\
+\hline
+Cache-Aside & Redis ile dashboard istatistiklerinin önbelleklenmesi (TTL: 60s) \\
+\hline
+Repository Pattern & SQLAlchemy ORM ile veritabanı soyutlaması \\
+\hline
+Factory Pattern & get\_bert\_detector(), get\_fasttext\_detector() singleton \\
+\hline
+Strategy Pattern & Tüm dedektörler predict() arayüzünü uygular \\
+\hline
+Façade Pattern & /api/email/analyze/hybrid üç modeli tek arayüzde birleştirir \\
+\hline
+Circuit Breaker & VirusTotal API erişilemezse ML ile devam \\
+\hline
+\end{tabular}
+
+\subsection{Kalıp Seçim Gerekçeleri}
+
+\subsubsection{MVC Kullanımı}
+\begin{itemize}
+\item \textbf{Sorumluluk Ayrımı:} Frontend ve backend bağımsız geliştirilebilir
+\item \textbf{Test Edilebilirlik:} Controller mantığı birim testlere tabi tutulabilir
+\item \textbf{Yeniden Kullanılabilirlik:} Aynı API farklı frontend'lerden kullanılabilir
+\end{itemize}
+
+\subsubsection{Ensemble Learning Kullanımı}
+\begin{itemize}
+\item \textbf{Tek Hata Noktası Yok:} Bir model başarısız olsa diğerleri çalışır
+\item \textbf{Doğruluk Artışı:} Ensemble, tek modelden daha iyi performans gösterir
+\item \textbf{Açıklanabilirlik:} Her modelin kararı ayrı görüntülenebilir
+\end{itemize}
+
+\subsubsection{Cache-Aside Kullanımı}
+\begin{itemize}
+\item \textbf{Dashboard Hızı:} 1s'den 200ms'ye düşürülmüştür
+\item \textbf{Veritabanı Yükü:} Sık sorgular önbellekten karşılanır
+\end{itemize}
+
+\newpage
+
+% ==================== 6. SİSTEM ÖZELLİKLERİ ====================
+\section{Sistem Özellikleri ve Kullanıcı Arayüzü}
+
+\subsection{Ana Panel (Dashboard)}
+
+Dashboard, sistemin merkezi kontrol paneli olarak işlev görmektedir.
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Bileşen} & \textbf{Konum} & \textbf{İşlev} \\
+\hline
+E-posta Analizi Kartı & Sol üst & Toplam analiz edilen e-posta ve phishing oranı \\
+\hline
+Web Anomali Kartı & Orta üst & Web log analiz sayısı ve anomali oranı \\
+\hline
+Toplam Tehdit Kartı & Sağ üst & Tüm vektörlerden tespit edilen tehdit sayısı \\
+\hline
+Sistem Durumu Kartı & Sağ üst & API ve model yükleme durumu (\% olarak) \\
+\hline
+Tehdit Dağılımı Grafiği & Sol alt & Donut chart: Phishing vs Legitimate \\
+\hline
+Model Performans Grafiği & Sağ alt & Bar chart: Model bazlı doğruluk oranları \\
+\hline
+\end{tabular}
+
+\textbf{Üst Menü Butonları:}
+\begin{itemize}
+\item \textbf{Generate Demo Data:} Test amaçlı örnek veri seti oluşturur
+\item \textbf{Clear History:} Tüm geçmiş verileri siler
+\item \textbf{Tema Değiştir:} Aydınlık/Karanlık mod geçişi
+\item \textbf{Dil Değiştir:} Türkçe/İngilizce arayüz
+\end{itemize}
+
+\subsection{E-posta Analizi}
+
+E-posta analizi sayfası, kullanıcıların e-posta içeriklerini analiz etmesine olanak tanır.
+
+\textbf{Giriş Alanları:}
+\begin{itemize}
+\item \textbf{Email Subject:} E-postanın konu satırı
+\item \textbf{From Address:} Gönderen e-posta adresi
+\item \textbf{Email Body:} E-postanın tam metin içeriği
+\end{itemize}
+
+\textbf{Analiz Sonuç Bölümü:}
+Her üç model için ayrı ayrı sonuçlar gösterilir:
+\begin{itemize}
+\item \textbf{BERT Panel:} En yüksek doğruluklu model
+\item \textbf{FastText Panel:} En hızlı model
+\item \textbf{TF-IDF Panel:} Açıklanabilir sonuçlar (LIME)
+\end{itemize}
+
+\subsection{Web Log Analizi}
+
+Web log analizi sayfası, sunucu loglarını analiz ederek saldırı girişimlerini tespit eder.
+
+\textbf{Giriş Alanları:}
+\begin{itemize}
+\item \textbf{IP Address:} İstemci IP adresi
+\item \textbf{HTTP Method:} GET, POST, PUT, DELETE vb.
+\item \textbf{Request Path:} İstenen URL yolu
+\item \textbf{Status Code:} HTTP yanıt kodu
+\item \textbf{User Agent:} Tarayıcı/bot bilgisi
+\item \textbf{Response Size:} Yanıt boyutu
+\end{itemize}
+
+\textbf{Tespit Edilen Saldırı Türleri:}
+SQL Injection, Cross-Site Scripting (XSS), Path Traversal, Brute Force, Bot/Crawler Activity, DDoS Patterns
+
+\subsection{Korelasyon Analizi}
+
+Korelasyon analizi, e-posta ve web tehditlerini zaman ve IP bazında ilişkilendirir.
+
+\textbf{Korelasyon Metrikleri:}
+\begin{itemize}
+\item \textbf{Korelasyon Skoru:} Pearson korelasyon katsayısı (-1 ile +1 arası)
+\item \textbf{Korelasyon Gücü:} Very Weak / Weak / Moderate / Strong
+\item \textbf{Koordineli Saldırı Sayısı:} Aynı saat diliminde hem e-posta hem web tehdidi
+\item \textbf{IP Boost:} Aynı IP'den çoklu saldırı bonus skoru
+\end{itemize}
+
+\subsection{Raporlar ve Ayarlar}
+
+\textbf{Raporlar - Dışa Aktarma:}
+\begin{itemize}
+\item \textbf{Export to Excel:} Tüm tehdit verilerini .xlsx formatında indirir
+\item \textbf{Export to JSON:} API entegrasyonu için JSON formatında
+\end{itemize}
+
+\textbf{Ayar Seçenekleri:}
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Ayar} & \textbf{Tür} & \textbf{Açıklama} \\
+\hline
+Dark Mode & Toggle & Karanlık/Aydınlık tema tercihi \\
+\hline
+Language & Seçim & Arayüz dili: İngilizce veya Türkçe \\
+\hline
+Detection Threshold & Slider & Phishing tespit eşiği (0.0 - 1.0) \\
+\hline
+High Risk Alerts & Toggle & Yüksek riskli tehditler için bildirim \\
+\hline
+\end{tabular}
+
+\textbf{Ayar Kalıcılığı:} Tüm ayarlar hem localStorage hem de PostgreSQL veritabanına kaydedilir.
+
+\newpage
+
+% ==================== 7. YAPAY ZEKA MODELLERİ ====================
+\section{Yapay Zeka Modelleri}
+
+\subsection{BERT (DistilBERT)}
+
+BERT (Bidirectional Encoder Representations from Transformers), sistemdeki en doğru modeldir.
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Özellik} & \textbf{Değer} \\
+\hline
+Mimari & DistilBERT (BERT'in damıtılmış versiyonu) \\
+\hline
+Parametre Sayısı & 66 milyon \\
+\hline
+Kaynak & Hugging Face Transformers kütüphanesi \\
+\hline
+Eğitim Verisi & 31,000+ e-posta (CEAS, Enron, Nigerian Fraud, SpamAssassin) \\
+\hline
+Fine-tuning & Önceden eğitilmiş DistilBERT üzerinden transfer öğrenme \\
+\hline
+Tokenizer & WordPiece, 30,522 kelime dağarcığı \\
+\hline
+Doğruluk & \%94-97 \\
+\hline
+İşlem Süresi & 45ms / e-posta \\
+\hline
+\end{tabular}
+
+\textbf{Avantajları:}
+\begin{itemize}
+\item Bağlamı anlar: "Click here to verify" şüpheli iken "Click here to view the report" olmayabilir
+\item Yazım hatalarını ve varyasyonları yakalar: "Paypa1" vs "PayPal"
+\item Semantik anlam çıkarımı: Aciliyet, tehdit, ödül gibi kavramları öğrenir
+\end{itemize}
+
+\textbf{Dezavantajı:} Diğer modellere göre daha yavaş işlem süresi
+
+\subsection{FastText}
+
+FastText, Facebook Research tarafından geliştirilen hızlı metin sınıflandırma modeli.
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Özellik} & \textbf{Değer} \\
+\hline
+Mimari & Word embedding + Linear classifier \\
+\hline
+Kaynak & Facebook Research \\
+\hline
+Model Boyutu & 881 MB \\
+\hline
+Doğruluk & \%90-94 \\
+\hline
+İşlem Süresi & <1ms / e-posta \\
+\hline
+\end{tabular}
+
+\textbf{Avantajları:} Çok hızlı işlem süresi, yüksek hacimli real-time işlemler için ideal, alt-kelime bilgisini kullanır.
+
+\textbf{Dezavantajı:} Karmaşık bağlam anlamada BERT'e göre zayıf
+
+\subsection{TF-IDF + Random Forest}
+
+Geleneksel makine öğrenimi yaklaşımı kullanan model.
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Özellik} & \textbf{Değer} \\
+\hline
+Mimari & TF-IDF vektörizasyon + Random Forest ensemble \\
+\hline
+Eğitim & SMOTE ile dengelenmiş veri seti \\
+\hline
+Doğruluk & \%89.75 \\
+\hline
+ROC-AUC & \%97.50 \\
+\hline
+İşlem Süresi & 25ms / e-posta \\
+\hline
+Model Boyutu & 50 MB \\
+\hline
+\end{tabular}
+
+\textbf{Avantajları:} Açıklanabilir sonuçlar (LIME ile özellik önem sıralaması), hafif model boyutu, eğitimi kolay.
+
+\subsection{Isolation Forest (Web Analizi)}
+
+Denetimsiz anomali tespiti için kullanılan model.
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Özellik} & \textbf{Değer} \\
+\hline
+Mimari & Unsupervised anomaly detection \\
+\hline
+Kullanım Alanı & Web log anomali tespiti \\
+\hline
+Doğruluk & \%92+ \\
+\hline
+İşlem Süresi & 15ms / log \\
+\hline
+Tespit Edilen Saldırılar & SQL Injection, XSS, DDoS, Brute Force \\
+\hline
+\end{tabular}
+
+\subsection{Ensemble Yaklaşımı}
+
+Sistemde üç e-posta modeli, ağırlıklı oylama (weighted voting) ile birleştirilmektedir:
+
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Model} & \textbf{Ağırlık} & \textbf{Gerekçe} \\
+\hline
+BERT & 0.5 & En yüksek doğruluk \\
+\hline
+FastText & 0.3 & Hız ve çeşitlilik \\
+\hline
+TF-IDF & 0.2 & Açıklanabilirlik \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 8. TEST METODOLOJİSİ ====================
+\section{Test Metodolojisi ve Sonuçları}
+
+\subsection{Test Stratejisi}
+
+CyberGuard için tasarlanan test stratejisi, sistemin temel güvenlik fonksiyonlarının doğruluğunu ve kullanıcı deneyimini öncelikli hedef olarak belirlemiştir. Siber güvenlik sistemlerinde, yanlış tespit oranlarının kritik sonuçları olabileceğinden, doğruluk testleri ön plana çıkmaktadır.
+
+\subsection{Test Odak Alanları}
+
+\begin{tabular}{|l|p{5cm}|l|}
+\hline
+\textbf{Test Tipi} & \textbf{Amaç} & \textbf{Öncelik} \\
+\hline
+Doğruluk Testi & ML modellerinin phishing/legitimate ayrımı & Kritik \\
+\hline
+Fonksiyonel Test & UI ve API endpoint'lerinin çalışması & Kritik \\
+\hline
+Entegrasyon Testi & Backend-Database-Cache entegrasyonu & Yüksek \\
+\hline
+Kullanılabilirlik & Tema, dil, ayar kalıcılığı & Orta \\
+\hline
+\end{tabular}
+
+\subsection{Test Yaklaşımı Açıklamaları}
+
+\subsubsection{Doğruluk Testlerinin Önemi}
+
+Makine öğrenimi tabanlı siber güvenlik sistemlerinde False Positive ve False Negative oranları kritik öneme sahiptir:
+\begin{itemize}
+\item \textbf{False Negative:} Gerçek phishing kaçırılırsa veri ihlali yaşanabilir
+\item \textbf{False Positive:} Meşru e-posta engellenirse operasyonel verimlilik düşer
+\end{itemize}
+
+Bu nedenle accuracy, precision, recall ve F1-score metrikleri detaylı olarak ölçülmüştür.
+
+\subsubsection{Gecikme Testleri Hakkında}
+
+Detaylı gecikme testleri kapsamlı olarak gerçekleştirilmemiştir çünkü CyberGuard, gerçek zamanlı akış işleme yerine talep üzerine analiz sistemi olarak tasarlanmıştır. 1-2 saniye yanıt süresi kullanıcı deneyimi açısından kabul edilebilir düzeydedir.
+
+Production ortamına geçişte P95/P99 gecikme metrikleri Grafana ile sürekli izlenmelidir.
+
+\subsubsection{Yük Testleri Hakkında}
+
+Sistem, orta ölçekli kurumlar (10-100 eşzamanlı kullanıcı) için optimize edilmiştir. Flask + Gunicorn (4 worker) bu senaryoyu karşılamaktadır. Kurumsal deployment öncesinde Apache JMeter ile yük testleri önerilmektedir.
+
+\subsection{Fonksiyonel Test Sonuçları}
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Test} & \textbf{Sonuç} \\
+\hline
+Dashboard yükleme ve grafikler & Başarılı \\
+\hline
+E-posta phishing tespiti (3 model) & Başarılı \\
+\hline
+E-posta legitimate sınıflandırma & Başarılı \\
+\hline
+Web log anomali tespiti & Başarılı \\
+\hline
+Web log normal trafik sınıflandırma & Başarılı \\
+\hline
+Korelasyon analizi hesaplama & Başarılı \\
+\hline
+Koordineli saldırı tespiti & Başarılı \\
+\hline
+Tema değiştirme ve kalıcılık & Başarılı \\
+\hline
+Dil değiştirme (TR/EN) & Başarılı \\
+\hline
+Ayar kaydetme ve yükleme & Başarılı \\
+\hline
+Excel dışa aktarma & Başarılı \\
+\hline
+JSON dışa aktarma & Başarılı \\
+\hline
+\end{tabular}
+
+\subsection{Performans Metrikleri}
+
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Metrik} & \textbf{Ölçüm} \\
+\hline
+API ortalama yanıt süresi & 200ms \\
+\hline
+BERT analiz süresi & 45ms \\
+\hline
+FastText analiz süresi & <1ms \\
+\hline
+TF-IDF analiz süresi & 25ms \\
+\hline
+Isolation Forest analiz süresi & 15ms \\
+\hline
+Dashboard tam yükleme & <1 saniye \\
+\hline
+Demo data oluşturma (60 kayıt) & 2 saniye \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 9. TRADE-OFF ANALİZİ ====================
+\section{Model Karşılaştırması ve Trade-off Analizi}
+
+\subsection{Performans Karşılaştırması}
+
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+\textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Süre} \\
+\hline
+BERT & \%94-97 & \%95 & \%93 & \%94 & 45ms \\
+\hline
+FastText & \%90-94 & \%92 & \%90 & \%91 & <1ms \\
+\hline
+TF-IDF + RF & \%89.75 & \%90 & \%88 & \%89 & 25ms \\
+\hline
+\end{tabular}
+
+\subsection{BERT'in Üstün Performansı}
+
+BERT modeli diğerlerine göre daha yüksek doğruluk göstermektedir. Bunun teknik nedenleri:
+
+\begin{enumerate}
+\item \textbf{Bağlamsal Anlama:} Kelimelerin bağlamını anlar. "bank" kelimesi "river bank" ve "bank account" ifadelerinde farklı embedding'ler üretir.
+\item \textbf{Transfer Öğrenme:} 1.5 milyar kelime üzerinde önceden eğitilmiştir.
+\item \textbf{Alt-Kelime Tokenizasyonu:} "PayPaI" gibi typosquatting saldırılarını yakalar.
+\item \textbf{Dikkat Mekanizması:} Önemli kelimeleri ("urgent", "verify", "click") öğrenir.
+\end{enumerate}
+
+\subsection{Hız vs Doğruluk Trade-off}
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Senaryo} & \textbf{Önerilen Model} & \textbf{Gerekçe} \\
+\hline
+Real-time Email Gateway & FastText & Yüksek throughput, <1ms gecikme \\
+\hline
+Kritik Güvenlik Analizi & BERT & Doğruluk kritik, gecikme kabul edilebilir \\
+\hline
+Balanced / Genel Kullanım & TF-IDF + RF & İyi denge, açıklanabilirlik (LIME) \\
+\hline
+Ensemble (Production) & Üçü birlikte & En yüksek doğruluk, weighted voting \\
+\hline
+\end{tabular}
+
+\subsection{False Positive / False Negative Analizi}
+
+\textbf{False Positive Senaryoları (Meşru - Phishing):}
+
+\begin{tabular}{|l|p{5cm}|l|}
+\hline
+\textbf{Senaryo} & \textbf{Açıklama} & \textbf{Mitigation} \\
+\hline
+Agresif Pazarlama & "Limited time offer!", "Act now!" & Whitelist domain \\
+\hline
+IT Departmanı Uyarıları & "Your password will expire" & Threshold ayarı \\
+\hline
+Kısa Mesajlar & Çok kısa mesajlarda güvensizlik & v2.0'da düzeltildi \\
+\hline
+\end{tabular}
+
+\textbf{False Negative Senaryoları (Phishing - Meşru):}
+
+\begin{tabular}{|l|p{4cm}|p{3.5cm}|}
+\hline
+\textbf{Senaryo} & \textbf{Açıklama} & \textbf{Mitigation} \\
+\hline
+Spear Phishing & Kişiselleştirilmiş saldırılar & Sürekli model eğitimi \\
+\hline
+Zero-Day Phishing & Yeni kampanyalar & Active learning \\
+\hline
+Homograph Saldırıları & Punycode saldırıları & VirusTotal API \\
+\hline
+\end{tabular}
+
+\subsection{Concept Drift Riski}
+
+Phishing saldırıları sürekli evrilmektedir. 2025'te etkili olan pattern'ler 2026'da geçerliliğini yitirebilir.
+
+\textbf{Risk Faktörleri:}
+\begin{itemize}
+\item AI tarafından oluşturulan phishing içerikleri
+\item Yeni sosyal mühendislik teknikleri
+\item Değişen e-posta formatları
+\end{itemize}
+
+\textbf{Önerilen Stratejiler:}
+
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Strateji} & \textbf{Açıklama} & \textbf{Periyot} \\
+\hline
+Periyodik Yeniden Eğitim & Yeni verilerle model güncellemesi & Her 3-6 ayda bir \\
+\hline
+Active Learning & FP/FN geri bildirimlerden öğrenme & Sürekli \\
+\hline
+Ensemble Çeşitlendirme & Farklı özellik kümelerine dayanan modeller & Başlangıçta \\
+\hline
+Sürekli İzleme & Doğruluk düşüşü için alerting & Günlük \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 10. API REFERANSI ====================
+\section{API Referansı}
+
+Sistem, RESTful API üzerinden tam entegrasyon imkanı sunmaktadır.
+
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Açıklama} \\
+\hline
+/api/health & GET & Sistem sağlık kontrolü \\
+\hline
+/api/models/status & GET & Model yükleme durumları \\
+\hline
+/api/email/analyze & POST & TF-IDF ile e-posta analizi \\
+\hline
+/api/email/analyze/bert & POST & BERT ile e-posta analizi \\
+\hline
+/api/email/analyze/fasttext & POST & FastText ile e-posta analizi \\
+\hline
+/api/email/analyze/hybrid & POST & Ensemble analiz (3 model) \\
+\hline
+/api/predict/web & POST & Web log anomali analizi \\
+\hline
+/api/correlation/analyze & GET & Korelasyon analizi \\
+\hline
+/api/dashboard/stats & GET & Dashboard istatistikleri \\
+\hline
+/api/reports/export/excel & GET & Excel dışa aktarma \\
+\hline
+/api/reports/export/json & GET & JSON dışa aktarma \\
+\hline
+/api/settings & GET/POST & Ayarları getir/kaydet \\
+\hline
+/api/demo/generate & POST & Demo veri oluştur \\
+\hline
+/api/database/clear & POST & Verileri temizle \\
+\hline
+/api/virustotal/check-ip/\{ip\} & GET & VirusTotal IP kontrolü \\
+\hline
+/api/virustotal/check-domain/\{d\} & GET & VirusTotal domain kontrolü \\
+\hline
+\end{tabular}
+
+\newpage
+
+% ==================== 11. KURULUM ====================
+\section{Kurulum ve Yapılandırma}
+
+\subsection{Docker ile Kurulum (Önerilen)}
+
+\begin{lstlisting}[language=bash]
+# 1. Projeyi klonlayin
+git clone https://github.com/TheLastKhan/UnifiedCyberThreatDetectionSystem.git
+cd UnifiedCyberThreatDetectionSystem
+
+# 2. Docker container'lari baslatin
+docker-compose up -d
+
+# 3. Durumu kontrol edin
+docker-compose ps
+
+# 4. API saglik kontrolu
+curl http://localhost:5000/api/health
+
+# 5. Servislere erisin
+# Dashboard: http://localhost:5000
+# Grafana: http://localhost:3000 (admin/admin)
+# Prometheus: http://localhost:9090
+\end{lstlisting}
+
+\subsection{Docker Container Yapısı}
+
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Container} & \textbf{Port} & \textbf{İşlev} & \textbf{Bağımlılık} \\
+\hline
+threat-detection-api & 5000 & Flask API + ML Modelleri & db, cache \\
+\hline
+threat-detection-db & 5432 & PostgreSQL Veritabanı & - \\
+\hline
+threat-detection-cache & 6379 & Redis Önbellek & - \\
+\hline
+threat-detection-nginx & 80, 443 & Reverse Proxy, SSL & api \\
+\hline
+threat-detection-prometheus & 9090 & Metrik Toplama & api \\
+\hline
+threat-detection-grafana & 3000 & Görselleştirme Dashboard & prometheus \\
+\hline
+\end{tabular}
+
+\subsection{Servis Erişim Noktaları}
+
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Servis} & \textbf{URL} & \textbf{Kimlik Bilgileri} & \textbf{Amaç} \\
+\hline
+Web Dashboard & http://localhost:5000 & Yok & Ana kullanıcı arayüzü \\
+\hline
+Grafana & http://localhost:3000 & admin / admin & Metrik görselleştirme \\
+\hline
+Prometheus & http://localhost:9090 & Yok & Metrik toplama \\
+\hline
+PostgreSQL & localhost:5432 & postgres / postgres & Veritabanı \\
+\hline
+Redis & localhost:6379 & Yok & Önbellek \\
+\hline
+\end{tabular}
+
+\subsection{Manuel Kurulum (Geliştirme)}
+
+\begin{lstlisting}[language=bash]
+# 1. Virtual environment olusturun
+python -m venv venv
+
+# 2. Aktif edin
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# 3. Bagimliliklari yukleyin
+pip install -r requirements.txt
+
+# 4. Dashboard'u baslatin
+python run_dashboard.py
+
+# 5. Tarayicida acin: http://localhost:5000
+\end{lstlisting}
+
+\subsection{Kurulum Sonrası İlk Adımlar}
+
+\begin{enumerate}
+\item \textbf{Demo Veri Oluşturma:} "Generate Demo Data" butonuna tıklayarak örnek tehditler oluşturun
+\item \textbf{E-posta Analizi Testi:} "Email Analysis" sayfasında bir phishing e-postası gönderin
+\item \textbf{Web Analizi Testi:} "Web Analysis" sayfasında şüpheli bir log kaydı gönderin
+\item \textbf{Korelasyon Görüntüleme:} "Correlation Analysis" sayfasında tehdit ilişkilerini inceleyin
+\item \textbf{Ayarları Özelleştirme:} "Settings" sayfasından tercihleri yapılandırın
+\end{enumerate}
+
+\newpage
+
+% ==================== 12. SONUÇ ====================
+\section{Sonuç ve Gelecek Çalışmalar}
+
+\subsection{Sistemin Temel Başarıları}
+
+CyberGuard, modern yapay zeka teknolojilerini kullanarak kapsamlı bir siber güvenlik çözümü sunmaktadır:
+
+\begin{itemize}
+\item \textbf{Üç farklı ML modeli} ile yüksek doğrulukta phishing tespiti (BERT \%50, FastText \%30, TF-IDF \%20)
+\item \textbf{Modüler, servis-odaklı mimari} ile bakım kolaylığı ve bağımsız model geliştirme
+\item \textbf{Bilinen tasarım kalıpları} (MVC, Event-Driven, Ensemble, Cache-Aside, Factory, Strategy, Façade, Circuit Breaker) ile sağlam altyapı
+\item \textbf{Gerçek zamanlı korelasyon analizi} ile koordineli saldırı tespiti
+\item \textbf{Trade-off bilinci} ile kullanım senaryosuna uygun model seçimi
+\item \textbf{Docker ile kolay dağıtım} ve production-ready altyapı (6 container)
+\item \textbf{Açıklanabilir AI (XAI)} - LIME ile model kararlarının görselleştirilmesi
+\item \textbf{False positive/negative analizi} ve mitigation stratejileri
+\item \textbf{Concept drift riski} farkındalığı ve periyodik yeniden eğitim planı
+\end{itemize}
+
+\subsection{Hedef Kitle ve Ölçeklenebilirlik}
+
+Sistem, özellikle orta ölçekli kurumlar (10-100 eşzamanlı kullanıcı) için optimize edilmiştir. Yüksek ölçeklenebilirlik ihtiyacı doğduğunda:
+\begin{itemize}
+\item Horizontal scaling için model inference ayrı container'lara taşınabilir
+\item TensorFlow Serving veya TorchServe ile dedicated inference server kurulabilir
+\item Kubernetes ile container orchestration yapılabilir
+\end{itemize}
+
+\subsection{Gelecek Çalışmalar}
+
+\begin{itemize}
+\item Gerçek zamanlı e-posta gateway entegrasyonu
+\item Mobil uygulama desteği
+\item SIEM sistemleri ile entegrasyon
+\item Active learning pipeline implementasyonu
+\item Model A/B testing altyapısı
+\item Multi-tenant mimari desteği
+\end{itemize}
+
+\vspace{2cm}
+\begin{center}
+\textbf{\copyright{} 2025-2026 CyberGuard Project Team}
+
+\vspace{0.5cm}
+\textit{Bu rapor, CyberGuard projesinin teknik dokümantasyonu ve akademik değerlendirme amacıyla hazırlanmıştır.}
+\end{center}
+
+\end{document}
