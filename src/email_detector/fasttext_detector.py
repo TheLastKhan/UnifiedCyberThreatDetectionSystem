@@ -246,12 +246,22 @@ class FastTextEmailDetector:
             )
             
             
-            # Format LIME output (enhanced visibility with 10x multiplier)
+            # Format LIME output with dynamic multiplier
             lime_breakdown = []
             for feature, weight in explanation.as_list():
-                # Enhanced formula: abs(weight) * score * 100 * 10
-                # 10x multiplier makes FastText features more visible in UI
-                contribution = abs(weight) * prediction.score * 100 * 10
+                # Dynamic multiplier: 
+                # - High phishing score (>0.5): use 10x for visibility
+                # - Low phishing score (<0.5): use 1x to avoid inflation
+                if prediction.score > 0.5:
+                    # Phishing case: use 10x multiplier for visibility
+                    contribution = abs(weight) * prediction.score * 100 * 10
+                else:
+                    # Legitimate case: use same formula as BERT/TF-IDF
+                    contribution = abs(weight) * prediction.score * 100
+                
+                # Cap at reasonable maximum
+                contribution = min(contribution, 99.9)
+                
                 lime_breakdown.append({
                     'feature': feature,
                     'contribution': round(contribution, 1),
