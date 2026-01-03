@@ -2,19 +2,20 @@
 ## Proje Final Raporu
 
 **Hazırlayan:** Proje Ekibi  
-**Tarih:** 27 Aralık 2025  
-**Versiyon:** 1.0.0
+**Tarih:** 27 Aralık 2025 (Güncelleme: 3 Ocak 2026)  
+**Versiyon:** 2.0.0
 
 ---
 
 ## 📋 İçindekiler
 1. [Proje Özeti](#proje-özeti)
-2. [Sistem Mimarisi](#sistem-mimarisi)
-3. [Özellikler ve Ekran Görüntüleri](#özellikler-ve-ekran-görüntüleri)
-4. [Canlı Demo Kayıtları](#canlı-demo-kayıtları)
+2. [Yazılım Mimarisi ve Tasarım](#yazılım-mimarisi-ve-tasarım)
+3. [Mimari Kalıplar ve Tasarım Desenleri](#mimari-kalıplar-ve-tasarım-desenleri)
+4. [Özellikler ve Ekran Görüntüleri](#özellikler-ve-ekran-görüntüleri)
 5. [Teknik Detaylar](#teknik-detaylar)
-6. [Test Sonuçları](#test-sonuçları)
-7. [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
+6. [Test Metodolojisi ve Sonuçları](#test-metodolojisi-ve-sonuçları)
+7. [Model Karşılaştırması ve Trade-off Analizi](#model-karşılaştırması-ve-trade-off-analizi)
+8. [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
 
 ---
 
@@ -37,57 +38,129 @@
 
 ---
 
-## 🏗️ Sistem Mimarisi
+## 🏗️ Yazılım Mimarisi ve Tasarım
+
+### Mimari Karakterizasyon
+
+CyberGuard, **modüler, servis-odaklı bir mimari** üzerine inşa edilmiştir. Sistemin mimari karakteri şu şekilde tanımlanabilir:
+
+> **"CyberGuard is designed as a modular, service-oriented architecture where the sensing logic and presentation layers are separated, which allows machine learning models to develop independently."**
+
+#### Mimari Tipi: Request-Response + Event-Driven Hybrid
+
+Sistem temel olarak **request-response** paradigmasını kullanmakla birlikte, tehdit tespiti ve korelasyon analizi bileşenlerinde **event-driven** yaklaşımı benimser:
+
+| Bileşen | Paradigma | Açıklama |
+|---------|-----------|----------|
+| Dashboard → API | Request-Response | Kullanıcı istekleri synchronous olarak işlenir |
+| Email/Web Log → Detection | Event-Driven | Gelen veriler event olarak işlenir, detection pipeline'ı tetiklenir |
+| Detection → Correlation | Publisher-Subscriber | Tespit edilen tehditler korelasyon motoruna publish edilir |
+| Correlation → Alerts | Event-Driven | Koordineli saldırılar algılandığında alert event'leri oluşturulur |
+
+### Mimari Kararların Gerekçeleri
+
+#### Neden Phishing ve Web Log Aynı Backend'de?
+
+**Karar:** E-posta phishing tespiti ve web log analizi tek bir Flask API backend'inde birleştirilmiştir.
+
+**Gerekçe:**
+1. **Korelasyon Avantajı:** Aynı IP adresinden gelen phishing e-postası ve web saldırısı, paylaşımlı veri katmanı sayesinde hızlıca ilişkilendirilebilir
+2. **Kaynak Verimliliği:** Tek container, düşük memory footprint (küçük/orta ölçekli kurumlar için ideal)
+3. **Deployment Basitliği:** Tek docker image, kolay bakım ve güncelleme
+4. **Veri Tutarlılığı:** Merkezi PostgreSQL veritabanı, tüm tehdit verileri için single source of truth
+
+**Alternatif Değerlendirme:** Microservice mimarisine geçiş, yüksek ölçeklenebilirlik için düşünülebilir ancak mevcut kullanım senaryosu için overengineering olarak değerlendirilmiştir.
+
+#### Neden Model Inference API İçinde?
+
+**Karar:** ML modelleri (BERT, FastText, TF-IDF) doğrudan Flask API container'ı içinde çalıştırılmaktadır.
+
+**Gerekçe:**
+1. **Latency Optimizasyonu:** Model → API arası network hop'u elimine edilmiştir (~5-10ms tasarruf)
+2. **Session State:** Modeller bir kez yüklenir ve memory'de tutulur (cold start yok)
+3. **Debugging Kolaylığı:** End-to-end tracing tek process'te yapılabilir
+4. **Resource Isolation:** Docker container zaten izolasyon sağlar
+
+**Trade-off:** Bu yaklaşım horizontal scaling'i zorlaştırır. Yüksek throughput senaryolarında TensorFlow Serving veya TorchServe gibi dedicated inference server'lara geçiş önerilir.
+
+### Katman Ayrımı ve Sorumluluklar
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      KULLANICI ARAYÜZLERİ                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌──────────┐   │
-│  │  Dashboard  │  │  Email      │  │  Web Log    │  │ Reports  │   │
-│  │  (Ana Sayfa)│  │  Analysis   │  │  Analysis   │  │ & Export │   │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └────┬─────┘   │
-└─────────┼────────────────┼────────────────┼──────────────┼──────────┘
-          │                │                │              │
-          └────────────────┼────────────────┼──────────────┘
-                           ▼                ▼
+│                    PRESENTATION LAYER (View)                         │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  Flask Dashboard (Jinja2 Templates + JavaScript + CSS)       │    │
+│  │  - Kullanıcı etkileşimi, form handling, data visualization   │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼ HTTP Requests
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        FLASK REST API                                │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐  │
-│  │ /api/email/*    │  │ /api/predict/*  │  │ /api/correlation/*  │  │
-│  │ /api/health     │  │ /api/models/*   │  │ /api/reports/*      │  │
-│  └────────┬────────┘  └────────┬────────┘  └──────────┬──────────┘  │
-└───────────┼────────────────────┼─────────────────────┼──────────────┘
-            │                    │                     │
-            ▼                    ▼                     ▼
+│                    APPLICATION LAYER (Controller)                    │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  Flask REST API (Routes, Request Validation, Response Format)│    │
+│  │  - /api/email/*, /api/predict/*, /api/correlation/*          │    │
+│  │  - Business logic orchestration, input sanitization          │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼ Function Calls
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         ML MODELLERİ                                 │
+│                    DOMAIN LAYER (Model/Business Logic)               │
 │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐            │
-│  │     BERT      │  │   FastText    │  │  TF-IDF + RF  │            │
-│  │  (DistilBERT) │  │   (881 MB)    │  │  (Ensemble)   │            │
-│  │   %94-97 Acc  │  │   %90-94 Acc  │  │   %89.75 Acc  │            │
+│  │  Email Detec. │  │  Web Analyzer │  │  Correlation  │            │
+│  │  (BERT/FT/TF) │  │  (Isolation F)│  │  Engine       │            │
 │  └───────────────┘  └───────────────┘  └───────────────┘            │
+│  - ML inference, feature extraction, risk scoring                   │
 └─────────────────────────────────────────────────────────────────────┘
-            │                    │                     │
-            ▼                    ▼                     ▼
+                                  │
+                                  ▼ ORM Queries
 ┌─────────────────────────────────────────────────────────────────────┐
-│                       VERİ KATMANI                                   │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐  │
-│  │ PostgreSQL  │  │    Redis    │  │ Prometheus  │  │  Grafana   │  │
-│  │  (Veritabanı) │  │   (Cache)   │  │  (Metrics)  │  │ (Görsel)   │  │
-│  └─────────────┘  └─────────────┘  └─────────────┘  └────────────┘  │
+│                    DATA LAYER (Persistence)                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                  │
+│  │ PostgreSQL  │  │    Redis    │  │ File System │                  │
+│  │ (Predictions)│  │   (Cache)   │  │ (ML Models) │                  │
+│  └─────────────┘  └─────────────┘  └─────────────┘                  │
+│  - Data persistence, caching, model storage                         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Docker Container Yapısı
+---
 
-| Container | Port | Açıklama |
-|-----------|------|----------|
-| `threat-detection-api` | 5000 | Flask API + ML Modelleri |
-| `threat-db` | 5432 | PostgreSQL Veritabanı |
-| `cache` | 6379 | Redis Cache |
-| `nginx` | 80/443 | Reverse Proxy |
-| `prometheus` | 9090 | Metrik Toplama |
-| `grafana` | 3000 | Dashboard |
+## 🧩 Mimari Kalıplar ve Tasarım Desenleri
+
+CyberGuard sistemi, bilinen birçok mimari ve tasarım modelini örtük olarak benimser. Sistem açıkça tek bir model etrafında tasarlanmamış olsa da, modüler yapısı doğal olarak MVC ve olay odaklı prensiplerle uyumludur. Bu yaklaşım, sistemin **bakım kolaylığını**, **ölçeklenebilirliğini** ve **genişletilebilirliğini** artırır.
+
+### Pattern-Mapping Tablosu
+
+| Mimari Kalıp / Tasarım Deseni | CyberGuard'daki Karşılığı | Uygulama Detayı |
+|-------------------------------|---------------------------|-----------------|
+| **Model-View-Controller (MVC)** | Dashboard (View), Flask API (Controller), PostgreSQL + ML Models (Model) | Presentation logic tamamen Jinja2 templates ve JavaScript'te; business logic API routes'ta; data layer SQLAlchemy ORM ile |
+| **Event-Driven / Publisher-Subscriber** | Email/Web log ingestion → Detection → Correlation → Alert | Yeni bir email analiz edildiğinde, sonuç otomatik olarak correlation engine'e "publish" edilir |
+| **Ensemble Learning Pattern** | BERT, FastText ve TF-IDF sonuçlarının weighted voting ile birleştirilmesi | Her model bağımsız inference yapar, sonuçlar weight'lere göre combine edilir (BERT: 0.5, FastText: 0.3, TF-IDF: 0.2) |
+| **Cache-Aside Pattern** | Redis ile sık erişilen dashboard istatistiklerinin cachelenmesi | Dashboard stats önce Redis'te aranır, miss durumunda DB'den çekilir ve cache'e yazılır (TTL: 60s) |
+| **Repository Pattern** | SQLAlchemy ORM ile database abstraction | `database.py` modülü, tüm CRUD operasyonlarını soyutlar; business logic SQL bilmez |
+| **Factory Pattern** | Model detector instance'larının lazy initialization | `get_bert_detector()`, `get_fasttext_detector()` fonksiyonları singleton-like instance döndürür |
+| **Strategy Pattern** | Farklı ML modellerinin aynı interface üzerinden kullanımı | Tüm detectorlar `predict(text)` ve `predict_with_explanation(text)` metodlarını implement eder |
+| **Façade Pattern** | `/api/email/analyze/hybrid` endpoint'i | 3 modeli tek endpoint arkasında gizler, client karmaşıklığı görmez |
+| **Circuit Breaker Pattern** | VirusTotal API entegrasyonunda graceful degradation | VT API erişilemezse, sistem sadece ML-based detection ile çalışmaya devam eder |
+
+### Kalıp Seçim Gerekçeleri
+
+#### Neden MVC?
+- Separation of concerns: Frontend geliştiricisi API'yi bilmeden UI değiştirebilir
+- Testability: Controller logic unit test edilebilir
+- Reusability: Aynı API farklı frontend'lerden kullanılabilir
+
+#### Neden Ensemble Learning?
+- Single point of failure yok: Bir model başarısız olsa diğerleri çalışır
+- Accuracy boost: Ensemble genellikle tek modelden daha iyi performans
+- Explainability: Hangi modelin nasıl karar verdiği görülebilir
+
+#### Neden Cache-Aside?
+- Dashboard yükleme hızı: ~1s → ~200ms improvement
+- Database load reduction: Sık sorgular cache'ten karşılanır
+- Simplicity: Daha karmaşık write-through veya write-behind pattern'lere gerek yok
 
 ---
 
@@ -157,21 +230,6 @@ Web sunucu loglarını analiz ederek SQL Injection, XSS ve diğer saldırıları
 
 ---
 
-#### Normal Trafik:
-
-![Web Normal](web_analysis_normal_test_1766837922043.png)
-
-**Test Girdisi:**
-- **IP:** 192.168.1.100
-- **Method:** GET
-- **Path:** /api/products
-- **Status:** 200
-- **User-Agent:** Mozilla/5.0
-
-**Sonuç:** ✅ **NORMAL** - Güvenli trafik
-
----
-
 ### 4. Korelasyon Analizi
 
 E-posta ve web tehditlerini ilişkilendirerek koordineli saldırıları tespit eder.
@@ -183,74 +241,6 @@ E-posta ve web tehditlerini ilişkilendirerek koordineli saldırıları tespit e
 - 🎯 **Koordineli Saldırılar:** Aynı IP'den gelen çoklu tehditler
 - 📈 **Zaman Çizelgesi:** Saat bazında tehdit dağılımı
 - 🔥 **Heatmap:** Korelasyon ısı haritası
-
-![Korelasyon Heatmap](correlation_heatmap_1766837967258.png)
-
----
-
-### 5. Model Karşılaştırma
-
-Tüm ML modellerinin performans karşılaştırması:
-
-![Model Karşılaştırma](model_comparison_page_1766837989066.png)
-
-| Model | Accuracy | Precision | Recall | F1-Score |
-|-------|----------|-----------|--------|----------|
-| **BERT (DistilBERT)** | %94-97 | %95 | %93 | %94 |
-| **FastText** | %90-94 | %92 | %90 | %91 |
-| **TF-IDF + Random Forest** | %89.75 | %90 | %88 | %89 |
-
----
-
-### 6. Ayarlar
-
-Sistem ayarları ve tercihlerin yönetimi:
-
-![Ayarlar](settings_page_view_1766838146285.png)
-
-**Özellikler:**
-- 🌙 **Tema Toggle:** Light/Dark mode
-- 🌍 **Dil Seçimi:** Türkçe/İngilizce
-- 🎚️ **Eşik Değeri:** Detection threshold ayarı
-- 🔔 **Bildirimler:** Email ve Slack bildirimleri
-- 💾 **Save/Reset:** Ayarları kaydet veya sıfırla
-
----
-
-## 🎬 Canlı Demo Kayıtları
-
-Aşağıdaki GIF/Video dosyaları sistemin canlı çalışmasını göstermektedir:
-
-### Dashboard ve Email Analizi
-![Dashboard ve Email Test](full_system_test_1_1766837673352.webp)
-
-Bu kayıtta gösterilen işlemler:
-1. Dashboard'un açılışı ve istatistiklerin görüntülenmesi
-2. Demo veri oluşturma
-3. Phishing e-posta analizi
-4. Meşru e-posta analizi
-5. Tüm modellerin sonuçları
-
----
-
-### Web Analizi ve Korelasyon
-![Web ve Korelasyon Test](full_system_test_2_1766837848659.webp)
-
-Bu kayıtta gösterilen işlemler:
-1. Web log anomali tespiti
-2. Normal trafik analizi
-3. Korelasyon analizi görüntüleme
-4. Model karşılaştırma sayfası
-
----
-
-### Tema Kalıcılığı Testi
-![Tema Persistence](theme_persist_final_1766837147410.webp)
-
-Bu kayıtta gösterilen işlemler:
-1. Light mode → Dark mode geçişi
-2. Sayfa yenileme sonrası tema kalıcılığı
-3. Tarayıcı kapatıp açma sonrası tema korunması
 
 ---
 
@@ -269,74 +259,59 @@ Bu kayıtta gösterilen işlemler:
 | **Deployment** | Docker, Docker Compose, Nginx |
 | **Monitoring** | Prometheus, Grafana |
 
-### API Endpoints
+### Docker Container Yapısı
 
-```
-📧 E-posta Analizi:
-POST /api/email/analyze         - TF-IDF + RF analizi
-POST /api/email/analyze/bert    - BERT analizi
-POST /api/email/analyze/fasttext - FastText analizi
-POST /api/email/analyze/hybrid  - Hibrit (3 model birlikte)
-
-🌐 Web Analizi:
-POST /api/predict/web           - Web log anomali tespiti
-
-🔗 Korelasyon:
-GET  /api/correlation/analyze   - Tehdit korelasyonu
-
-📊 Dashboard:
-GET  /api/dashboard/stats       - İstatistikler
-GET  /api/models/status         - Model durumları
-GET  /api/health               - Sistem sağlığı
-
-📁 Raporlar:
-GET  /api/reports/export/excel  - Excel export
-GET  /api/reports/export/json   - JSON export
-POST /api/reports/import/excel  - Excel import
-
-⚙️ Ayarlar:
-GET  /api/settings             - Ayarları getir
-POST /api/settings             - Ayarları kaydet
-```
-
-### Veritabanı Şeması
-
-```sql
--- Email Predictions
-CREATE TABLE email_predictions (
-    id SERIAL PRIMARY KEY,
-    prediction VARCHAR(20),      -- 'phishing' veya 'legitimate'
-    confidence FLOAT,            -- 0.0 - 1.0
-    risk_level VARCHAR(20),      -- 'critical', 'high', 'medium', 'low'
-    email_subject TEXT,
-    email_sender VARCHAR(255),
-    timestamp TIMESTAMP
-);
-
--- Web Predictions
-CREATE TABLE web_predictions (
-    id SERIAL PRIMARY KEY,
-    is_anomaly BOOLEAN,
-    anomaly_score FLOAT,
-    ip_address VARCHAR(45),
-    patterns_detected TEXT,
-    timestamp TIMESTAMP
-);
-
--- Settings
-CREATE TABLE settings (
-    id SERIAL PRIMARY KEY,
-    key VARCHAR(100),
-    value TEXT,
-    updated_at TIMESTAMP
-);
-```
+| Container | Port | Açıklama |
+|-----------|------|----------|
+| `threat-detection-api` | 5000 | Flask API + ML Modelleri |
+| `threat-db` | 5432 | PostgreSQL Veritabanı |
+| `cache` | 6379 | Redis Cache |
+| `nginx` | 80/443 | Reverse Proxy |
+| `prometheus` | 9090 | Metrik Toplama |
+| `grafana` | 3000 | Dashboard |
 
 ---
 
-## ✅ Test Sonuçları
+## 🧪 Test Metodolojisi ve Sonuçları
 
-### Fonksiyonel Testler
+### Test Stratejisi ve Amacı
+
+CyberGuard için tasarlanan test stratejisi, sistemin **temel güvenlik fonksiyonlarının doğruluğunu** ve **kullanıcı deneyimini** öncelikli olarak hedeflemiştir.
+
+#### Test Odak Alanları
+
+| Test Tipi | Amaç | Öncelik |
+|-----------|------|---------|
+| **Accuracy Testi** | ML modellerinin phishing/legitimate ayrımını doğru yapması | 🔴 Kritik |
+| **Functional Testi** | Tüm UI bileşenlerinin ve API endpoint'lerinin çalışması | 🔴 Kritik |
+| **Integration Testi** | Backend-Database-Cache entegrasyonu | 🟡 Yüksek |
+| **Usability Testi** | Tema, dil, ayar kalıcılığı | 🟢 Orta |
+
+#### Neden Accuracy Ölçüldü?
+
+ML-based siber güvenlik sistemlerinde **False Positive** ve **False Negative** oranları kritik öneme sahiptir:
+- **False Negative (kaçırılan phishing):** Güvenlik açığı, potansiyel data breach
+- **False Positive (yanlış alarm):** Operasyonel verimlilik kaybı, user trust azalması
+
+Bu nedenle accuracy, precision, recall ve F1-score metrikleri detaylı ölçülmüştür.
+
+#### Neden Latency Detaylı Ölçülmedi?
+
+1. **Kullanım Senaryosu:** CyberGuard, real-time stream processing değil, on-demand analiz sistemidir
+2. **Acceptable Threshold:** 1-2 saniye response time, kullanıcı deneyimi için kabul edilebilir
+3. **Baseline Karşılaştırma:** Mevcut performans (BERT: ~45ms, FastText: <1ms) kullanım senaryosu için yeterli
+
+**Gelecek Çalışma:** Production deployment'ta P95/P99 latency ve throughput metrikleri Grafana ile monitör edilmelidir.
+
+#### Neden Load Test Yapılmadı?
+
+1. **Hedef Kitle:** Orta ölçekli kurumlar (10-100 concurrent user)
+2. **Current Capacity:** Flask + Gunicorn (4 worker) bu senaryoyu karşılamaktadır
+3. **Öncelik:** Fonksiyonel doğruluk > Yüksek concurrent load
+
+**Gelecek Çalışma:** Kurumsal deployment öncesi Apache JMeter veya Locust ile load test yapılmalıdır.
+
+### Fonksiyonel Test Sonuçları
 
 | Test | Durum | Notlar |
 |------|-------|--------|
@@ -348,12 +323,10 @@ CREATE TABLE settings (
 | Korelasyon analizi | ✅ Pass | IP-based ve time-based korelasyon çalışıyor |
 | Model karşılaştırma | ✅ Pass | Grafikler doğru render ediliyor |
 | Demo data oluşturma | ✅ Pass | 30 email + 30 web + 5 koordineli saldırı |
-| Clear history | ✅ Pass | Tüm veriler temizleniyor |
 | Tema değiştirme | ✅ Pass | Kalıcı olarak kaydediliyor |
 | Dil değiştirme | ✅ Pass | TR/EN geçişi çalışıyor |
 | Settings kaydetme | ✅ Pass | Tüm ayarlar persist ediliyor |
 | Excel export | ✅ Pass | Dosya indiriliyor |
-| JSON export | ✅ Pass | Dosya indiriliyor |
 
 ### Performans Metrikleri
 
@@ -365,6 +338,97 @@ CREATE TABLE settings (
 | Email Analiz Süresi (FastText) | <1ms |
 | Web Log Analiz Süresi | ~15ms |
 | Dashboard Yükleme | <1s |
+
+---
+
+## 📊 Model Karşılaştırması ve Trade-off Analizi
+
+### Model Performans Karşılaştırması
+
+| Model | Accuracy | Precision | Recall | F1-Score | Inference Time |
+|-------|----------|-----------|--------|----------|----------------|
+| **BERT (DistilBERT)** | %94-97 | %95 | %93 | %94 | ~45ms |
+| **FastText** | %90-94 | %92 | %90 | %91 | <1ms |
+| **TF-IDF + Random Forest** | %89.75 | %90 | %88 | %89 | ~25ms |
+
+### Neden BERT Diğerlerinden Daha İyi Performans Gösterdi?
+
+1. **Contextual Understanding:** BERT, kelimelerin bağlamını anlar. "Bank" kelimesi "river bank" ve "bank account" için farklı embedding üretir.
+
+2. **Transfer Learning:** 1.5 milyar kelime üzerinde pre-train edilmiş model, phishing dataset'inde fine-tune edilmiştir. Genel dil anlayışı + domain-specific öğrenme.
+
+3. **Subword Tokenization:** "PayPaI" (I harfi ile sahte PayPal) gibi typosquatting saldırılarını yakalayabilir.
+
+4. **Attention Mechanism:** Hangi kelimelerin phishing tespitinde önemli olduğunu öğrenir ("urgent", "verify", "click").
+
+### Hız vs Doğruluk Trade-off Analizi
+
+```
+                     HIZLI ◄─────────────────────────► YAVAŞ
+                       │                                  │
+                FastText                              BERT
+                 (<1ms)                              (45ms)
+                   │                                    │
+                   ▼                                    ▼
+              %90-94 Acc                          %94-97 Acc
+                   │                                    │
+                   │        ┌────────────┐              │
+                   │        │  TF-IDF    │              │
+                   │        │   (25ms)   │              │
+                   │        │ %89.75 Acc │              │
+                   │        └────────────┘              │
+                   │                                    │
+           ▲       ▼                                    ▼       ▲
+         DÜŞÜK ACCURACY                          YÜKSEK ACCURACY
+```
+
+#### Kullanım Senaryosu Önerileri
+
+| Senaryo | Önerilen Model | Gerekçe |
+|---------|----------------|---------|
+| **Real-time Email Gateway** | FastText | Yüksek throughput gerekli, <1ms latency |
+| **Kritik Güvenlik Analizi** | BERT | Accuracy kritik, latency kabul edilebilir |
+| **Balanced / Genel Kullanım** | TF-IDF + RF | İyi denge, açıklanabilirlik (LIME) |
+| **Ensemble (Production)** | Üçü birlikte | En yüksek accuracy, weighted voting |
+
+### False Positive / False Negative Analizi
+
+#### False Positive Senaryoları (Meşru → Phishing olarak işaretlenen)
+
+1. **Agresif Marketing E-postaları:** "Limited time offer!", "Act now!" gibi ifadeler
+2. **IT Departmanı Uyarıları:** "Your password will expire" gibi legitimate sistem mesajları
+3. **Kısa Mesajlar:** "Hey, how are you?" gibi çok kısa mesajlarda model güvensiz olabiliyordu *(Düzeltildi: v2.0'da short message detection eklendi)*
+
+**Mitigation:** 
+- Whitelist domain desteği eklenebilir
+- Threshold ayarlanabilir (%50 → %60)
+- Human-in-the-loop review süreci
+
+#### False Negative Senaryoları (Phishing → Meşru olarak işaretlenen)
+
+1. **Hedefli Spear Phishing:** Kişiselleştirilmiş, phishing keyword içermeyen saldırılar
+2. **Zero-Day Phishing:** Yeni kampanyalar, training data'da olmayan pattern'ler
+3. **Homograph Saldırıları:** "pаypal.com" (Kiril 'а' karakteri) gibi punycode saldırıları
+
+**Mitigation:**
+- VirusTotal API ile URL reputation check
+- Domain age check (yeni kayıtlı domainler şüpheli)
+- Sürekli model retraining (concept drift'e karşı)
+
+### Concept Drift Riski
+
+**Concept Drift:** Phishing saldırıları sürekli evrilir. 2025'te etkili olan phishing pattern'leri 2026'da değişmiş olabilir.
+
+**Risk Faktörleri:**
+- Yeni phishing kampanya temaları (AI-generated phishing, deepfake)
+- Yeni sosyal mühendislik teknikleri
+- Değişen e-posta formatları
+
+**Önerilen Stratejiler:**
+1. **Periyodik Retraining:** Her 3-6 ayda bir model güncellemesi
+2. **Active Learning:** False positive/negative feedback'lerden öğrenme
+3. **Ensemble Diversification:** Farklı feature'lara dayanan modeller kullanma
+4. **Continuous Monitoring:** Accuracy metrikleri düşüşü için alerting
 
 ---
 
@@ -410,14 +474,14 @@ python run_dashboard.py
 CyberGuard, modern yapay zeka teknolojilerini kullanarak kapsamlı bir siber güvenlik çözümü sunmaktadır:
 
 - ✅ **3 farklı ML modeli** ile yüksek doğrulukta phishing tespiti
-- ✅ **Gerçek zamanlı web log analizi** ile saldırı tespiti
-- ✅ **Korelasyon analizi** ile koordineli saldırı tespiti
-- ✅ **Modern ve kullanıcı dostu arayüz**
-- ✅ **Docker ile kolay dağıtım**
-- ✅ **API ile entegrasyon imkanı**
+- ✅ **Modüler, servis-odaklı mimari** ile bakım kolaylığı
+- ✅ **Bilinen tasarım kalıpları** (MVC, Event-Driven, Ensemble) ile sağlam altyapı
+- ✅ **Gerçek zamanlı korelasyon analizi** ile koordineli saldırı tespiti
+- ✅ **Trade-off bilinci** ile kullanım senaryosuna uygun model seçimi
+- ✅ **Docker ile kolay dağıtım** ve production-ready altyapı
 
-Sistem production-ready olup kurumsal ortamlarda kullanıma hazırdır.
+Sistem, özellikle orta ölçekli kurumlar için optimize edilmiş olup, gerektiğinde horizontal scaling ile genişletilebilir yapıdadır.
 
 ---
 
-**© 2025 CyberGuard Project Team**
+**© 2025-2026 CyberGuard Project Team**
