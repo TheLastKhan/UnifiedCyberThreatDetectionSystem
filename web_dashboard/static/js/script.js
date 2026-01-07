@@ -983,21 +983,32 @@ function formatDate(date) {
 
 // ==================== DASHBOARD REAL-TIME DATA ====================
 
+// Flag to track if this is the initial load
+let isInitialDashboardLoad = true;
+
 async function loadDashboardData() {
     console.log('📊 Loading real-time dashboard data...');
 
     try {
-        // Load all dashboard data in parallel
-        await Promise.all([
-            loadDashboardStats(),
-            loadDashboardAlerts(),
-            loadDashboardCharts()
-        ]);
+        // On initial load, load everything including alerts
+        if (isInitialDashboardLoad) {
+            await Promise.all([
+                loadDashboardStats(),
+                loadDashboardAlerts(),
+                loadDashboardCharts()
+            ]);
+            isInitialDashboardLoad = false;
+        } else {
+            // On auto-refresh, skip alerts to preserve lazy loaded state
+            await Promise.all([
+                loadDashboardStats(),
+                loadDashboardCharts()
+            ]);
+        }
 
         console.log('✅ Dashboard data loaded successfully');
 
-        // Refresh every 30 seconds
-        // Start auto-refresh
+        // Auto-refresh every 5 seconds (but skip alerts)
         setTimeout(loadDashboardData, 5000);
 
     } catch (error) {
@@ -1112,43 +1123,103 @@ async function loadDashboardAlerts() {
             return;
         }
 
+        // Store all alerts for lazy loading
+        window.allAlerts = data.alerts;
+        window.alertsOffset = 0;
+        window.alertsPerPage = 10;
+        window.alertsLoading = false;
+
         // Clear existing alerts
         alertsList.innerHTML = '';
 
-        // Add alerts
-        data.alerts.forEach(alert => {
-            const alertLevel = alert.severity || 'medium';
-            const alertItem = document.createElement('div');
-            alertItem.className = `alert-item alert-${alertLevel}`;
+        // Load initial batch
+        loadMoreAlerts();
 
-            const iconMap = {
-                high: 'fas fa-exclamation-circle',
-                medium: 'fas fa-warning',
-                low: 'fas fa-info-circle'
-            };
-
-            alertItem.innerHTML = `
-                <div class="alert-icon">
-                    <i class="${iconMap[alertLevel] || 'fas fa-warning'}"></i>
-                </div>
-                <div class="alert-content">
-                    <div class="alert-title">
-                        ${alert.title}
-                        ${alert.severity_badge ? `<span class="severity-badge severity-${alertLevel}">${alert.severity_badge}</span>` : ''}
-                    </div>
-                    <div class="alert-description">${alert.description}</div>
-                    <div class="alert-time">${alert.time_ago}</div>
-                </div>
-                ${alert.confidence ? `<div class="alert-confidence">${alert.confidence}%</div>` : ''}
-            `;
-
-            alertsList.appendChild(alertItem);
-        });
+        // Setup infinite scroll on window (page scroll)
+        if (!window.alertsScrollListenerAdded) {
+            window.addEventListener('scroll', handleWindowScrollForAlerts);
+            window.alertsScrollListenerAdded = true;
+        }
 
     } catch (error) {
         console.error('Error loading dashboard alerts:', error);
     }
 }
+
+// Handle window scroll for lazy loading alerts
+function handleWindowScrollForAlerts() {
+    // Check if we're on dashboard page
+    const alertsList = document.querySelector('.alerts-list');
+    if (!alertsList) return;
+
+    // Calculate if user scrolled near the bottom of the page
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // If scrolled within 200px of bottom, load more
+    if (documentHeight - scrollTop - windowHeight < 200) {
+        loadMoreAlerts();
+    }
+}
+
+// Load more alerts (lazy loading)
+function loadMoreAlerts() {
+    if (window.alertsLoading) return;
+    if (!window.allAlerts || window.alertsOffset >= window.allAlerts.length) {
+        return;
+    }
+
+    window.alertsLoading = true;
+    const alertsList = document.querySelector('.alerts-list');
+    if (!alertsList) return;
+
+    // Remove loading indicator if exists
+    const loadingIndicator = alertsList.querySelector('.alerts-loading');
+    if (loadingIndicator) loadingIndicator.remove();
+
+    // Get next batch
+    const nextBatch = window.allAlerts.slice(
+        window.alertsOffset,
+        window.alertsOffset + window.alertsPerPage
+    );
+
+    // Add alerts
+    nextBatch.forEach(alert => {
+        const alertLevel = alert.severity || 'medium';
+        const alertItem = document.createElement('div');
+        alertItem.className = `alert-item alert-${alertLevel}`;
+
+        const iconMap = {
+            high: 'fas fa-exclamation-circle',
+            medium: 'fas fa-warning',
+            low: 'fas fa-info-circle'
+        };
+
+        alertItem.innerHTML = `
+            <div class="alert-icon">
+                <i class="${iconMap[alertLevel] || 'fas fa-warning'}"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">
+                    ${alert.title}
+                    ${alert.severity_badge ? `<span class="severity-badge severity-${alertLevel}">${alert.severity_badge}</span>` : ''}
+                </div>
+                <div class="alert-description">${alert.description}</div>
+                <div class="alert-time">${alert.time_ago}</div>
+            </div>
+            ${alert.confidence ? `<div class="alert-confidence">${alert.confidence}%</div>` : ''}
+        `;
+
+        alertsList.appendChild(alertItem);
+    });
+
+    window.alertsOffset += nextBatch.length;
+    window.alertsLoading = false;
+
+    console.log(`📋 Loaded ${window.alertsOffset}/${window.allAlerts.length} alerts`);
+}
+
 
 async function loadDashboardCharts() {
     try {

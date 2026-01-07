@@ -972,9 +972,9 @@ def dashboard_alerts():
         formatted_alerts = []
         
         if database_available:
-            # Get recent predictions from database
-            email_preds = get_email_predictions(limit=limit*2, hours=24*7)  # Last week
-            web_preds = get_web_predictions(limit=limit*2, hours=24*7)
+            # Get all predictions from database (no time filter to match card totals)
+            email_preds = get_email_predictions(limit=500)  # Get more to filter later
+            web_preds = get_web_predictions(limit=500)
             
             # Convert email predictions to alerts
             for pred in email_preds:
