@@ -1868,11 +1868,11 @@ def check_ip_virustotal(ip_address):
 
 # ==================== DEMO DATA GENERATION ====================
 
-def _generate_random_timestamp(days_back=30):
+def _generate_random_timestamp(days_back=28):
     """
     Generate random timestamp for demo data
     70% of data in last 7 days (recent)
-    30% of data in 8-30 days (older)
+    30% of data in 8-28 days (older)
     """
     import random
     from datetime import datetime, timedelta
