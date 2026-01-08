@@ -170,6 +170,10 @@ class BertEmailDetector:
             else:  # Default fallback
                 phishing_score = 1 - score
             
+            # Keyword-based boost for common phishing patterns
+            # If model is uncertain but text contains strong phishing indicators, boost the score
+            phishing_score = self._apply_keyword_boost(text.lower(), phishing_score)
+            
             # Tokenize to count tokens
             tokens = self.tokenizer.encode(text, truncation=True)
             num_tokens = len(tokens)
@@ -177,7 +181,7 @@ class BertEmailDetector:
             return BertPrediction(
                 score=phishing_score,
                 label="phishing" if phishing_score > 0.5 else "legitimate",
-                confidence=max(score, 1 - score),
+                confidence=max(phishing_score, 1 - phishing_score),
                 tokens=num_tokens,
                 model_type="BERT"
             )
@@ -185,6 +189,91 @@ class BertEmailDetector:
         except Exception as e:
             logger.error(f"Error in prediction: {e}")
             raise
+    
+    def _apply_keyword_boost(self, text: str, base_score: float) -> float:
+        """
+        Apply keyword-based boost to phishing score
+        
+        If text contains strong phishing indicators but model gives low score,
+        boost the score based on keyword matches.
+        
+        Args:
+            text: Lowercased email text
+            base_score: Original phishing score from model
+            
+        Returns:
+            Adjusted phishing score
+        """
+        # High-priority phishing keywords (strong indicators)
+        high_priority_keywords = [
+            'verify your account', 'account suspended', 'account compromised',
+            'click here', 'click the link', 'click below',
+            'act now', 'act immediately', 'immediate action required',
+            'your account will be', 'will be suspended', 'will be terminated',
+            'verify your identity', 'confirm your identity',
+            'security alert', 'security notice', 'unusual activity',
+            'suspicious activity', 'unauthorized access',
+            'update your payment', 'update your information',
+            'within 24 hours', 'within 48 hours', 'expires today',
+            'password reset', 'reset your password'
+        ]
+        
+        # Medium-priority keywords
+        medium_priority_keywords = [
+            'urgent', 'immediately', 'suspended', 'compromised',
+            'verify', 'confirm', 'expire', 'limited time',
+            'account', 'password', 'login', 'security',
+            'dear user', 'dear customer', 'dear member'
+        ]
+        
+        # Critical indicators (almost always phishing)
+        critical_keywords = [
+            'ssn', 'social security', 'credit card number', 'cvv',
+            'bank account', 'wire transfer', 'bitcoin', 'cryptocurrency',
+            'nigerian prince', 'lottery winner', 'you have won'
+        ]
+        
+        # Suspicious URL patterns
+        suspicious_url_patterns = [
+            'http://', '.ru/', '.tk/', '.ml/', 'bit.ly', 'tinyurl',
+            'verify', 'secure', 'login', 'account', 'update'
+        ]
+        
+        # Count keyword matches
+        high_count = sum(1 for kw in high_priority_keywords if kw in text)
+        medium_count = sum(1 for kw in medium_priority_keywords if kw in text)
+        critical_count = sum(1 for kw in critical_keywords if kw in text)
+        
+        # Check for suspicious URLs
+        url_suspicious = any(pattern in text for pattern in suspicious_url_patterns)
+        
+        # Calculate boost
+        boost = 0.0
+        
+        # Critical keywords = strong boost
+        if critical_count > 0:
+            boost += min(0.4, critical_count * 0.2)
+        
+        # High priority = moderate boost
+        if high_count > 0:
+            boost += min(0.3, high_count * 0.1)
+        
+        # Medium priority = small boost
+        if medium_count >= 3:
+            boost += min(0.2, (medium_count - 2) * 0.05)
+        
+        # Suspicious URL = additional boost
+        if url_suspicious:
+            boost += 0.15
+        
+        # Apply boost only if base score is below threshold
+        # This prevents over-boosting already high scores
+        if base_score < 0.7 and boost > 0:
+            adjusted_score = min(0.99, base_score + boost)
+            logger.debug(f"Keyword boost applied: {base_score:.2f} -> {adjusted_score:.2f} (boost: {boost:.2f})")
+            return adjusted_score
+        
+        return base_score
     
     def batch_predict(
         self,
