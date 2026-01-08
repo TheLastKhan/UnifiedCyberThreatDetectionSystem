@@ -1701,6 +1701,11 @@ def analyze_correlation():
         
     except Exception as e:
         print(f"[ERROR] Correlation analysis error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 # ==================== SETTINGS ENDPOINTS ====================
 
 @api_bp.route('/settings', methods=['GET'])

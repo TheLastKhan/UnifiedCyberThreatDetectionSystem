@@ -156,22 +156,22 @@ class TFIDFEmailDetector:
         confidence = max(probabilities)
         
         # Apply corrections based on indicators
-        # CASE 1: High phishing score but has legitimate indicators AND trusted domains, no phishing indicators
-        if phishing_score > 0.5 and phishing_count == 0:
-            total_legit = legit_count + (trusted_count * 2)  # Trusted domains count double
-            if total_legit >= 2:
-                correction_factor = max(0.15, 1 - (total_legit * 0.2))
-                phishing_score = phishing_score * correction_factor
-                logger.info(f"TF-IDF legit indicator correction: {phishing_score:.2f}")
-        
-        # CASE 2: Short message with no phishing indicators
-        elif is_very_short and phishing_count == 0:
+        # CASE 1: Short message with no phishing indicators - APPLY FIRST
+        if is_very_short and phishing_count == 0:
             correction_factor = 0.3
             phishing_score = phishing_score * correction_factor
             logger.info(f"TF-IDF short message correction applied: {phishing_score:.2f}")
         elif is_short_message and phishing_count == 0:
             correction_factor = 0.5
             phishing_score = phishing_score * correction_factor
+            logger.info(f"TF-IDF short message correction applied: {phishing_score:.2f}")
+        # CASE 2: High phishing score but has legitimate indicators, no phishing indicators
+        elif phishing_score > 0.5 and phishing_count == 0:
+            total_legit = legit_count + (trusted_count * 2)  # Trusted domains count double
+            if total_legit >= 2:
+                correction_factor = max(0.15, 1 - (total_legit * 0.2))
+                phishing_score = phishing_score * correction_factor
+                logger.info(f"TF-IDF legit indicator correction: {phishing_score:.2f}")
         
         # Determine label based on corrected score
         label = "phishing" if phishing_score > 0.5 else "legitimate"
@@ -222,19 +222,97 @@ class TFIDFEmailDetector:
         # Get base prediction
         prediction = self.predict(text)
         
-        # Generate LIME explanation
+        # Generate LIME explanation - request more features to filter from
         explanation = self.lime_explainer.explain_instance(
             text,
             self._predict_proba_for_lime,
-            num_features=num_features,
+            num_features=15,  # Request more to have enough after filtering
             num_samples=num_samples
         )
         
-        # Format LIME breakdown for frontend
-        # Use same formula as BERT/FastText: abs(weight) * score * 100
+        # Stopwords to filter out - these don't provide meaningful insights
+        stopwords = {
+            # Articles, prepositions, conjunctions
+            'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
+            'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used',
+            'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into',
+            'through', 'during', 'before', 'after', 'above', 'below', 'between',
+            'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either', 'neither',
+            'not', 'only', 'own', 'same', 'than', 'too', 'very', 'just',
+            # Pronouns
+            'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
+            'you', 'your', 'yours', 'yourself', 'yourselves',
+            'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
+            'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+            'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those',
+            # Common verbs and auxiliaries
+            'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'get', 'got', 'getting', 'make', 'made', 'making',
+            # Greetings and casual words
+            'hi', 'hey', 'hello', 'how', 'fine', 'good', 'great', 'nice', 'well',
+            'ok', 'okay', 'yes', 'no', 'please', 'thanks', 'thank',
+            # Conditionals and adverbs
+            'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'each',
+            'every', 'any', 'some', 'such', 'no', 'nor', 'not', 'only', 'own',
+            'here', 'there', 'now', 'then', 'once', 'always', 'never',
+            'also', 'still', 'already', 'even', 'ever', 'just', 'about',
+            # More common words that don't help
+            'like', 'know', 'see', 'think', 'want', 'come', 'go', 'take',
+            'use', 'find', 'give', 'tell', 'say', 'said', 'ask', 'asked',
+            'first', 'last', 'new', 'old', 'high', 'low', 'big', 'small',
+            'long', 'short', 'many', 'much', 'more', 'most', 'other', 'another',
+            'full', 'following', 'due', 'within', 'detected', 'provide',
+            # Numbers and dates
+            'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+            'hours', 'days', 'weeks', 'months', 'years', 'date', 'time'
+        }
+        
+        # Format LIME output - filter stopwords
+        lime_list = explanation.as_list()
+        
+        # Filter out stopwords, numbers, and short tokens
+        filtered_features = []
+        for feature, weight in lime_list:
+            feature_clean = feature.lower().strip()
+            # Skip stopwords
+            if feature_clean in stopwords:
+                continue
+            # Skip pure numbers or very short tokens
+            if feature_clean.isdigit() or len(feature_clean) <= 2:
+                continue
+            # Skip tokens that are mostly numbers (like "18", "24", "2025")
+            if any(c.isdigit() for c in feature_clean) and sum(c.isdigit() for c in feature_clean) > len(feature_clean) / 2:
+                continue
+            filtered_features.append((feature, weight))
+        
+        # If we have less than 5 meaningful features, fill with remaining from original list
+        if len(filtered_features) < 5:
+            for feature, weight in lime_list:
+                if (feature, weight) not in filtered_features:
+                    filtered_features.append((feature, weight))
+                if len(filtered_features) >= 5:
+                    break
+        
+        # Calculate contributions with normalization
+        # Scale based on phishing score - linear: 0.05->3%, 0.21->5%, 0.85->15%, 1.0->17%
+        features_to_show = filtered_features[:5]
+        if features_to_show:
+            max_weight = max(abs(w) for _, w in features_to_show)
+            # Formula: 2.25 + score * 14.75
+            target_max = 2.25 + (prediction.score * 14.75)
+            scale_factor = target_max / max_weight if max_weight > 0 else 1.0
+        else:
+            scale_factor = 1.0
+        
         lime_breakdown = []
-        for feature, weight in explanation.as_list():
-            contribution = abs(weight) * prediction.score * 100
+        for feature, weight in features_to_show:
+            # Normalized contribution percentage
+            contribution = abs(weight) * scale_factor
+            
+            # Cap at reasonable maximum
+            contribution = min(contribution, 25.0)
+            
             lime_breakdown.append({
                 'feature': feature,
                 'contribution': round(contribution, 1),

@@ -289,7 +289,8 @@ class BertEmailDetector:
         
         # Check if email is very short and informal (likely false positive)
         word_count = len(text.split())
-        is_short_informal = word_count < 20 and not any(kw in text for kw in ['http', 'click', 'verify', 'password', 'suspended', 'urgent', 'immediately'])
+        is_very_short = word_count < 15
+        is_short_informal = word_count < 30 and not any(kw in text for kw in ['http', 'click', 'verify', 'password', 'suspended', 'urgent', 'immediately', 'account', 'security', 'confirm', 'update'])
         
         # Calculate total phishing indicator score
         phishing_indicator_score = critical_count * 3 + high_count * 2 + medium_count * 1
@@ -300,11 +301,17 @@ class BertEmailDetector:
         if legit_count > 0 or trusted_domain_count > 0:
             phishing_indicator_score = max(0, phishing_indicator_score - (legit_count + trusted_domain_count * 2))
         
+        # CASE 0: Very short casual messages (< 15 words) with NO phishing indicators -> definitely not phishing
+        if is_very_short and phishing_indicator_score == 0 and not url_suspicious:
+            adjusted_score = max(0.05, base_score * 0.1)  # Force to very low score
+            logger.debug(f"Very short casual message: {base_score:.2f} -> {adjusted_score:.2f}")
+            return adjusted_score
+        
         # CASE 1: High base score but FEW or NO phishing indicators -> likely false positive
-        if base_score > 0.5 and phishing_indicator_score <= 1:
+        if base_score > 0.3 and phishing_indicator_score <= 1:
             # Strong reduction for short informal messages with no indicators
             if is_short_informal:
-                adjusted_score = max(0.1, base_score * 0.15)
+                adjusted_score = max(0.08, base_score * 0.12)
                 logger.debug(f"False positive correction (short informal): {base_score:.2f} -> {adjusted_score:.2f}")
                 return adjusted_score
             
@@ -316,7 +323,7 @@ class BertEmailDetector:
                 return adjusted_score
             
             # General reduction for high score with no/few phishing indicators
-            adjusted_score = max(0.2, base_score * 0.3)
+            adjusted_score = max(0.15, base_score * 0.25)
             logger.debug(f"False positive correction (no indicators): {base_score:.2f} -> {adjusted_score:.2f}")
             return adjusted_score
         
@@ -463,19 +470,97 @@ class BertEmailDetector:
                     results.append([prob_legit, prob_phishing])
                 return np.array(results)
             
-            # Get LIME explanation
+            # Get LIME explanation - request more features to filter from
             explanation = self.lime_explainer.explain_instance(
                 text,
                 predict_proba,
-                num_features=num_features,
+                num_features=15,  # Request more to have enough after filtering
                 num_samples=num_samples
             )
             
-            # Format LIME output for frontend
+            # Stopwords to filter out - these don't provide meaningful insights
+            stopwords = {
+                # Articles, prepositions, conjunctions
+                'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
+                'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used',
+                'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into',
+                'through', 'during', 'before', 'after', 'above', 'below', 'between',
+                'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either', 'neither',
+                'not', 'only', 'own', 'same', 'than', 'too', 'very', 'just',
+                # Pronouns
+                'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
+                'you', 'your', 'yours', 'yourself', 'yourselves',
+                'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself',
+                'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+                'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those',
+                # Common verbs and auxiliaries
+                'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                'get', 'got', 'getting', 'make', 'made', 'making',
+                # Greetings and casual words
+                'hi', 'hey', 'hello', 'how', 'fine', 'good', 'great', 'nice', 'well',
+                'ok', 'okay', 'yes', 'no', 'please', 'thanks', 'thank',
+                # Conditionals and adverbs
+                'if', 'then', 'else', 'when', 'where', 'why', 'how', 'all', 'each',
+                'every', 'any', 'some', 'such', 'no', 'nor', 'not', 'only', 'own',
+                'here', 'there', 'now', 'then', 'once', 'always', 'never',
+                'also', 'still', 'already', 'even', 'ever', 'just', 'about',
+                # More common words that don't help
+                'like', 'know', 'see', 'think', 'want', 'come', 'go', 'take',
+                'use', 'find', 'give', 'tell', 'say', 'said', 'ask', 'asked',
+                'first', 'last', 'new', 'old', 'high', 'low', 'big', 'small',
+                'long', 'short', 'many', 'much', 'more', 'most', 'other', 'another',
+                'full', 'following', 'due', 'within', 'detected', 'provide',
+                # Numbers and dates
+                'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+                'hours', 'days', 'weeks', 'months', 'years', 'date', 'time'
+            }
+            
+            # Format LIME output - filter stopwords and use raw weights
+            lime_list = explanation.as_list()
+            
+            # Filter out stopwords, numbers, and short tokens
+            filtered_features = []
+            for feature, weight in lime_list:
+                feature_clean = feature.lower().strip()
+                # Skip stopwords
+                if feature_clean in stopwords:
+                    continue
+                # Skip pure numbers or very short tokens
+                if feature_clean.isdigit() or len(feature_clean) <= 2:
+                    continue
+                # Skip tokens that are mostly numbers (like "18", "24", "2025")
+                if any(c.isdigit() for c in feature_clean) and sum(c.isdigit() for c in feature_clean) > len(feature_clean) / 2:
+                    continue
+                filtered_features.append((feature, weight))
+            
+            # If we have less than 5 meaningful features, fill with remaining from original list
+            if len(filtered_features) < 5:
+                for feature, weight in lime_list:
+                    if (feature, weight) not in filtered_features:
+                        filtered_features.append((feature, weight))
+                    if len(filtered_features) >= 5:
+                        break
+            
+            # Calculate contributions with normalization
+            # Scale based on phishing score - linear: 0.05->4%, 0.21->7%, 0.85->18%, 1.0->21%
+            features_to_show = filtered_features[:5]
+            if features_to_show:
+                max_weight = max(abs(w) for _, w in features_to_show)
+                # Formula: 3 + score * 18
+                target_max = 3.0 + (prediction.score * 18.0)
+                scale_factor = target_max / max_weight if max_weight > 0 else 1.0
+            else:
+                scale_factor = 1.0
+            
             lime_breakdown = []
-            for feature, weight in explanation.as_list():
-                # Calculate contribution as percentage
-                contribution = abs(weight) * prediction.score * 100
+            for feature, weight in features_to_show:
+                # Normalized contribution percentage
+                contribution = abs(weight) * scale_factor
+                
+                # Cap at reasonable maximum
+                contribution = min(contribution, 25.0)
+                
                 lime_breakdown.append({
                     'feature': feature,
                     'contribution': round(contribution, 1),
