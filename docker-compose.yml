@@ -96,6 +96,25 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Database Admin Panel (Adminer)
+  adminer:
+    image: adminer:latest
+    container_name: threat-detection-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - threat-detection-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -183,6 +202,40 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Portainer - Docker Management UI
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: threat-detection-portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+    networks:
+      - threat-detection-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Mailhog - Fake SMTP Server for Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: threat-detection-mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    restart: unless-stopped
+    networks:
+      - threat-detection-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   postgres_data:
     driver: local
@@ -191,6 +244,8 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  portainer_data:
     driver: local
 
 networks:
