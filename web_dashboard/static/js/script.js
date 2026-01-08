@@ -2414,6 +2414,19 @@ async function checkEmailDomainReputation(email) {
         document.getElementById('vtEmailMalicious').textContent = maliciousCount;
         document.getElementById('vtEmailSuspicious').textContent = suspiciousCount;
 
+        // Update details (Fix for stuck "Checking..." message)
+        const detailsDiv = document.getElementById('vtEmailDetails');
+        if (data.categories && Object.keys(data.categories).length > 0) {
+            let detailsHtml = '<ul style="list-style: none; padding: 0; font-size: 0.9em; max-height: 150px; overflow-y: auto;">';
+            for (const [engine, category] of Object.entries(data.categories)) {
+                detailsHtml += `<li style="margin-bottom: 4px;"><strong style="color: var(--text-secondary);">${engine}:</strong> ${category}</li>`;
+            }
+            detailsHtml += '</ul>';
+            detailsDiv.innerHTML = detailsHtml;
+        } else {
+            detailsDiv.textContent = 'No specific category classification available.';
+        }
+
     } catch (error) {
         console.error('Error checking domain reputation:', error);
     }
