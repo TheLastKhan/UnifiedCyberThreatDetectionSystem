@@ -708,8 +708,13 @@ body.dark-mode {
 
 .result-metric span:first-child {
     font-size: 12px;
-    color: var(--gray);
+    color: #000000 !important;
     margin-bottom: 8px;
+    font-weight: 700 !important;
+}
+
+.result-metric .metric-value {
+    font-weight: 700 !important;
 }
 
 .result-details {
@@ -1372,4 +1377,122 @@ button {
     .model-results-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* ==================== RESULT BADGES (Target Theme) ==================== */
+
+.result-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-badge.badge-danger {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    color: white;
+    box-shadow: 0 2px 6px rgba(238, 90, 90, 0.3);
+}
+
+.result-badge.badge-warning {
+    background: linear-gradient(135deg, #fce38a, #f38181);
+    color: white;
+    box-shadow: 0 2px 6px rgba(243, 129, 129, 0.3);
+}
+
+.result-badge.badge-success {
+    background: linear-gradient(135deg, #51cf66, #40c057);
+    color: white;
+    box-shadow: 0 2px 6px rgba(64, 192, 87, 0.3);
+}
+
+/* ==================== TEXT COLOR CLASSES ==================== */
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* ==================== LIME FEATURE IMPORTANCE (Classic Progress Bars) ==================== */
+
+.lime-features {
+    padding: 10px 0;
+}
+
+.lime-feature-item {
+    margin-bottom: 12px;
+}
+
+.lime-feature-item .feature-word {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.dark-mode .lime-feature-item .feature-word {
+    color: #f1f5f9;
+}
+
+.lime-feature-item .progress {
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.dark-mode .lime-feature-item .progress {
+    background-color: #374151;
+}
+
+.lime-feature-item .progress-bar {
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+/* ==================== KEY INDICATORS (Keyword Badges) ==================== */
+
+.keyword-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 3px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.keyword-badge.critical {
+    background: #fce4e4;
+    color: #c0392b;
+    border: 1px solid #e74c3c;
+}
+
+.keyword-badge.high {
+    background: #fef3e2;
+    color: #d68910;
+    border: 1px solid #f39c12;
+}
+
+.keyword-badge.medium {
+    background: #fef9e7;
+    color: #b7950b;
+    border: 1px solid #f1c40f;
+}
+
+.keyword-badge.low {
+    background: #e8f6e9;
+    color: #1e8449;
+    border: 1px solid #27ae60;
 }

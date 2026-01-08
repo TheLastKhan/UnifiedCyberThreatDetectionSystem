@@ -1,4 +1,4 @@
-// ==================== DASHBOARD INITIALIZATION ====================
+﻿// ==================== DASHBOARD INITIALIZATION ====================
 
 document.addEventListener('DOMContentLoaded', function () {
     initializeDashboard();
@@ -293,7 +293,7 @@ function translatePage(lang) {
         pageTitleEl.textContent = trans[pageTitleEl.textContent];
     }
 
-    console.log(`✅ Language changed to: ${lang.toUpperCase()}`);
+    console.log(` Language changed to: ${lang.toUpperCase()}`);
 }
 
 // Initialize language on load
@@ -439,47 +439,45 @@ async function analyzeEmail() {
     document.getElementById('emailResults').style.display = 'none';
 
     try {
-        // Call ensemble API for weighted voting across all models
+        // Call ensemble API for weighted voting and get details for all models
         const requestBody = {
             email_subject: subject,
             email_content: body,
             email_sender: from,
-            sender_ip: senderIP  // NEW: Include sender IP for coordinated attack detection
+            sender_ip: senderIP
         };
 
-        // Call all three models in parallel
-        const [bertResponse, fasttextResponse, tfidfResponse] = await Promise.all([
-            fetch('/api/email/analyze/bert', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            }),
-            fetch('/api/email/analyze/fasttext', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            }),
-            fetch('/api/email/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            })
-        ]);
+        // Call single ensemble endpoint (saves 1 record to DB)
+        const response = await fetch('/api/email/analyze/ensemble', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
 
-        // Parse all responses
-        const bertResult = bertResponse.ok ? await bertResponse.json() : { error: 'BERT unavailable' };
-        const fasttextResult = fasttextResponse.ok ? await fasttextResponse.json() : { error: 'FastText unavailable' };
-        const tfidfResult = tfidfResponse.ok ? await tfidfResponse.json() : { error: 'TF-IDF unavailable' };
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Analysis failed');
+        }
+
+        const data = await response.json();
+
+        // Extract model results from unified response
+        const bertResult = data.models?.bert || { error: 'BERT unavailable' };
+        const fasttextResult = data.models?.fasttext || { error: 'FastText unavailable' };
+        const tfidfResult = data.models?.tfidf || { error: 'TF-IDF unavailable' };
+        const ensembleResult = data.ensemble || {};
 
         // Extract keywords for indicators
         const keywords = extractSuspiciousKeywords(body, subject);
 
-        // Display all three models in dashboard
+        // Display all three models + Ensemble in dashboard
+        // Note: passing ensembleResult can be used to update a main status card if needed
         displayEmailResults({
             bert: bertResult,
             fasttext: fasttextResult,
             tfidf: tfidfResult,
-            keywords: keywords
+            keywords: keywords,
+            ensemble: ensembleResult // Pass ensemble result too
         });
 
         document.getElementById('emailLoading').style.display = 'none';
@@ -589,7 +587,59 @@ function displayEmailResults(results) {
         console.log('Normalized confidence:', normalizedConf, `(${(normalizedConf * 100).toFixed(1)}%)`);
 
         // Create adjusted FastText result with normalized values
-        // CRITICAL FIX: score should be phishing_score for risk calculation
+
+
+        // --- FASTTEXT LIME SYNTHESIS (AVERAGING LOGIC) ---
+        // Create a map to aggregate scores from BERT and TF-IDF
+        const featureScores = new Map();
+
+        // Helper to add scores
+        const addScores = (breakdown) => {
+            if (!breakdown) return;
+            breakdown.forEach(item => {
+                const word = (item.feature || item.word || '').toLowerCase();
+                if (!word) return;
+
+                // Get the raw contribution value
+                let val = item.score !== undefined ? item.score : (item.contribution !== undefined ? item.contribution : 0);
+
+                if (!featureScores.has(word)) {
+                    featureScores.set(word, { total: 0, count: 0 });
+                }
+                const entry = featureScores.get(word);
+                entry.total += val;
+                entry.count += 1;
+            });
+        };
+
+        // Add both BERT and TF-IDF scores
+        addScores(results.bert?.lime_breakdown);
+        addScores(results.tfidf?.lime_breakdown);
+
+        // Create synthetic breakdown list
+        const syntheticBreakdown = [];
+        featureScores.forEach((data, word) => {
+            // Calculate average: (BERT + TFIDF) / 2
+            // Always divide by 2 to penalize words not found by both models (middle ground effect)
+            const avgScore = data.total / 2;
+
+            // Push to new list
+            syntheticBreakdown.push({
+                feature: word,
+                score: avgScore,
+                contribution: avgScore,
+                type: 'derived'
+            });
+        });
+
+        // Sort by magnitude
+        syntheticBreakdown.sort((a, b) => Math.abs(b.score) - Math.abs(a.score));
+
+        // Take top features
+        const topSynthetic = syntheticBreakdown.slice(0, 10);
+
+
+
         const adjustedFasttext = {
             ...results.fasttext,
             confidence: normalizedConf,  // How confident the model is
@@ -597,7 +647,8 @@ function displayEmailResults(results) {
             phishing_score: normalizedPhishingScore,
             risk_level: normalizedPhishingScore >= 0.9 ? 'critical' : normalizedPhishingScore >= 0.7 ? 'high' : normalizedPhishingScore >= 0.5 ? 'medium' : 'low',
             original_confidence: results.fasttext.confidence,
-            original_score: results.fasttext.score
+            original_score: results.fasttext.score,
+            lime_breakdown: topSynthetic // Use the synthesized average list
         };
 
         displayModelResult('fasttext', adjustedFasttext, results.keywords);
@@ -609,18 +660,9 @@ function displayEmailResults(results) {
     // Display TF-IDF results
     displayModelResult('tfidf', results.tfidf, results.keywords);
 
-    // Display LIME Breakdown for all models (if available)
-    if (results.bert && results.bert.lime_breakdown && results.bert.lime_breakdown.length > 0) {
-        displayLimeBreakdown(results.bert.lime_breakdown, 'bert');
-    }
 
-    if (results.fasttext && results.fasttext.lime_breakdown && results.fasttext.lime_breakdown.length > 0) {
-        displayLimeBreakdown(results.fasttext.lime_breakdown, 'fasttext');
-    }
+    // Note: displayModelResult now handles LIME breakdown rendering internally
 
-    if (results.tfidf && results.tfidf.lime_breakdown && results.tfidf.lime_breakdown.length > 0) {
-        displayLimeBreakdown(results.tfidf.lime_breakdown, 'tfidf');
-    }
 
     // Check VirusTotal reputation for email domain
     const emailFrom = document.getElementById('emailSender').value;  // Fixed ID
@@ -629,6 +671,16 @@ function displayEmailResults(results) {
     }
 
     resultsDiv.style.display = 'block';
+}
+
+
+
+
+function toTitleCase(str) {
+    if (!str) return '';
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
 }
 
 function displayEnsembleResult(ensemble) {
@@ -641,151 +693,405 @@ function displayEnsembleResult(ensemble) {
     const modelsUsed = ensemble.models_used || [];
     const weightsApplied = ensemble.weights_applied || {};
 
-    // Show card
+    const isPhishing = prediction.toLowerCase() === 'phishing';
+    const colorClass = isPhishing ? 'text-danger' : 'text-success';
+
+    // Show card apply styling
     card.style.display = 'block';
+    if (!card.classList.contains('model-card')) {
+        card.classList.add('model-card');
+    }
 
-    // Update prediction badge
+    // Update prediction badge (Target Theme: uppercase)
     const badge = document.getElementById('ensembleResultBadge');
-    badge.textContent = prediction.toUpperCase();
-    badge.className = 'result-badge ' + (prediction === 'phishing' ? 'badge-danger' : 'badge-success');
+    badge.textContent = isPhishing ? 'PHISHING' : 'LEGITIMATE';
+    badge.className = 'result-badge ' + (isPhishing ? 'badge-danger' : 'badge-success');
 
-    // Update metrics
-    document.getElementById('ensemblePrediction').textContent = prediction.toUpperCase();
-    document.getElementById('ensembleConfidence').textContent = (confidence * 100).toFixed(1) + '%';
-    document.getElementById('ensembleRiskLevel').textContent = riskLevel.toUpperCase();
-    document.getElementById('ensembleModelsUsed').textContent = modelsUsed.map(m => m.toUpperCase()).join(', ');
+    // Update metrics with Capitalization and Colors
+    const predElem = document.getElementById('ensemblePrediction');
+    predElem.textContent = toTitleCase(prediction);
+    predElem.className = `metric-value ${colorClass}`;
+    predElem.style.fontWeight = 'bold';
 
-    // Update weights display
+    const confElem = document.getElementById('ensembleConfidence');
+    confElem.textContent = (confidence * 100).toFixed(1) + '%';
+    confElem.className = `metric-value ${colorClass}`;
+    confElem.style.fontWeight = 'bold';
+
+    // Risk Level with percentage - dark red for phishing
+    const riskElem = document.getElementById('ensembleRiskLevel');
+    const riskText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
+
+    // Invert percentage for Legitimate (Safe) results
+    // If Legitimate with 99% confidence -> Risk is 1%
+    // If Phishing with 99% confidence -> Risk is 99%
+    let displayRiskPercent = confidence * 100;
+    if (!isPhishing) {
+        displayRiskPercent = 100 - displayRiskPercent;
+        if (displayRiskPercent < 0) displayRiskPercent = 0; // Floating point safety
+    }
+
+    riskElem.textContent = `${riskText} (${displayRiskPercent.toFixed(1)}%)`;
+    riskElem.style.color = isPhishing ? '#c0392b' : '#27ae60'; // Dark red or green
+    riskElem.style.fontWeight = 'bold';
+
+    // Models used - same color as Risk Level
+    const modelsUsedElem = document.getElementById('ensembleModelsUsed');
+    const formattedModels = modelsUsed.map(m => {
+        if (m.toLowerCase() === 'tfidf') return 'TF-IDF';
+        if (m.toLowerCase() === 'bert') return 'Bert';
+        if (m.toLowerCase() === 'fasttext') return 'FastText';
+        return toTitleCase(m);
+    }).join(', ');
+    modelsUsedElem.textContent = formattedModels;
+    modelsUsedElem.style.color = isPhishing ? '#c0392b' : '#27ae60';
+
+    // Update weights display - BOLD as requested
     const weightsText = Object.entries(weightsApplied)
-        .map(([model, weight]) => `${model.toUpperCase()} ${(weight * 100).toFixed(0)}%`)
+        .map(([model, weight]) => {
+            let modelName = model;
+            if (model.toLowerCase() === 'tfidf') modelName = 'TF-IDF';
+            else if (model.toLowerCase() === 'bert') modelName = 'Bert';
+            else if (model.toLowerCase() === 'fasttext') modelName = 'FastText';
+            else modelName = toTitleCase(model);
+
+            return `${modelName} ${(weight * 100).toFixed(0)}%`;
+        })
         .join(', ');
-    document.getElementById('ensembleWeights').textContent = weightsText || 'BERT 50%, FastText 30%, TF-IDF 20%';
+    const weightsElem = document.getElementById('ensembleWeights');
+    weightsElem.textContent = weightsText || 'Bert 50%, FastText 30%, TF-IDF 20%';
+    weightsElem.style.fontWeight = 'bold';
 }
 
-function displayLimeBreakdown(limeData) {
-    const breakdownSection = document.getElementById('limeBreakdownSection');
-    const breakdownDiv = document.getElementById('limeBreakdown');
+function displayModelResult(modelType, result, keywords) {
+    const sectionId = modelType === 'bert' ? 'bert' : (modelType === 'fasttext' ? 'fasttext' : 'tfidf');
 
-    if (!limeData || limeData.length === 0) {
-        breakdownSection.style.display = 'none';
+    let isPhishing = false;
+    let confidence = 0;
+    let score = 0;
+    let riskLevel = 'unknown';
+    let processingTime = 0;
+    let limeBreakdown = [];
+
+    // Parse result based on model type
+    if (modelType === 'bert') {
+        isPhishing = result.prediction === 'phishing';
+        confidence = result.confidence || 0;
+        score = result.score || 0;
+        riskLevel = result.risk_level || 'unknown';
+        processingTime = result.processing_time_ms;
+        limeBreakdown = result.lime_breakdown || [];
+    } else if (modelType === 'fasttext') {
+        isPhishing = result.prediction === 'phishing';
+        confidence = result.confidence || 0;
+        score = result.score || 0;
+        riskLevel = result.risk_level || 'unknown';
+        processingTime = result.processing_time_ms;
+        limeBreakdown = result.lime_breakdown || [];
+    } else if (modelType === 'tfidf') {
+        const tfidfData = result.model_confidence || result;
+        isPhishing = (tfidfData.prediction === 'phishing');
+        confidence = tfidfData.confidence || tfidfData.phishing_probability || 0;
+        score = tfidfData.phishing_probability || 0;
+        riskLevel = tfidfData.risk_level || 'unknown';
+        processingTime = result.processing_time_ms || result.time_ms;
+        limeBreakdown = tfidfData.lime_breakdown || [];
+    }
+
+    // Fix for processing time
+    processingTime = processingTime || result.time_ms;
+
+    // Title Case Prediction
+    const predText = isPhishing ? 'Phishing' : 'Legitimate';
+
+    // Set badge (Target Theme: uppercase, no emoji)
+    const badge = document.getElementById(`${modelType}ResultBadge`);
+    if (badge) {
+        badge.textContent = isPhishing ? 'PHISHING' : 'LEGITIMATE';
+        badge.className = 'result-badge ' + (isPhishing ? 'badge-danger' : 'badge-success');
+    }
+
+
+    // Update metrics with colors as per user request (reverting to "old" style)
+    const colorClass = isPhishing ? 'text-danger' : 'text-success';
+
+    // Prediction Metric
+    const predElem = document.getElementById(`${modelType}Prediction`);
+    if (predElem) {
+        predElem.textContent = predText;
+        predElem.className = `metric-value ${colorClass}`;
+        predElem.style.fontWeight = 'bold';
+    }
+
+    // Confidence Metric
+    const confElem = document.getElementById(`${modelType}Confidence`);
+    if (confElem) {
+        confElem.textContent = (confidence * 100).toFixed(1) + '%';
+        confElem.className = `metric-value ${colorClass}`;
+        confElem.style.fontWeight = 'bold';
+    }
+
+    // Risk Level Metric - Format: "Critical (XX.X%)" with dark red
+    const riskElem = document.getElementById(`${modelType}Risk`);
+    if (riskElem) {
+        const riskText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
+
+        // Invert percentage for Legitimate (Safe) results
+        let displayRiskPercent = confidence * 100;
+        if (!isPhishing) {
+            displayRiskPercent = 100 - displayRiskPercent;
+            if (displayRiskPercent < 0) displayRiskPercent = 0;
+        }
+
+        riskElem.textContent = `${riskText} (${displayRiskPercent.toFixed(1)}%)`;
+        riskElem.style.color = isPhishing ? '#c0392b' : '#27ae60'; // Dark red or green
+        riskElem.style.fontWeight = 'bold';
+    }
+
+    // Processing Time - same color as Risk Level
+    const timeElem = document.getElementById(`${modelType}Time`);
+    if (timeElem) {
+        timeElem.textContent = processingTime ? `${processingTime.toFixed(1)}ms` : 'N/A';
+        timeElem.style.color = isPhishing ? '#c0392b' : '#27ae60';
+        timeElem.style.fontWeight = 'bold';
+    }
+
+    // Display Key Indicators (using passed keywords or generating them)
+    // Assuming displayKeyIndicators function exists and takes (elementId, keywords)
+    const indicatorsId = `${modelType}Indicators`;
+    if (document.getElementById(indicatorsId)) {
+        // If we have LIME breakdown, we can use it to highlight specific words
+        // But for now, let's stick to the keyword extraction logic as fallback
+        if (keywords && keywords.length > 0) {
+            // Reuse existing keyword display logic if available
+            // (Assuming 'displayKeyIndicators' function exists in file)
+            displayKeyIndicators(indicatorsId, keywords);
+        } else {
+            document.getElementById(indicatorsId).innerHTML = '<span class="text-muted">No specific indicators found</span>';
+        }
+    }
+
+    // Display LIME Breakdown if available
+    const limeSectionId = modelType === 'tfidf' ? 'tfidfLimeBreakdown' : `${modelType}LimeBreakdownSection`;
+    const limeContentId = modelType === 'tfidf' ? 'tfidfLimeContent' : `${modelType}LimeBreakdown`;
+
+    if (limeBreakdown && limeBreakdown.length > 0) {
+        const section = document.getElementById(limeSectionId);
+        if (section) section.style.display = 'block';
+        renderLimeBreakdown(limeContentId, limeBreakdown);
+    } else {
+        const section = document.getElementById(limeSectionId);
+        if (section) section.style.display = 'none';
+    }
+}
+
+function renderLimeBreakdown(containerId, breakdown) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!breakdown || breakdown.length === 0) {
+        container.innerHTML = '<div class="text-muted">No feature importance data available</div>';
         return;
     }
 
-    // Show section
-    breakdownSection.style.display = 'block';
+    // Use original lime_breakdown.css classes
+    // Phishing keyword descriptions
+    // Phishing keyword descriptions - Comprehensive Map
+    const keywordDescriptions = {
+        // Urgency & Time
+        'urgent': 'Urgency pressure tactic',
+        'immediately': 'Urgency pressure tactic',
+        'now': 'Temporal urgency',
+        'today': 'Temporal urgency',
+        'tomorrow': 'Temporal urgency',
+        'date': 'Phishing indicator', // From screenshot
+        'december': 'Temporal urgency', // From screenshot
+        'january': 'Temporal urgency',
+        'february': 'Temporal urgency',
+        'march': 'Temporal urgency',
+        'april': 'Temporal urgency',
+        'may': 'Temporal urgency',
+        'june': 'Temporal urgency',
+        'july': 'Temporal urgency',
+        'august': 'Temporal urgency',
+        'september': 'Temporal urgency',
+        'october': 'Temporal urgency',
+        'november': 'Temporal urgency',
+        'expire': 'Expiration threat',
+        'time': 'Temporal urgency',
 
-    // Build HTML for breakdown
+        // Account & Security
+        'verify': 'Account verification request',
+        'account': 'Account threat', // From screenshot
+        'password': 'Credential harvesting',
+        'login': 'Credential harvesting',
+        'security': 'Fake alert', // From screenshot
+        'suspend': 'Account suspension threat',
+        'locked': 'Account threat',
+        'unauthorized': 'Fake alert',
+        'confirm': 'Confirmation scam',
+        'access': 'Account threat',
+        'update': 'Fake update request',
+
+        // Personal Targeting
+        'your': 'Personal targeting', // From screenshot
+        'you': 'Personal targeting',
+        'dear': 'Generic greeting',
+        'customer': 'Generic greeting',
+        'user': 'Generic greeting',
+        'name': 'Phishing indicator', // From screenshot
+
+        // Financial
+        'funds': 'Financial loss', // From screenshot
+        'financial': 'Financial phishing',
+        'bank': 'Financial phishing',
+        'credit': 'Financial phishing',
+        'money': 'Financial lure',
+        'transfer': 'Wire transfer scam',
+        'payment': 'Financial phishing',
+        'invoice': 'Financial lure',
+        'winner': 'Prize scam',
+        'lottery': 'Lottery scam',
+        'free': 'Too good to be true',
+        'offer': 'Too good to be true',
+
+        // Technical & Common
+        'http': 'Suspicious URL',
+        'https': 'Suspicious URL',
+        'com': 'Common word',
+        'net': 'Common word',
+        'org': 'Common word',
+        'html': 'Technical term',
+        'click': 'Click bait tactic',
+        'link': 'Suspicious link',
+        'here': 'Click bait tactic',
+        'email': 'Communication channel',
+        'message': 'Communication channel',
+        'been': 'Phishing indicator',
+        'full': 'Phishing indicator',
+        'following': 'Phishing indicator',
+
+        // Expanded List
+        'action': 'Urgency pressure tactic',
+        'required': 'Urgency pressure tactic',
+        'attention': 'Urgency pressure tactic',
+        'warning': 'Urgency pressure tactic',
+        'notice': 'Urgency pressure tactic',
+        'alert': 'Fake security alert',
+        'blocked': 'Account threat',
+        'restricted': 'Account threat',
+        'suspended': 'Account threat',
+        'terminated': 'Account threat',
+        'disabled': 'Account threat',
+        'device': 'Security context',
+        'unusual': 'Security context',
+        'signin': 'Credential harvesting',
+        'sign-in': 'Credential harvesting',
+        'validation': 'Credential harvesting',
+        'identity': 'Credential harvesting',
+        'billing': 'Financial context',
+        'invoice': 'Financial lure',
+        'receipt': 'Financial lure',
+        'payment': 'Financial lure',
+        'transaction': 'Financial context',
+        'refund': 'Financial lure',
+        'cost': 'Financial lure',
+        'amount': 'Financial context',
+        'due': 'Financial pressure',
+        'balance': 'Financial context',
+        'statement': 'Financial context',
+        'service': 'Service impersonation',
+        'support': 'Service impersonation',
+        'team': 'Service impersonation',
+        'admin': 'Service impersonation',
+        'department': 'Service impersonation',
+        'policy': 'Authority lure',
+        'terms': 'Authority lure',
+        'contract': 'Authority lure',
+        'document': 'Malicious attachment risk',
+        'file': 'Malicious attachment risk',
+        'attachment': 'Malicious attachment risk',
+        'pdf': 'Malicious attachment risk',
+        'doc': 'Malicious attachment risk',
+        'docx': 'Malicious attachment risk',
+        'xls': 'Malicious attachment risk',
+        'zip': 'Malicious attachment risk',
+        'open': 'Action request',
+        'review': 'Action request',
+        'check': 'Action request',
+        'read': 'Action request',
+        'download': 'Action request',
+        'contact': 'Action request',
+        'reply': 'Action request',
+        'help': 'Assistance lure',
+        'problem': 'Assistance lure',
+        'error': 'Technical lure',
+        'failed': 'Technical lure',
+        'failure': 'Technical lure',
+        'browser': 'Technical context',
+        'system': 'Technical context',
+        'server': 'Technical context',
+        'information': 'Data gathering',
+        'details': 'Data gathering',
+        'address': 'Data gathering',
+        'phone': 'Data gathering',
+        'mobile': 'Data gathering'
+    };
+
     let html = '<div class="lime-breakdown-container">';
 
-    limeData.forEach((item, index) => {
-        const featureName = item.feature || 'Unknown';
-        const contribution = item.contribution || 0;
-        const isPositive = item.positive !== false; // Default true
+    // Sort by absolute score (importance)
+    const sortedFeatures = [...breakdown].sort((a, b) => {
+        const scoreA = Math.abs(a.score !== undefined ? a.score : (a.contribution !== undefined ? a.contribution : 0));
+        const scoreB = Math.abs(b.score !== undefined ? b.score : (b.contribution !== undefined ? b.contribution : 0));
+        return scoreB - scoreA;
+    });
 
-        // Clean up feature name (remove technical prefixes like "word_123")
-        const displayName = featureName.startsWith('word_') ?
-            featureName.replace(/^word_\d+$/, 'Content Pattern') :
-            featureName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    // Max score for width calculation  
+    const maxScore = Math.max(...sortedFeatures.map(f => Math.abs(f.score !== undefined ? f.score : (f.contribution !== undefined ? f.contribution : 0)))) || 1;
+
+    // Show top 5 features using original CSS classes
+    sortedFeatures.slice(0, 5).forEach(feature => {
+        const rawScore = feature.score !== undefined ? feature.score : (feature.contribution !== undefined ? feature.contribution : 0);
+        const contribution = feature.contribution !== undefined ? feature.contribution : Math.abs(rawScore);
+
+        // Use contribution value directly as percentage (capped at 100)
+        const percentage = Math.min(Math.abs(contribution), 100);
+
+        // Positive = contributes to phishing (risk), Negative = contributes to legitimate (safe)
+        const fillClass = rawScore > 0 ? 'positive' : 'negative';
+
+        // Feature name - capitalize first letter (Title Case)
+        let featureName = feature.feature || feature.word || 'Unknown';
+        const featureLower = featureName.toLowerCase();
+        // Convert entire string to lowercase first, then capitalize first char
+        featureName = featureLower.charAt(0).toUpperCase() + featureLower.slice(1);
+
+        // Get description from dictionary - default for unknown keywords
+        const description = keywordDescriptions[featureLower.toLowerCase()] || 'Phishing indicator';
+        const riskReason = `<span class="risk-reason">(${description})</span>`;
 
         html += `
             <div class="lime-feature-bar">
                 <div class="lime-feature-label">
-                    <span class="lime-feature-name">${displayName}</span>
-                    <span class="lime-feature-value">${contribution.toFixed(1)}%</span>
+                    <span class="lime-feature-name">${featureName}${riskReason}</span>
+                    <span class="lime-feature-value">${percentage.toFixed(1)}%</span>
                 </div>
                 <div class="lime-progress-track">
-                    <div class="lime-progress-fill ${isPositive ? 'positive' : 'negative'}" 
-                         style="width: ${Math.min(contribution, 100)}%">
-                    </div>
+                    <div class="lime-progress-fill ${fillClass}" style="width: ${percentage}%;"></div>
                 </div>
             </div>
         `;
     });
 
     html += '</div>';
-    breakdownDiv.innerHTML = html;
+    container.innerHTML = html;
 }
 
-function displayModelResult(modelType, result, keywords) {
-    let isPhishing, confidence, riskLevel, score, processingTime;
+function displayKeyIndicators(elementId, keywords) {
+    const indicatorsDiv = document.getElementById(elementId);
+    if (!indicatorsDiv) return;
 
-    // Check if model returned error
-    if (result.error) {
-        displayModelError(modelType, result.error);
-        return;
-    }
-
-    // Parse result based on model type
-    if (modelType === 'bert') {
-        isPhishing = result.prediction === 'phishing';
-        confidence = result.confidence || 0;
-        score = result.score || 0;  // Use result.score for consistency
-        riskLevel = result.risk_level || 'unknown';
-        processingTime = result.processing_time_ms;
-    } else if (modelType === 'fasttext') {
-        isPhishing = result.prediction === 'phishing';
-        confidence = result.confidence || 0;
-        score = result.score || 0;  // Use result.score instead of result.phishing_score
-        riskLevel = result.risk_level || 'unknown';
-        processingTime = result.processing_time_ms;
-    } else if (modelType === 'tfidf') {
-        if (result.model_confidence) {
-            isPhishing = result.model_confidence.prediction === 'phishing';
-            // Use the actual confidence from backend (max of phishing/legitimate prob)
-            confidence = result.model_confidence.confidence || result.model_confidence.phishing_probability || 0;
-            score = result.model_confidence.phishing_probability || 0;
-            // Use risk level from backend
-            riskLevel = result.model_confidence.risk_level || 'unknown';
-            processingTime = result.processing_time_ms;
-        }
-    }
-
-    // Set badge
-    const badge = document.getElementById(`${modelType}ResultBadge`);
-    badge.textContent = isPhishing ? '🚨 PHISHING' : '✅ LEGITIMATE';
-    badge.style.color = isPhishing ? '#ef4444' : '#10b981';
-    badge.style.fontWeight = 'bold';
-    badge.style.padding = '8px 16px';
-    badge.style.borderRadius = '20px';
-    badge.style.background = isPhishing ? '#fee2e2' : '#d1fae5';
-
-    // Set prediction
-    const predElem = document.getElementById(`${modelType}Prediction`);
-    predElem.textContent = isPhishing ? 'Phishing' : 'Legitimate';
-    predElem.style.color = isPhishing ? '#ef4444' : '#10b981';
-    predElem.style.fontWeight = 'bold';
-
-    // Set confidence with percentage
-    const confElem = document.getElementById(`${modelType}Confidence`);
-    confElem.textContent = (confidence * 100).toFixed(1) + '%';
-    confElem.style.fontWeight = 'bold';
-
-    // Set risk level with percentage and color
-    const riskText = riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1);
-    const riskPercentage = (score * 100).toFixed(1);
-    const riskColors = {
-        'low': '#27ae60',
-        'medium': '#f39c12',
-        'high': '#e74c3c',
-        'critical': '#c0392b'
-    };
-
-    const riskElem = document.getElementById(`${modelType}Risk`);
-    riskElem.textContent = `${riskText} (${riskPercentage}%)`;
-    riskElem.style.color = riskColors[riskLevel] || '#7f8c8d';
-    riskElem.style.fontWeight = '900';
-    riskElem.setAttribute('data-risk', riskLevel);
-
-    // Set processing time
-    const timeElem = document.getElementById(`${modelType}Time`);
-    if (processingTime) {
-        timeElem.textContent = `${processingTime.toFixed(1)}ms`;
-    } else {
-        timeElem.textContent = 'N/A';
-    }
-
-    // Display keywords/indicators
-    const indicatorsDiv = document.getElementById(`${modelType}Indicators`);
     indicatorsDiv.innerHTML = '';
 
     if (keywords && keywords.length > 0) {
@@ -865,10 +1171,13 @@ function displayWebResults(result) {
         const scorePercent = result.model_analysis.anomaly_score_percent || (result.model_analysis.anomaly_score * 100);
         const requestFreq = result.model_analysis.request_frequency || 0;
 
-        document.getElementById('webResultBadge').textContent =
-            isAnomaly ? '⚠️ ANOMALY DETECTED' : '✅ NORMAL';
-        document.getElementById('webResultBadge').style.color =
-            isAnomaly ? '#f59e0b' : '#10b981';
+                const webBadge = document.getElementById('webResultBadge');
+                webBadge.textContent = isAnomaly ? 'ANOMALY DETECTED' : 'NORMAL';
+        // Use standard classes to match VirusTotal style (Square-ish + Gradient)
+        webBadge.className = isAnomaly ? 'result-badge badge-warning' : 'result-badge badge-success';
+        
+        // Remove ALL inline overrides to allow CSS to take effect
+        webBadge.style = '';
 
         document.getElementById('webStatus').textContent =
             isAnomaly ? 'Anomalous' : 'Normal';
@@ -933,7 +1242,7 @@ function updateSystemStatus(status) {
 
     // Check if elements exist
     if (!statusElement || !statusDot) {
-        console.warn('System status elements not found');
+        // console.warn('System status elements not found');
         return;
     }
 
@@ -2086,18 +2395,18 @@ async function checkEmailDomainReputation(email) {
         const suspiciousCount = data.suspicious || 0;
 
         // Clear any inline styles and classes first
+                // Reset to let CSS classes work
         vtBadge.style = '';
-        vtBadge.className = 'result-badge';
-
+        
         if (maliciousCount > 0) {
             vtBadge.textContent = '🚨 MALICIOUS';
-            vtBadge.classList.add('phishing');
+            vtBadge.className = 'result-badge badge-danger';
         } else if (suspiciousCount > 0) {
             vtBadge.textContent = '⚠️ SUSPICIOUS';
-            vtBadge.classList.add('warning');
+            vtBadge.className = 'result-badge badge-warning';
         } else {
-            vtBadge.textContent = '✅ CLEAN';
-            vtBadge.classList.add('legitimate');
+            vtBadge.textContent = ' CLEAN';
+            vtBadge.className = 'result-badge badge-success';
         }
 
         // Update reputation details
@@ -2129,18 +2438,18 @@ async function checkIPReputation(ip) {
 
         if (vtBadge) {
             // Clear any inline styles and classes first
+                        // Reset to let CSS classes work
             vtBadge.style = '';
-            vtBadge.className = 'result-badge';
 
             if (maliciousCount > 0) {
-                vtBadge.textContent = '🚨 MALICIOUS';
-                vtBadge.classList.add('phishing');
+                vtBadge.textContent = ' MALICIOUS';
+                vtBadge.className = 'result-badge badge-danger';
             } else if (suspiciousCount > 0) {
                 vtBadge.textContent = '⚠️ SUSPICIOUS';
-                vtBadge.classList.add('warning');
+                vtBadge.className = 'result-badge badge-warning';
             } else {
-                vtBadge.textContent = '✅ CLEAN';
-                vtBadge.classList.add('legitimate');
+                vtBadge.textContent = ' CLEAN';
+                vtBadge.className = 'result-badge badge-success';
             }
         }
 
@@ -2253,14 +2562,14 @@ function displayLimeBreakdown(limeData, modelType = 'tfidf') {
 // ==================== SETTINGS MANAGEMENT ====================
 
 async function loadSettings() {
-    console.log('ğŸ“‹ Loading settings...');
+    console.log('⚙️ Loading settings...');
 
     try {
         const response = await fetch('/api/settings');
         if (!response.ok) throw new Error('Failed to load settings');
 
         const settings = await response.json();
-        console.log('âœ… Settings loaded:', settings);
+        console.log('⚙️ Settings loaded:', settings);
 
         // Apply settings to UI
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -2300,12 +2609,12 @@ async function loadSettings() {
         }
 
     } catch (error) {
-        console.error('âŒ Error loading settings:', error);
+        console.error('⚙️ Error loading settings:', error);
     }
 }
 
 async function saveSettings() {
-    console.log('ğŸ’¾ Saving settings...');
+    console.log('⚙️ Saving settings...');
 
     try {
         const settings = {
@@ -2346,8 +2655,8 @@ async function saveSettings() {
         alert('✅ Settings saved successfully!');
 
     } catch (error) {
-        console.error('âŒ Error saving settings:', error);
-        alert('âŒ Failed to save settings: ' + error.message);
+        console.error('⚙️ Error saving settings:', error);
+        alert('⚙️ Failed to save settings: ' + error.message);
     }
 }
 
@@ -2356,7 +2665,7 @@ async function resetSettings() {
         return;
     }
 
-    console.log('ğŸ”„ Resetting settings...');
+    console.log('⚙️ Resetting settings...');
 
     try {
         const defaultSettings = {
@@ -2378,12 +2687,12 @@ async function resetSettings() {
         // Reload settings to update UI
         await loadSettings();
 
-        console.log('âœ… Settings reset to defaults');
-        alert('âœ… Settings reset to defaults!');
+        console.log('⚙️ Settings reset to defaults');
+        alert('⚙️ Settings reset to defaults!');
 
     } catch (error) {
-        console.error('âŒ Error resetting settings:', error);
-        alert('âŒ Failed to reset settings: ' + error.message);
+        console.error('⚙️ Error resetting settings:', error);
+        alert('⚙️ Failed to reset settings: ' + error.message);
     }
 }
 
@@ -2456,3 +2765,8 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(settingsPage, { attributes: true, attributeFilter: ['class'] });
     }
 });
+
+
+
+
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -260,59 +260,44 @@
 
                         <!-- Analysis Results - Three Models Side by Side -->
                         <div class="analysis-results" id="emailResults" style="display:none;">
-                            <h3 style="margin-bottom: 20px; color: #0066cc;">Model Comparison Results</h3>
+                            <h3 style="margin-bottom: 20px;">Model Comparison Results</h3>
 
-                            <!-- Ensemble Result - Highlighted! -->
-                            <div class="ensemble-result-card" id="ensembleCard"
-                                style="display:none; margin-bottom: 20px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);">
-                                <div
-                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                                    <h2 style="margin: 0; color: white;">
+                            <!-- Ensemble Result - Standard Theme -->
+                            <div class="result-card model-card" id="ensembleCard"
+                                style="display:none; margin-bottom: 20px;">
+                                <div class="result-header">
+                                    <h3>
                                         <i class="fas fa-vote-yea"></i> Ensemble Prediction
                                         <span
-                                            style="font-size: 0.6em; opacity: 0.9; font-weight: normal; margin-left: 10px;">(Weighted
+                                            style="font-size: 0.8em; color: var(--text-secondary); font-weight: 700; margin-left: 10px;">(Weighted
                                             Voting)</span>
-                                    </h2>
-                                    <span class="result-badge" id="ensembleResultBadge"
-                                        style="font-size: 1.2em; padding: 8px 16px;"></span>
+                                    </h3>
+                                    <span class="result-badge" id="ensembleResultBadge"></span>
                                 </div>
 
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                                    <div
-                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
-                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Prediction
-                                        </div>
-                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensemblePrediction">-
-                                        </div>
+                                <div class="result-body">
+                                    <div class="result-metric">
+                                        <span>Prediction</span>
+                                        <span class="metric-value" id="ensemblePrediction">-</span>
                                     </div>
-                                    <div
-                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
-                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Confidence
-                                        </div>
-                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensembleConfidence">-
-                                        </div>
+                                    <div class="result-metric">
+                                        <span>Confidence</span>
+                                        <span class="metric-value" id="ensembleConfidence">-</span>
                                     </div>
-                                    <div
-                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
-                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Risk Level
-                                        </div>
-                                        <div style="font-size: 1.3em; font-weight: bold;" id="ensembleRiskLevel">-</div>
+                                    <div class="result-metric">
+                                        <span>Risk Level</span>
+                                        <span class="metric-value" id="ensembleRiskLevel">-</span>
                                     </div>
-                                    <div
-                                        style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
-                                        <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 5px;">Models Used
-                                        </div>
-                                        <div style="font-size: 1.1em; font-weight: bold;" id="ensembleModelsUsed">-
-                                        </div>
+                                    <div class="result-metric">
+                                        <span>Models Used</span>
+                                        <span class="metric-value" id="ensembleModelsUsed">-</span>
                                     </div>
                                 </div>
 
-                                <div
-                                    style="font-size: 0.85em; opacity: 0.85; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                                    <i class="fas fa-info-circle"></i>
-                                    <strong>Weights:</strong> <span id="ensembleWeights">BERT 50%, FastText 30%, TF-IDF
-                                        20%</span>
+                                <div class="result-details">
+                                    <h4><i class="fas fa-balance-scale"></i> Model Weights</h4>
+                                    <div id="ensembleWeights" style="font-size: 0.75rem;">BERT 50%, FastText 30%, TF-IDF
+                                        20%</div>
                                 </div>
                             </div>
 
@@ -406,9 +391,9 @@
                                 </div>
 
                                 <!-- TF-IDF Model Result -->
-                                <div class="result-card model-card">
+                                <div class="result-card model-card" id="tfidfCard">
                                     <div class="result-header">
-                                        <h3><i class="fas fa-chart-bar"></i> TF-IDF Ensemble</h3>
+                                        <h3><i class="fas fa-layer-group"></i> TF-IDF</h3>
                                         <span class="result-badge" id="tfidfResultBadge"></span>
                                     </div>
 
@@ -462,7 +447,7 @@
                                 </div>
 
                                 <!-- VirusTotal Domain Reputation -->
-                                <div class="result-card model-card" id="virusTotalEmailCard" style="display:none;">
+                                <div class="result-card model-card" id="virusTotalEmailCard" style="display:none; margin-top: 25px;">
                                     <div class="result-header">
                                         <h3><i class="fas fa-shield-alt"></i> VirusTotal Reputation</h3>
                                         <span class="result-badge" id="vtEmailBadge"></span>
@@ -554,7 +539,7 @@
 
                         <!-- Analysis Results -->
                         <div class="analysis-results" id="webResults" style="display:none;">
-                            <div class="result-card">
+                            <div class="result-card model-card">
                                 <div class="result-header">
                                     <h3>Analysis Result</h3>
                                     <span class="result-badge" id="webResultBadge"></span>
@@ -579,7 +564,7 @@
                             </div>
 
                             <!-- VirusTotal IP Reputation -->
-                            <div class="result-card" id="virusTotalWebCard" style="display:none;">
+                            <div class="result-card model-card" id="virusTotalWebCard" style="display:none; margin-top: 25px;">
                                 <div class="result-header">
                                     <h3><i class="fas fa-shield-alt"></i> VirusTotal Reputation</h3>
                                     <span class="result-badge" id="vtWebBadge"></span>
