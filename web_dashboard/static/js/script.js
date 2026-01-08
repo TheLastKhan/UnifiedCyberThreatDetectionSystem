@@ -2134,7 +2134,7 @@ async function loadCorrelationAnalysis() {
                     options: {
                         responsive: true,
                         maintainAspectRatio: true,
-                        aspectRatio: 2.5,
+                        aspectRatio: 4,
                         plugins: {
                             legend: { position: 'top' },
                             title: { display: false }
@@ -2189,7 +2189,7 @@ async function loadCorrelationAnalysis() {
                     options: {
                         responsive: true,
                         maintainAspectRatio: true,
-                        aspectRatio: 1.2,
+                        aspectRatio: 2.5,
                         plugins: {
                             legend: { position: 'top' },
                             title: { display: false },
@@ -2765,6 +2765,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(settingsPage, { attributes: true, attributeFilter: ['class'] });
     }
 });
+
 
 
 
