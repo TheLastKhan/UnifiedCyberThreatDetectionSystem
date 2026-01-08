@@ -359,12 +359,15 @@ python run_dashboard.py
 
 | Container | Image | Port | Purpose | Dependencies |
 |-----------|-------|------|---------|--------------|
-| `threat-detection-api` | Custom Flask | 5000 | Main API + ML Models | db, cache |
-| `threat-db` | PostgreSQL 15 | 5432 | Primary database | None |
-| `cache` | Redis 7 | 6379 | Caching & rate limiting | None |
-| `nginx` | Nginx | 80, 443 | Reverse proxy, SSL | api |
-| `prometheus` | Prometheus | 9090 | Metrics collection | api |
-| `grafana` | Grafana | 3000 | Metrics visualization | prometheus |
+| `threat-detection-api` | Custom Flask + Gunicorn | 5000 | Main API + ML Models | db, cache |
+| `threat-detection-db` | PostgreSQL 15 Alpine | 5432 | Primary database | None |
+| `threat-detection-cache` | Redis 7 Alpine | 6379 | Caching & rate limiting | None |
+| `threat-detection-nginx` | Nginx Alpine | 80, 443 | Reverse proxy, SSL termination | api |
+| `threat-detection-prometheus` | Prometheus | 9090 | Metrics collection | api |
+| `threat-detection-grafana` | Grafana | 3000 | Metrics visualization | prometheus |
+| `threat-detection-adminer` | Adminer | 8080 | Database management UI | db |
+| `threat-detection-portainer` | Portainer CE | 9000 | Docker container management | None |
+| `threat-detection-mailhog` | Mailhog | 8025/1025 | Email testing (SMTP + Web UI) | None |
 
 ### Data Flow
 
@@ -801,36 +804,40 @@ UnifiedCyberThreatDetectionSystem/
 ├── web_dashboard/                 # Web Interface
 │   ├── api.py                    # Flask API endpoints (2000+ lines)
 │   ├── app.py                    # Flask application factory
+│   ├── production_api.py         # Production API with ensemble logic
 │   ├── database.py               # Database operations
 │   ├── static/
 │   │   ├── css/
-│   │   │   ├── styles.css        # Main stylesheet
-│   │   │   └── theme.css         # Theme variables
+│   │   │   └── styles.css        # Main stylesheet + theme variables
 │   │   ├── js/
-│   │   │   ├── script.js         # Main JavaScript (2300+ lines)
-│   │   │   └── theme-toggle.js   # Theme management
+│   │   │   └── script.js         # Main JavaScript (2500+ lines)
 │   │   └── i18n/
-│   │       ├── en.json           # English translations
-│   │       └── tr.json           # Turkish translations
+│   │       ├── en.json           # English translations (51 keys)
+│   │       └── tr.json           # Turkish translations (51 keys)
 │   └── templates/
 │       └── dashboard.html        # Main HTML template
 │
 ├── src/
 │   ├── email_detector/           # Email ML Models
-│   │   ├── bert_detector.py      # BERT implementation
+│   │   ├── bert_detector.py      # BERT + LIME XAI implementation
 │   │   ├── fasttext_detector.py  # FastText implementation
-│   │   ├── tfidf_detector.py     # TF-IDF + RF implementation
+│   │   ├── tfidf_detector.py     # TF-IDF + RF + LIME implementation
 │   │   └── detector.py           # Unified detector interface
 │   │
 │   ├── web_analyzer/             # Web Log Analysis
 │   │   ├── analyzer.py           # Isolation Forest implementation
 │   │   └── patterns.py           # Attack pattern definitions
 │   │
-│   └── unified_platform/         # Correlation Engine
-│       └── correlation.py        # Threat correlation logic
+│   ├── unified_platform/         # Correlation Engine
+│   │   └── correlation.py        # Threat correlation logic
+│   │
+│   └── utils/                    # Utility modules
+│       ├── data_loader.py        # Data loading utilities
+│       └── visualization.py      # Visualization helpers
 │
 ├── models/                       # Trained ML Models
-│   ├── bert_finetuned/           # BERT model files
+│   ├── bert_finetuned/           # BERT model files (~250MB)
+│   ├── fasttext_model.bin        # FastText model (~881MB)
 │   ├── tfidf_vectorizer.pkl      # TF-IDF vectorizer
 │   └── random_forest.pkl         # Random Forest classifier
 │
@@ -839,22 +846,33 @@ UnifiedCyberThreatDetectionSystem/
 │   ├── train_fasttext_local.py   # FastText training
 │   └── train_tfidf_local.py      # TF-IDF training
 │
-├── tests/                        # Test Suite
+├── tests/                        # Test Suite (26 files)
 │   ├── test_api.py               # API endpoint tests
 │   ├── test_email_detector.py    # Email model tests
 │   └── test_web_analyzer.py      # Web analyzer tests
 │
-├── docs/                         # Documentation
+├── docs/                         # Documentation (52 files)
 │   ├── professor_report/         # Project report + screenshots
 │   │   ├── screenshots/          # UI screenshots
 │   │   └── CyberGuard_Proje_Raporu_v2.docx
 │   ├── API_DOCUMENTATION.md
-│   └── DEPLOYMENT_GUIDE.md
+│   ├── DEPLOYMENT_GUIDE.md
+│   ├── MODEL_COMPARISON.md
+│   └── RISK_SCORING_DETAILED.md
 │
-├── docker-compose.yml            # Docker configuration
+├── dataset/                      # Training datasets
+│   ├── CEAS_08.csv               # CEAS 2008 phishing dataset
+│   ├── Enron.csv                 # Enron email dataset
+│   ├── Nigerian_Fraud.csv        # Nigerian fraud emails
+│   └── SpamAssasin.csv           # SpamAssassin dataset
+│
+├── docker-compose.yml            # Docker configuration (9 containers)
 ├── Dockerfile                    # API container definition
 ├── requirements.txt              # Python dependencies
 ├── run_dashboard.py              # Local development starter
+├── TEST_EMAILS.md                # Sample test emails
+├── TEST_WEB_LOGS.md              # Sample web attack patterns
+├── TASK.md                       # Project task tracker
 └── README.md                     # This file
 ```
 
