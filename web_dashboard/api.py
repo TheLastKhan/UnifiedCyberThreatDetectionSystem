@@ -214,7 +214,7 @@ def analyze_email():
             
             # Get predictions from both models
             stacking_pred = _stacking_model.predict_proba(X)[0]
-            voting_pred = _voting_model.predict_proba(X)[0]
+            voting_pred = _voting_model.predict_proba(X)[0] if _voting_model is not None else stacking_pred
             
             # Average predictions
             phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
@@ -322,6 +322,8 @@ def analyze_emails_batch():
     """
     try:
         data = request.json
+        if data is None:
+            return jsonify({'error': 'No data provided'}), 400
         emails = data.get('emails', [])
         
         if not emails:
@@ -345,7 +347,7 @@ def analyze_emails_batch():
                 text = f"{subject} {body}".lower()
                 X = _tfidf_vectorizer.transform([text])
                 stacking_pred = _stacking_model.predict_proba(X)[0]
-                voting_pred = _voting_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0] if _voting_model is not None else stacking_pred
                 phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
                 
                 result['model_confidence'] = {
@@ -450,6 +452,8 @@ def analyze_web_logs_batch():
     """
     try:
         data = request.json
+        if data is None:
+            return jsonify({'error': 'No data provided'}), 400
         logs = data.get('logs', [])
         
         if not logs:
@@ -522,11 +526,13 @@ def analyze_unified():
     """
     try:
         data = request.json
+        if data is None:
+            return jsonify({'error': 'No data provided'}), 400
         threat_type = data.get('type', 'unknown')
         
         if threat_type == 'email':
             email_data = data.get('email', {})
-            subject = email_data.get('subject', '')
+            subject = email_data.get('subject', '') if email_data else ''
             body = email_data.get('body', '')
             sender = email_data.get('sender', '')
             
@@ -540,7 +546,7 @@ def analyze_unified():
                 text = f"{subject} {body}".lower()
                 X = _tfidf_vectorizer.transform([text])
                 stacking_pred = _stacking_model.predict_proba(X)[0]
-                voting_pred = _voting_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0] if _voting_model is not None else stacking_pred
                 phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
                 
                 result['model_confidence'] = {
@@ -553,8 +559,8 @@ def analyze_unified():
             
         elif threat_type == 'web':
             log_data = data.get('log', {})
-            path = log_data.get('path', '')
-            user_agent = log_data.get('user_agent', '').lower()
+            path = log_data.get('path', '') if log_data else ''
+            user_agent = (log_data.get('user_agent', '') if log_data else '').lower()
             
             features = [
                 len(path),
@@ -626,6 +632,8 @@ def generate_summary():
     """
     try:
         data = request.json
+        if data is None:
+            return jsonify({'error': 'No data provided'}), 400
         emails = data.get('emails', [])
         logs = data.get('logs', [])
         
@@ -640,7 +648,7 @@ def generate_summary():
                 text = f"{subject} {body}".lower()
                 X = _tfidf_vectorizer.transform([text])
                 stacking_pred = _stacking_model.predict_proba(X)[0]
-                voting_pred = _voting_model.predict_proba(X)[0]
+                voting_pred = _voting_model.predict_proba(X)[0] if _voting_model is not None else stacking_pred
                 phishing_prob = (stacking_pred[1] + voting_pred[1]) / 2
                 if phishing_prob > 0.5:
                     email_phishing_count += 1
@@ -837,6 +845,13 @@ def cache_stats():
             return jsonify({
                 'enabled': False,
                 'message': 'Redis cache not available'
+            }), 200
+        
+        # Check if client is available
+        if cache.client is None:
+            return jsonify({
+                'enabled': False,
+                'message': 'Redis client not initialized'
             }), 200
         
         # Get Redis INFO
@@ -1590,7 +1605,9 @@ def analyze_correlation():
         
         # Calculate Pearson correlation
         if len(email_counts) >= 3 and max(email_counts) > 0 and max(web_counts) > 0:
-            correlation, p_value = scipy_stats.pearsonr(email_counts, web_counts)
+            corr_result = scipy_stats.pearsonr(email_counts, web_counts)
+            correlation: float = float(corr_result[0])  # type: ignore
+            p_value: float = float(corr_result[1])  # type: ignore
         else:
             correlation = 0.0
             p_value = 1.0
@@ -1687,9 +1704,9 @@ def analyze_correlation():
         ]
         
         return jsonify({
-            'correlation_score': round(correlation, 3),
+            'correlation_score': round(float(correlation), 3),
             'correlation_strength': strength,
-            'p_value': round(p_value, 4),
+            'p_value': round(float(p_value), 4),
             'coordinated_attacks': coordinated_count,
             'coordinated_events': coordinated_events[-10:],  # Last 10 events
             'coordinated_ips': coordinated_ips[:10] if 'coordinated_ips' in locals() else [],  # Top 10 IPs
@@ -1720,7 +1737,7 @@ def get_user_settings():
         settings = get_settings()
         
         # Provide defaults if no settings exist
-        default_settings = {
+        default_settings: dict[str, str] = {
             'dark_mode': 'false',
             'threshold': '0.50',
             'auto_reload': 'true',
@@ -1728,12 +1745,13 @@ def get_user_settings():
             'daily_reports': 'true'
         }
         
-        # Merge with defaults
+        # Merge with defaults - convert to dict for type safety
+        settings_dict: dict[str, str] = {str(k): str(v) for k, v in settings.items()} if hasattr(settings, 'items') else dict(default_settings)
         for key, default_value in default_settings.items():
-            if key not in settings:
-                settings[key] = default_value
+            if key not in settings_dict:
+                settings_dict[key] = default_value
         
-        return jsonify(settings), 200
+        return jsonify(settings_dict), 200
         
     except Exception as e:
         print(f"[ERROR] Settings GET error: {e}")

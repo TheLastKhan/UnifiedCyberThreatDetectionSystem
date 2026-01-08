@@ -721,14 +721,25 @@ def analyze_web_logs():
         
         # If no logs array provided but individual fields exist, create log entry
         if not logs and ip_address:
+            # Parse log_entry if provided (raw Apache/Nginx log format)
+            raw_log_entry = data.get('log_entry', '')
+            if raw_log_entry:
+                # Extract path and user_agent from raw log entry
+                # Format: "GET /path HTTP/1.1 200 1234 Mozilla/5.0..."
+                path = raw_log_entry  # Use entire log as path for pattern matching
+                user_agent = raw_log_entry.lower()
+            else:
+                path = data.get('path', '/')
+                user_agent = data.get('user_agent', 'Unknown')
+            
             log_entry = {
                 'ip': ip_address,
                 'timestamp': data.get('timestamp', datetime.now().isoformat()),
                 'method': data.get('method', 'GET'),
-                'path': data.get('path', '/'),
+                'path': path,
                 'status': int(data.get('status', 200)),
                 'size': int(data.get('size', 0)),
-                'user_agent': data.get('user_agent', 'Unknown'),
+                'user_agent': user_agent,
                 'protocol': data.get('protocol', 'HTTP/1.1'),
                 'referer': data.get('referer', '-')
             }
