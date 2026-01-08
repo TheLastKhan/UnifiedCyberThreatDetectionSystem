@@ -8,7 +8,7 @@ import requests
 import json
 from typing import Dict, List, Tuple
 
-API_BASE = "http://localhost:5000/api"
+API_BASE = "http://localhost:5001/api"
 
 # Test cases with expected risk levels
 # Format: (name, subject, body, expected_label, expected_risk_range)

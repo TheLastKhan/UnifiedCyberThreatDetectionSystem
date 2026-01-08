@@ -125,7 +125,11 @@ class TFIDFEmailDetector:
             'lunch', 'coffee', 'dinner', 'call', 'chat', 'quick question',
             # Birthday/Celebration
             'happy birthday', 'birthday', 'celebrate', 'wishing you',
-            'best wishes', 'have a great day', 'wonderful', 'family and friends'
+            'best wishes', 'have a great day', 'wonderful', 'family and friends',
+            # Thank you / Gratitude
+            'thank you', 'thanks', 'thank you so much', 'thank for', 'appreciate',
+            'grateful', 'helpful', 'went well', 'went really well', 'great help',
+            'help with', 'your help'
         ]
         
         # Trusted domains (not suspicious even if present)

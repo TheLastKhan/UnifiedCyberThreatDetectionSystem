@@ -8,7 +8,7 @@ import requests
 import json
 import sys
 
-API_URL = 'http://localhost:5000'
+API_URL = 'http://localhost:5001'
 
 test_cases = [
     # ===== CLEARLY LEGITIMATE =====
