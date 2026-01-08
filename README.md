@@ -2,9 +2,10 @@
 
 [![Production Ready](https://img.shields.io/badge/status-production--ready-brightgreen)](docs/DEPLOYMENT_GUIDE.md)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](requirements.txt)
-[![Docker](https://img.shields.io/badge/docker-6%20containers-blue)](#-docker-deployment)
+[![Docker](https://img.shields.io/badge/docker-9%20containers-blue)](#-docker-deployment)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![AI Models](https://img.shields.io/badge/AI%20Models-BERT%20%7C%20FastText%20%7C%20TF--IDF-orange)](#-ai-models)
+[![XAI](https://img.shields.io/badge/XAI-LIME-purple)](#-explainability)
 
 > **Enterprise-grade AI-powered cyber threat detection platform** that combines email phishing detection and web log analysis to identify coordinated attacks in real-time using multiple machine learning models.
 
@@ -68,10 +69,11 @@ Traditional security systems rely on signature-based detection, which fails agai
 | 🌐 **Web Log Analysis** | Detects SQL injection, XSS, DDoS, and bot attacks | Isolation Forest |
 | 🔗 **Threat Correlation** | Links email and web threats to identify coordinated attacks | Pearson Correlation, IP Tracking |
 | 📊 **Real-time Dashboard** | Interactive charts, statistics, and threat visualization | Chart.js, JavaScript |
+| 🔬 **Explainable AI (XAI)** | LIME-based feature importance with stopwords filtering | LIME |
 | 🌍 **Multi-language Support** | Full Turkish and English interface | i18next |
 | 🌙 **Theme Support** | Dark and light mode with persistent preferences | CSS + LocalStorage + API |
 | 📥 **Import/Export** | Data exchange in Excel and JSON formats | pandas, openpyxl |
-| 🐳 **Docker Deployment** | Production-ready with 6 containers | Docker Compose |
+| 🐳 **Docker Deployment** | Production-ready with 9 containers | Docker Compose |
 | 📈 **Monitoring Stack** | Performance metrics and visualization | Prometheus, Grafana |
 | 🔐 **Security Features** | Rate limiting, input validation | Redis, Flask |
 
