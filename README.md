@@ -240,9 +240,13 @@ curl http://localhost:5000/api/health
 | Service | URL | Credentials | Purpose |
 |---------|-----|-------------|---------|
 | **Web Dashboard** | http://localhost:5000 | None | Main user interface |
+| **Nginx** | http://localhost:80, https://localhost:443 | None | Reverse proxy & SSL |
 | **Grafana** | http://localhost:3000 | admin / admin | Metrics visualization |
 | **Prometheus** | http://localhost:9090 | None | Metrics collection |
-| **PostgreSQL** | localhost:5432 | postgres / postgres | Database |
+| **Adminer** | http://localhost:8080 | - | Database management UI |
+| **Portainer** | http://localhost:9000 | (create on first login) | Docker management UI |
+| **Mailhog** | http://localhost:8025 | None | Email testing (SMTP: 1025) |
+| **PostgreSQL** | localhost:5432 | threat_user / threat_pass | Database |
 | **Redis** | localhost:6379 | None | Cache |
 
 ### 💻 Manual Installation (Development)
