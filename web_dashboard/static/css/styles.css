@@ -1497,3 +1497,106 @@ button {
     color: #1e8449;
     border: 1px solid #27ae60;
 }
+/* ==================== DARK MODE TEXT VISIBILITY FIX ==================== */
+
+.dark-mode h1, .dark-mode h2, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
+    color: #f1f5f9;
+}
+
+
+
+
+
+.dark-mode p, .dark-mode span, .dark-mode label, .dark-mode div {
+    color: inherit;
+}
+
+.dark-mode .metric-value, .dark-mode .metric-label {
+    color: #f1f5f9;
+}
+
+.dark-mode .result-metric span, .dark-mode .result-details {
+    color: #e2e8f0;
+}
+
+.dark-mode .form-group label {
+    color: #e2e8f0;
+}
+
+.dark-mode input, .dark-mode textarea, .dark-mode select {
+    background: #334155;
+    color: #f1f5f9;
+    border-color: #475569;
+}
+
+.dark-mode .alert-title, .dark-mode .alert-description {
+    color: #f1f5f9;
+}
+
+.dark-mode table th, .dark-mode table td {
+    color: #e2e8f0;
+}
+
+.dark-mode .chart-card h3 {
+    color: #f1f5f9;
+}
+
+
+
+/* Status badges - keep original colors in dark mode */
+.dark-mode .status-badge.danger,
+.dark-mode .status-badge.warning {
+    /* Keep original colors */
+}
+
+/* FontAwesome exclamation icons - keep red */
+.dark-mode .fa-exclamation-circle,
+.dark-mode .fa-exclamation-triangle {
+    color: #ef4444 !important;
+}
+
+.dark-mode .alert-high .alert-icon i,
+.dark-mode .alert-critical .alert-icon i {
+    color: #ef4444 !important;
+}
+
+/* Fix: Status badge text - different colors based on badge type */
+/* Default light badge - dark text */
+.dark-mode .status-badge:not(.success):not(.warning):not(.danger):not(.healthy) {
+    color: #1f2937;
+}
+
+/* Colored badges keep their original text color */
+.dark-mode .status-badge.success,
+.dark-mode .status-badge.warning,
+.dark-mode .status-badge.danger,
+.dark-mode .status-badge.healthy {
+    color: white;
+}
+
+/* Fix: Metric card h3 titles visible in dark mode */
+.dark-mode .metric-header h3 {
+    color: #f1f5f9 !important;
+}
+
+
+
+
+/* Sidebar nav items - white text in dark mode for visibility */
+.dark-mode .nav-item a {
+    color: #f1f5f9;
+}
+
+.dark-mode .nav-item a:hover {
+    color: white;
+}
+
+/* Sidebar nav text labels explicitly white in dark mode */
+.dark-mode .nav-item span {
+    color: #f1f5f9 !important;
+}
+
+/* Sidebar nav icons white in dark mode */
+.dark-mode .nav-item i {
+    color: #f1f5f9 !important;
+}
