@@ -64,6 +64,7 @@ except Exception as e:
 # Global instances for advanced models
 _bert_detector = None
 _fasttext_detector = None
+_tfidf_detector = None
 
 def get_bert_detector():
     """Get or create BERT detector instance (uses fine-tuned model)"""
@@ -98,6 +99,20 @@ def get_fasttext_detector():
             print(f"[ERROR] Failed to load FastText detector: {e}")
             return None
     return _fasttext_detector
+
+def get_tfidf_detector():
+    """Get or create TF-IDF detector instance"""
+    global _tfidf_detector
+    if not TFIDF_DETECTOR_AVAILABLE:
+        return None
+    if _tfidf_detector is None:
+        try:
+            _tfidf_detector = TFIDFEmailDetector()
+            print("[INFO] TF-IDF detector loaded successfully")
+        except Exception as e:
+            print(f"[ERROR] Failed to load TF-IDF detector: {e}")
+            return None
+    return _tfidf_detector
 
 
 # ============================================
@@ -635,11 +650,12 @@ def analyze_email_ensemble():
                 'message': 'No models available for prediction'
             }), 503
         
-        # Apply weighted voting
+        # Apply weighted voting with keyword boost
         ensemble_result = weighted_vote(
             bert_score=model_scores.get('bert'),
             fasttext_score=model_scores.get('fasttext'),
-            tfidf_score=model_scores.get('tfidf')
+            tfidf_score=model_scores.get('tfidf'),
+            full_text=full_text  # Pass full text for keyword-based phishing detection
         )
         
         total_time = (time.time() - start_time) * 1000
@@ -787,7 +803,7 @@ def analyze_web_logs():
                                "' or '", '" or "', "or '1'='1", 'or 1=1', "'=", '"=']
                 if any(kw in path for kw in sql_patterns):
                     patterns_detected.append('SQL Injection')
-                    severity_scores.append(0.9)
+                    severity_scores.append(0.75)  # High severity (0.7-0.85)
                 
                 # XSS patterns (high severity)
                 if any(pat in path for pat in ['<script', 'javascript:', 'onerror=', 'onclick=', 'alert(']):
@@ -797,7 +813,7 @@ def analyze_web_logs():
                 # Directory Traversal (medium severity)
                 if '../' in path or '..\\\\' in path:
                     patterns_detected.append('Directory Traversal')
-                    severity_scores.append(0.7)
+                    severity_scores.append(0.55)  # Medium severity (0.5-0.7)
                 
                 # Admin Access Attempt (low-medium severity)
                 if any(admin in path for admin in ['admin', 'wp-admin', 'phpmyadmin']):

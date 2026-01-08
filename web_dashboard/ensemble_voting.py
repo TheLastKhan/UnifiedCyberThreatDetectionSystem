@@ -20,7 +20,8 @@ def weighted_vote(
     bert_score: Optional[float] = None,
     fasttext_score: Optional[float] = None,
     tfidf_score: Optional[float] = None,
-    weights: Dict[str, float] = None
+    weights: Dict[str, float] = None,
+    full_text: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Combine model predictions using weighted voting
@@ -30,6 +31,7 @@ def weighted_vote(
         fasttext_score: FastText phishing probability (0-1), None if unavailable
         tfidf_score: TF-IDF phishing probability (0-1), None if unavailable
         weights: Custom weights dict, defaults to {'bert': 0.5, 'fasttext': 0.3, 'tfidf': 0.2}
+        full_text: Optional email text for keyword-based boost
     
     Returns:
         Dictionary with:
@@ -47,6 +49,52 @@ def weighted_vote(
             'fasttext': 0.3,
             'tfidf': 0.2
         }
+    
+    # Keyword-based phishing boost for common scam patterns
+    keyword_boost = 0.0
+    if full_text:
+        text_lower = full_text.lower()
+        print(f"[DEBUG] Checking keywords in text: {text_lower[:100]}...")
+        
+        # Lottery/Prize scam keywords (strong indicators)
+        lottery_keywords = ['lottery', 'you won', 'you have won', 'winner', 'prize', 
+                           'million dollars', 'million usd', '$1,000,000', 'cash prize',
+                           'claim your prize', 'congratulations you', 'selected winner']
+        
+        # Financial scam keywords
+        financial_keywords = ['bank details', 'bank account', 'wire transfer', 
+                             'send money', 'western union', 'moneygram', 
+                             'inheritance', 'beneficiary', 'next of kin']
+        
+        # Urgency keywords
+        urgency_keywords = ['act now', 'immediately', 'within 24 hours', 'urgent response',
+                           'expires today', 'last chance', 'don\'t miss', 'hurry']
+        
+        # Count keyword matches
+        lottery_matches = sum(1 for kw in lottery_keywords if kw in text_lower)
+        financial_matches = sum(1 for kw in financial_keywords if kw in text_lower)
+        urgency_matches = sum(1 for kw in urgency_keywords if kw in text_lower)
+        
+        print(f"[DEBUG] Keyword matches - lottery: {lottery_matches}, financial: {financial_matches}, urgency: {urgency_matches}")
+        
+        # Apply boost based on keyword combinations
+        if lottery_matches >= 2:  # Multiple lottery keywords = strong signal
+            keyword_boost += 0.25
+        elif lottery_matches >= 1:
+            keyword_boost += 0.15
+            
+        if financial_matches >= 2:
+            keyword_boost += 0.20
+        elif financial_matches >= 1:
+            keyword_boost += 0.10
+            
+        if urgency_matches >= 2:
+            keyword_boost += 0.10
+        elif urgency_matches >= 1:
+            keyword_boost += 0.05
+        
+        # Cap the boost
+        keyword_boost = min(keyword_boost, 0.35)
     
     # Track which models are available
     available_models = []
@@ -89,6 +137,11 @@ def weighted_vote(
         scores[model] * normalized_weights[model]
         for model in available_models
     )
+    
+    # Apply keyword boost and cap at 1.0
+    if keyword_boost > 0:
+        weighted_score = min(weighted_score + keyword_boost, 1.0)
+        logger.info(f"Keyword boost applied: +{keyword_boost:.2f} → final score: {weighted_score:.4f}")
     
     # Determine prediction
     prediction = 'phishing' if weighted_score > 0.5 else 'legitimate'
