@@ -136,14 +136,31 @@ class FastTextEmailDetector:
         # Short message detection - reduce false positives on casual messages
         # Common phishing indicators to check
         phishing_indicators = [
-            'urgent', 'verify', 'account', 'password', 'click', 'suspend',
-            'confirm', 'security', 'bank', 'credit', 'expire', 'immediately',
+            'urgent', 'verify your', 'account suspended', 'password', 'click here', 'suspended',
+            'confirm your', 'security alert', 'bank account', 'credit card', 'expire', 'immediately',
             'winner', 'prize', 'congratulation', 'lottery', 'paypal', 'bitcoin',
-            'wire', 'transfer', 'ssn', 'social security', 'cvv', 'pin',
-            'http://', 'https://', 'bit.ly', 'tinyurl', '.ru', '.cn'
+            'wire transfer', 'ssn', 'social security', 'cvv', 'pin',
+            'bit.ly', 'tinyurl', '.ru/', '.tk/', '.ml/'
         ]
         
-        has_phishing_indicator = any(ind in clean_text for ind in phishing_indicators)
+        # Legitimate indicators
+        legitimate_indicators = [
+            'meeting', 'schedule', 'project', 'report', 'deadline', 'presentation',
+            'thank you for your order', 'has been shipped', 'order confirmation',
+            'track your order', 'your package', 'delivery', 'estimated delivery',
+            'attached', 'please find', 'as discussed', 'follow up',
+            'regards', 'best regards', 'sincerely', 'cheers',
+            'looking forward', 'let me know', 'feel free',
+            'interview', 'position', 'resume', 'application',
+            'unsubscribe', 'newsletter', 'weekly', 'announced',
+            'lunch', 'coffee', 'dinner', 'call', 'chat', 'quick question',
+            'amazon.com', 'google.com', 'microsoft.com', 'linkedin.com'
+        ]
+        
+        phishing_count = sum(1 for ind in phishing_indicators if ind in clean_text)
+        legit_count = sum(1 for ind in legitimate_indicators if ind in clean_text)
+        
+        has_phishing_indicator = phishing_count > 0
         is_short_message = len(clean_text) < 100  # Less than 100 chars
         word_count = len(clean_text.split())
         is_very_short = word_count < 15  # Less than 15 words
@@ -174,9 +191,14 @@ class FastTextEmailDetector:
         # Convert to phishing score (0-1)
         phishing_score = score if label == "phishing" else 1 - score
         
-        # Short message correction: reduce false positives
-        # If very short message without phishing indicators, bias toward legitimate
-        if is_very_short and not has_phishing_indicator:
+        # CASE 1: Legitimate indicator correction
+        # If has legitimate indicators but no phishing indicators, reduce false positives
+        if legit_count > 0 and phishing_count == 0:
+            correction_factor = max(0.15, 1 - (legit_count * 0.25))
+            phishing_score = phishing_score * correction_factor
+            logger.debug(f"FastText legit indicator correction: {phishing_score:.2f}")
+        # CASE 2: Short message correction
+        elif is_very_short and not has_phishing_indicator:
             # Apply correction factor - reduce phishing score for short casual messages
             correction_factor = 0.3  # Reduce phishing confidence by 70%
             phishing_score = phishing_score * correction_factor

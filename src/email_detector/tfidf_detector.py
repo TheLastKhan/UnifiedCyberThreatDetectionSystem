@@ -102,15 +102,33 @@ class TFIDFEmailDetector:
         
         # Short message detection - reduce false positives on casual messages
         clean_text = " ".join(text.lower().split())
+        
+        # Phishing indicators
         phishing_indicators = [
-            'urgent', 'verify', 'account', 'password', 'click', 'suspend',
-            'confirm', 'security', 'bank', 'credit', 'expire', 'immediately',
+            'urgent', 'verify your', 'account suspended', 'password', 'click here', 'suspended',
+            'confirm your', 'security alert', 'bank account', 'credit card', 'expire', 'immediately',
             'winner', 'prize', 'congratulation', 'lottery', 'paypal', 'bitcoin',
-            'wire', 'transfer', 'ssn', 'social security', 'cvv', 'pin',
-            'http://', 'https://', 'bit.ly', 'tinyurl', '.ru', '.cn'
+            'wire transfer', 'ssn', 'social security', 'cvv', 'pin',
+            'bit.ly', 'tinyurl', '.ru/', '.tk/', '.ml/'
         ]
         
-        has_phishing_indicator = any(ind in clean_text for ind in phishing_indicators)
+        # Legitimate indicators
+        legitimate_indicators = [
+            'meeting', 'schedule', 'project', 'report', 'deadline', 'presentation',
+            'thank you for your order', 'has been shipped', 'order confirmation',
+            'track your order', 'your package', 'delivery',
+            'attached', 'please find', 'as discussed', 'follow up',
+            'regards', 'best regards', 'sincerely', 'cheers',
+            'looking forward', 'let me know', 'feel free',
+            'interview', 'position', 'resume', 'application',
+            'unsubscribe', 'newsletter', 'weekly', 'announced',
+            'lunch', 'coffee', 'dinner', 'call', 'chat', 'quick question',
+            'amazon.com', 'google.com', 'microsoft.com', 'linkedin.com'
+        ]
+        
+        phishing_count = sum(1 for ind in phishing_indicators if ind in clean_text)
+        legit_count = sum(1 for ind in legitimate_indicators if ind in clean_text)
+        
         word_count = len(clean_text.split())
         is_very_short = word_count < 15
         is_short_message = len(clean_text) < 100
@@ -126,13 +144,19 @@ class TFIDFEmailDetector:
         phishing_score = probabilities[1]  # Probability of class 1 (phishing)
         confidence = max(probabilities)
         
-        # Short message correction: reduce false positives
-        if is_very_short and not has_phishing_indicator:
-            # Apply correction factor for short casual messages
+        # Apply corrections based on indicators
+        # CASE 1: High phishing score but has legitimate indicators and no phishing indicators
+        if phishing_score > 0.5 and legit_count > 0 and phishing_count == 0:
+            correction_factor = max(0.2, 1 - (legit_count * 0.25))
+            phishing_score = phishing_score * correction_factor
+            logger.info(f"TF-IDF legit indicator correction: {phishing_score:.2f}")
+        
+        # CASE 2: Short message with no phishing indicators
+        elif is_very_short and phishing_count == 0:
             correction_factor = 0.3
             phishing_score = phishing_score * correction_factor
             logger.info(f"TF-IDF short message correction applied: {phishing_score:.2f}")
-        elif is_short_message and not has_phishing_indicator:
+        elif is_short_message and phishing_count == 0:
             correction_factor = 0.5
             phishing_score = phishing_score * correction_factor
         

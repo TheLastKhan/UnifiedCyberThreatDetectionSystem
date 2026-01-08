@@ -243,12 +243,31 @@ class BertEmailDetector:
         
         # Legitimate email indicators (reduce false positives)
         legitimate_indicators = [
+            # Business/Work
             'meeting', 'schedule', 'project', 'report', 'deadline',
-            'thank you for your order', 'has been shipped',
             'attached is', 'please find attached', 'as discussed',
             'follow up', 'following up', 'as per our conversation',
             'regards', 'best regards', 'sincerely', 'cheers',
-            'looking forward', 'let me know', 'feel free'
+            'looking forward', 'let me know', 'feel free',
+            'availability', 'interview', 'position', 'resume', 'application',
+            'quarterly', 'annual', 'budget', 'proposal', 'presentation',
+            # E-commerce (legitimate)
+            'thank you for your order', 'has been shipped', 'order confirmation',
+            'track your order', 'your package', 'delivery', 'shipped',
+            'amazon.com', 'ebay.com', 'walmart.com', 'target.com',
+            # Newsletter/Marketing (legitimate)
+            'unsubscribe', 'weekly news', 'newsletter', 'this week',
+            'announced', 'released', 'update', 'results',
+            # Casual/Personal
+            'lunch', 'coffee', 'dinner', 'call', 'chat',
+            'how are you', 'hope you', 'quick question'
+        ]
+        
+        # Trusted domains (not phishing even if mentioned)
+        trusted_domains = [
+            'amazon.com', 'google.com', 'microsoft.com', 'apple.com',
+            'ebay.com', 'walmart.com', 'target.com', 'linkedin.com',
+            'github.com', 'stackoverflow.com'
         ]
         
         # Count keyword matches
@@ -256,35 +275,43 @@ class BertEmailDetector:
         medium_count = sum(1 for kw in medium_priority_keywords if kw in text)
         critical_count = sum(1 for kw in critical_keywords if kw in text)
         legit_count = sum(1 for kw in legitimate_indicators if kw in text)
+        trusted_domain_count = sum(1 for domain in trusted_domains if domain in text)
         
-        # Check for suspicious URLs
+        # Check for suspicious URLs (but not trusted domains)
         url_suspicious = any(pattern in text for pattern in suspicious_url_patterns)
+        # If text contains trusted domain, reduce suspicion
+        if trusted_domain_count > 0:
+            url_suspicious = False
         
         # Check if email is very short and informal (likely false positive)
         word_count = len(text.split())
-        is_short_informal = word_count < 20 and not any(kw in text for kw in ['http', 'click', 'verify', 'password', 'account', 'suspended', 'urgent'])
+        is_short_informal = word_count < 20 and not any(kw in text for kw in ['http', 'click', 'verify', 'password', 'suspended', 'urgent', 'immediately'])
         
         # Calculate total phishing indicator score
         phishing_indicator_score = critical_count * 3 + high_count * 2 + medium_count * 1
         if url_suspicious:
             phishing_indicator_score += 2
         
-        # CASE 1: High base score but NO phishing indicators -> likely false positive
-        if base_score > 0.5 and phishing_indicator_score == 0:
+        # Subtract legitimate indicators from phishing score
+        if legit_count > 0 or trusted_domain_count > 0:
+            phishing_indicator_score = max(0, phishing_indicator_score - (legit_count + trusted_domain_count * 2))
+        
+        # CASE 1: High base score but FEW or NO phishing indicators -> likely false positive
+        if base_score > 0.5 and phishing_indicator_score <= 1:
             # Strong reduction for short informal messages with no indicators
             if is_short_informal:
                 adjusted_score = max(0.1, base_score * 0.15)
                 logger.debug(f"False positive correction (short informal): {base_score:.2f} -> {adjusted_score:.2f}")
                 return adjusted_score
             
-            # Moderate reduction if legitimate indicators present
-            if legit_count > 0:
-                reduction = min(0.5, legit_count * 0.15)
+            # Strong reduction if legitimate indicators present and no critical phishing indicators
+            if (legit_count > 0 or trusted_domain_count > 0) and critical_count == 0:
+                reduction = min(0.7, (legit_count + trusted_domain_count * 2) * 0.2)
                 adjusted_score = max(0.05, base_score - reduction)
                 logger.debug(f"False positive correction (legit indicators): {base_score:.2f} -> {adjusted_score:.2f}")
                 return adjusted_score
             
-            # General reduction for high score with no phishing indicators
+            # General reduction for high score with no/few phishing indicators
             adjusted_score = max(0.2, base_score * 0.3)
             logger.debug(f"False positive correction (no indicators): {base_score:.2f} -> {adjusted_score:.2f}")
             return adjusted_score
@@ -295,22 +322,31 @@ class BertEmailDetector:
             
             # Critical keywords = strong boost
             if critical_count > 0:
-                boost += min(0.4, critical_count * 0.2)
+                boost += min(0.5, critical_count * 0.25)
             
             # High priority = moderate boost
             if high_count > 0:
-                boost += min(0.3, high_count * 0.1)
+                boost += min(0.4, high_count * 0.15)
             
             # Medium priority = small boost (only if multiple)
             if medium_count >= 2:
-                boost += min(0.2, (medium_count - 1) * 0.05)
+                boost += min(0.3, (medium_count - 1) * 0.1)
             
             # Suspicious URL = additional boost
             if url_suspicious:
-                boost += 0.15
+                boost += 0.2
+            
+            # Extra boost if multiple indicator types present
+            indicator_types = sum([critical_count > 0, high_count > 0, medium_count >= 2, url_suspicious])
+            if indicator_types >= 2:
+                boost += 0.15  # Compound indicator bonus
             
             if boost > 0:
+                # Ensure phishing emails with clear indicators get high enough score
                 adjusted_score = min(0.99, base_score + boost)
+                # If boost is significant and we have multiple indicators, ensure minimum score
+                if boost >= 0.4 and indicator_types >= 2:
+                    adjusted_score = max(adjusted_score, 0.75)
                 logger.debug(f"Phishing boost applied: {base_score:.2f} -> {adjusted_score:.2f} (boost: {boost:.2f})")
                 return adjusted_score
         
