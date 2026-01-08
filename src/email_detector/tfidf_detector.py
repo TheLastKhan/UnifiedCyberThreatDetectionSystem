@@ -123,11 +123,18 @@ class TFIDFEmailDetector:
             'interview', 'position', 'resume', 'application',
             'unsubscribe', 'newsletter', 'weekly', 'announced',
             'lunch', 'coffee', 'dinner', 'call', 'chat', 'quick question',
-            'amazon.com', 'google.com', 'microsoft.com', 'linkedin.com'
+            # Birthday/Celebration
+            'happy birthday', 'birthday', 'celebrate', 'wishing you',
+            'best wishes', 'have a great day', 'wonderful', 'family and friends'
         ]
+        
+        # Trusted domains (not suspicious even if present)
+        trusted_domains = ['amazon.com', 'google.com', 'microsoft.com', 'linkedin.com', 
+                          'ebay.com', 'walmart.com', 'target.com']
         
         phishing_count = sum(1 for ind in phishing_indicators if ind in clean_text)
         legit_count = sum(1 for ind in legitimate_indicators if ind in clean_text)
+        trusted_count = sum(1 for d in trusted_domains if d in clean_text)
         
         word_count = len(clean_text.split())
         is_very_short = word_count < 15
@@ -145,11 +152,13 @@ class TFIDFEmailDetector:
         confidence = max(probabilities)
         
         # Apply corrections based on indicators
-        # CASE 1: High phishing score but has legitimate indicators and no phishing indicators
-        if phishing_score > 0.5 and legit_count > 0 and phishing_count == 0:
-            correction_factor = max(0.2, 1 - (legit_count * 0.25))
-            phishing_score = phishing_score * correction_factor
-            logger.info(f"TF-IDF legit indicator correction: {phishing_score:.2f}")
+        # CASE 1: High phishing score but has legitimate indicators AND trusted domains, no phishing indicators
+        if phishing_score > 0.5 and phishing_count == 0:
+            total_legit = legit_count + (trusted_count * 2)  # Trusted domains count double
+            if total_legit >= 2:
+                correction_factor = max(0.15, 1 - (total_legit * 0.2))
+                phishing_score = phishing_score * correction_factor
+                logger.info(f"TF-IDF legit indicator correction: {phishing_score:.2f}")
         
         # CASE 2: Short message with no phishing indicators
         elif is_very_short and phishing_count == 0:

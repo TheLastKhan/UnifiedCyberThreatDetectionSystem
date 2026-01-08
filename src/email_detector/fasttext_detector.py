@@ -154,7 +154,10 @@ class FastTextEmailDetector:
             'interview', 'position', 'resume', 'application',
             'unsubscribe', 'newsletter', 'weekly', 'announced',
             'lunch', 'coffee', 'dinner', 'call', 'chat', 'quick question',
-            'amazon.com', 'google.com', 'microsoft.com', 'linkedin.com'
+            'amazon.com', 'google.com', 'microsoft.com', 'linkedin.com',
+            # Birthday/Celebration
+            'happy birthday', 'birthday', 'celebrate', 'wishing you',
+            'best wishes', 'have a great day', 'wonderful', 'family and friends'
         ]
         
         phishing_count = sum(1 for ind in phishing_indicators if ind in clean_text)
@@ -191,22 +194,34 @@ class FastTextEmailDetector:
         # Convert to phishing score (0-1)
         phishing_score = score if label == "phishing" else 1 - score
         
-        # CASE 1: Legitimate indicator correction
-        # If has legitimate indicators but no phishing indicators, reduce false positives
-        if legit_count > 0 and phishing_count == 0:
-            correction_factor = max(0.15, 1 - (legit_count * 0.25))
+        # Keep the model's phishing prediction if it has high confidence
+        # Only apply corrections for potential false positives
+        model_says_phishing = label == "phishing"
+        high_confidence = score > 0.9
+        
+        # CASE 1: False Positive Correction
+        # Only reduce if model says phishing, NO phishing indicators exist, and has STRONG legitimate signals
+        if model_says_phishing and phishing_count == 0 and legit_count >= 3 and not high_confidence:
+            correction_factor = max(0.3, 1 - (legit_count * 0.15))
             phishing_score = phishing_score * correction_factor
             logger.debug(f"FastText legit indicator correction: {phishing_score:.2f}")
-        # CASE 2: Short message correction
-        elif is_very_short and not has_phishing_indicator:
+        # CASE 2: Short message correction (only for non-phishing indicators)
+        elif is_very_short and phishing_count == 0:
             # Apply correction factor - reduce phishing score for short casual messages
             correction_factor = 0.3  # Reduce phishing confidence by 70%
             phishing_score = phishing_score * correction_factor
             logger.debug(f"Short message correction applied: {phishing_score:.2f}")
-        elif is_short_message and not has_phishing_indicator:
+        elif is_short_message and phishing_count == 0:
             # Moderate correction for medium-short messages
             correction_factor = 0.5
             phishing_score = phishing_score * correction_factor
+        
+        # CASE 3: False Negative Boost
+        # If model says legitimate but has phishing indicators, boost score
+        if not model_says_phishing and phishing_count >= 2:
+            boost = min(0.8, phishing_count * 0.15)
+            phishing_score = min(1.0, phishing_score + boost)
+            logger.debug(f"FastText phishing boost applied: {phishing_score:.2f}")
         
         # Determine final label
         final_label = "phishing" if phishing_score > 0.5 else "legitimate"

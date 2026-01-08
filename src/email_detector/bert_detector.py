@@ -260,7 +260,11 @@ class BertEmailDetector:
             'announced', 'released', 'update', 'results',
             # Casual/Personal
             'lunch', 'coffee', 'dinner', 'call', 'chat',
-            'how are you', 'hope you', 'quick question'
+            'how are you', 'hope you', 'quick question',
+            # Birthday/Celebration (not phishing)
+            'happy birthday', 'birthday', 'celebrate', 'celebrating',
+            'wishing you', 'best wishes', 'have a great day',
+            'amazing day', 'wonderful', 'family and friends'
         ]
         
         # Trusted domains (not phishing even if mentioned)
