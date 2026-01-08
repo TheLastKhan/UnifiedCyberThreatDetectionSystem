@@ -1,4 +1,4 @@
-/* ==================== MODERN DASHBOARD STYLES ==================== */
+﻿/* ==================== MODERN DASHBOARD STYLES ==================== */
 
 :root {
     --primary: #6366f1;
@@ -285,6 +285,7 @@ body.dark-mode {
 .metric-card {
     background: white;
     border-radius: 12px;
+    margin-bottom: 10px;
     padding: 20px;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
@@ -1151,9 +1152,9 @@ body.dark-mode {
     background: #e74c3c;
 }
 
-/* ==================== GENEL FIX: Sidebar Çakışmasını Önle ==================== */
+/* ==================== GENEL FIX: Sidebar Ã‡akÄ±ÅŸmasÄ±nÄ± Ã–nle ==================== */
 
-/* Tüm card, container ve content elementleri için genel kurallar */
+/* TÃ¼m card, container ve content elementleri iÃ§in genel kurallar */
 .page-content,
 .card,
 .panel,
@@ -1169,7 +1170,7 @@ body.dark-mode {
     z-index: 10;
 }
 
-/* Tüm form elementleri için */
+/* TÃ¼m form elementleri iÃ§in */
 input,
 textarea,
 select,
@@ -1178,7 +1179,7 @@ button {
     max-width: 100%;
 }
 
-/* Responsive: Mobile'da sidebar overlap'i tamamen kaldır */
+/* Responsive: Mobile'da sidebar overlap'i tamamen kaldÄ±r */
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
