@@ -192,10 +192,10 @@ class BertEmailDetector:
     
     def _apply_keyword_boost(self, text: str, base_score: float) -> float:
         """
-        Apply keyword-based boost to phishing score
+        Apply keyword-based adjustment to phishing score
         
-        If text contains strong phishing indicators but model gives low score,
-        boost the score based on keyword matches.
+        - If text contains phishing indicators but model gives low score, boost it
+        - If text has NO phishing indicators but model gives high score, reduce it
         
         Args:
             text: Lowercased email text
@@ -222,56 +222,97 @@ class BertEmailDetector:
         medium_priority_keywords = [
             'urgent', 'immediately', 'suspended', 'compromised',
             'verify', 'confirm', 'expire', 'limited time',
-            'account', 'password', 'login', 'security',
-            'dear user', 'dear customer', 'dear member'
+            'password', 'login', 'security',
+            'dear user', 'dear customer', 'dear member',
+            'click', 'link below', 'attached'
         ]
         
         # Critical indicators (almost always phishing)
         critical_keywords = [
             'ssn', 'social security', 'credit card number', 'cvv',
             'bank account', 'wire transfer', 'bitcoin', 'cryptocurrency',
-            'nigerian prince', 'lottery winner', 'you have won'
+            'nigerian prince', 'lottery winner', 'you have won',
+            'inheritance', 'million dollars', 'congratulations you'
         ]
         
         # Suspicious URL patterns
         suspicious_url_patterns = [
             'http://', '.ru/', '.tk/', '.ml/', 'bit.ly', 'tinyurl',
-            'verify', 'secure', 'login', 'account', 'update'
+            '-verify', '-secure', '-login', '-account', '-update'
+        ]
+        
+        # Legitimate email indicators (reduce false positives)
+        legitimate_indicators = [
+            'meeting', 'schedule', 'project', 'report', 'deadline',
+            'thank you for your order', 'has been shipped',
+            'attached is', 'please find attached', 'as discussed',
+            'follow up', 'following up', 'as per our conversation',
+            'regards', 'best regards', 'sincerely', 'cheers',
+            'looking forward', 'let me know', 'feel free'
         ]
         
         # Count keyword matches
         high_count = sum(1 for kw in high_priority_keywords if kw in text)
         medium_count = sum(1 for kw in medium_priority_keywords if kw in text)
         critical_count = sum(1 for kw in critical_keywords if kw in text)
+        legit_count = sum(1 for kw in legitimate_indicators if kw in text)
         
         # Check for suspicious URLs
         url_suspicious = any(pattern in text for pattern in suspicious_url_patterns)
         
-        # Calculate boost
-        boost = 0.0
+        # Check if email is very short and informal (likely false positive)
+        word_count = len(text.split())
+        is_short_informal = word_count < 20 and not any(kw in text for kw in ['http', 'click', 'verify', 'password', 'account', 'suspended', 'urgent'])
         
-        # Critical keywords = strong boost
-        if critical_count > 0:
-            boost += min(0.4, critical_count * 0.2)
-        
-        # High priority = moderate boost
-        if high_count > 0:
-            boost += min(0.3, high_count * 0.1)
-        
-        # Medium priority = small boost
-        if medium_count >= 3:
-            boost += min(0.2, (medium_count - 2) * 0.05)
-        
-        # Suspicious URL = additional boost
+        # Calculate total phishing indicator score
+        phishing_indicator_score = critical_count * 3 + high_count * 2 + medium_count * 1
         if url_suspicious:
-            boost += 0.15
+            phishing_indicator_score += 2
         
-        # Apply boost only if base score is below threshold
-        # This prevents over-boosting already high scores
-        if base_score < 0.7 and boost > 0:
-            adjusted_score = min(0.99, base_score + boost)
-            logger.debug(f"Keyword boost applied: {base_score:.2f} -> {adjusted_score:.2f} (boost: {boost:.2f})")
+        # CASE 1: High base score but NO phishing indicators -> likely false positive
+        if base_score > 0.5 and phishing_indicator_score == 0:
+            # Strong reduction for short informal messages with no indicators
+            if is_short_informal:
+                adjusted_score = max(0.1, base_score * 0.15)
+                logger.debug(f"False positive correction (short informal): {base_score:.2f} -> {adjusted_score:.2f}")
+                return adjusted_score
+            
+            # Moderate reduction if legitimate indicators present
+            if legit_count > 0:
+                reduction = min(0.5, legit_count * 0.15)
+                adjusted_score = max(0.05, base_score - reduction)
+                logger.debug(f"False positive correction (legit indicators): {base_score:.2f} -> {adjusted_score:.2f}")
+                return adjusted_score
+            
+            # General reduction for high score with no phishing indicators
+            adjusted_score = max(0.2, base_score * 0.3)
+            logger.debug(f"False positive correction (no indicators): {base_score:.2f} -> {adjusted_score:.2f}")
             return adjusted_score
+        
+        # CASE 2: Low base score but HAS phishing indicators -> boost it
+        if base_score < 0.7 and phishing_indicator_score > 0:
+            boost = 0.0
+            
+            # Critical keywords = strong boost
+            if critical_count > 0:
+                boost += min(0.4, critical_count * 0.2)
+            
+            # High priority = moderate boost
+            if high_count > 0:
+                boost += min(0.3, high_count * 0.1)
+            
+            # Medium priority = small boost (only if multiple)
+            if medium_count >= 2:
+                boost += min(0.2, (medium_count - 1) * 0.05)
+            
+            # Suspicious URL = additional boost
+            if url_suspicious:
+                boost += 0.15
+            
+            if boost > 0:
+                adjusted_score = min(0.99, base_score + boost)
+                logger.debug(f"Phishing boost applied: {base_score:.2f} -> {adjusted_score:.2f} (boost: {boost:.2f})")
+                return adjusted_score
         
         return base_score
     
