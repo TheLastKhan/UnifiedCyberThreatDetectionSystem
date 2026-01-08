@@ -504,21 +504,25 @@ def analyze_email_ensemble():
         full_text = f"{email_subject} {email_content}".strip()
         
         # 1. BERT (50% weight)
+        # 1. BERT (50% weight)
         if BERT_AVAILABLE:
             try:
                 model_start = time.time()
-                bert_detector = _get_bert_detector()
+                bert_detector = get_bert_detector()
                 if bert_detector:
-                    bert_result = bert_detector.predict(full_text)
+                    # Use predict_with_explanation for LIME
+                    bert_full_result = bert_detector.predict_with_explanation(full_text)
                     bert_time = (time.time() - model_start) * 1000
                     
                     model_results['bert'] = {
-                        'prediction': bert_result.label,
-                        'score': float(bert_result.score),
-                        'confidence': float(bert_result.confidence),
-                        'time_ms': round(bert_time, 2)
+                        'prediction': bert_full_result['prediction'],
+                        'score': float(bert_full_result['score']),
+                        'confidence': float(bert_full_result['confidence']),
+                        'time_ms': round(bert_time, 2),
+                        'risk_level': 'critical' if float(bert_full_result['score']) >= 0.99 else 'high' if float(bert_full_result['score']) >= 0.90 else 'medium' if float(bert_full_result['score']) >= 0.70 else 'low',
+                        'lime_breakdown': bert_full_result.get('lime_breakdown', [])
                     }
-                    model_scores['bert'] = float(bert_result.score)
+                    model_scores['bert'] = float(bert_full_result['score'])
             except Exception as e:
                 print(f"[WARNING] BERT prediction failed: {e}")
         
@@ -526,18 +530,20 @@ def analyze_email_ensemble():
         if FASTTEXT_AVAILABLE:
             try:
                 model_start = time.time()
-                fasttext_detector = _get_fasttext_detector()
+                fasttext_detector = get_fasttext_detector()
                 if fasttext_detector:
-                    ft_result = fasttext_detector.predict(full_text)
+                    ft_full_result = fasttext_detector.predict_with_explanation(full_text)
                     ft_time = (time.time() - model_start) * 1000
                     
                     model_results['fasttext'] = {
-                        'prediction': ft_result.label,
-                        'score': float(ft_result.score),
-                        'confidence': float(ft_result.confidence),
-                        'time_ms': round(ft_time, 2)
+                        'prediction': ft_full_result['prediction'],
+                        'score': float(ft_full_result['score']),
+                        'confidence': float(ft_full_result['confidence']),
+                        'time_ms': round(ft_time, 2),
+                        'risk_level': 'critical' if float(ft_full_result['score']) >= 0.90 else 'high' if float(ft_full_result['score']) >= 0.70 else 'medium' if float(ft_full_result['score']) >= 0.50 else 'low',
+                        'lime_breakdown': ft_full_result.get('lime_breakdown', [])
                     }
-                    model_scores['fasttext'] = float(ft_result.score)
+                    model_scores['fasttext'] = float(ft_full_result['score'])
             except Exception as e:
                 print(f"[WARNING] FastText prediction failed: {e}")
         
@@ -547,16 +553,18 @@ def analyze_email_ensemble():
                 model_start = time.time()
                 from src.email_detector.tfidf_detector import TFIDFEmailDetector
                 tfidf_detector = TFIDFEmailDetector()
-                tfidf_result = tfidf_detector.predict(full_text)
+                tfidf_full_result = tfidf_detector.predict_with_explanation(full_text)
                 tfidf_time = (time.time() - model_start) * 1000
                 
                 model_results['tfidf'] = {
-                    'prediction': tfidf_result.label,
-                    'score': float(tfidf_result.score),
-                    'confidence': float(tfidf_result.confidence),
-                    'time_ms': round(tfidf_time, 2)
+                    'prediction': tfidf_full_result['prediction'],
+                    'score': float(tfidf_full_result['score']),
+                    'confidence': float(tfidf_full_result['confidence']),
+                    'time_ms': round(tfidf_time, 2),
+                    'risk_level': 'critical' if float(tfidf_full_result['score']) >= 0.8 else 'high' if float(tfidf_full_result['score']) >= 0.6 else 'medium' if float(tfidf_full_result['score']) >= 0.4 else 'low',
+                    'lime_breakdown': tfidf_full_result.get('lime_breakdown', [])
                 }
-                model_scores['tfidf'] = float(tfidf_result.score)
+                model_scores['tfidf'] = float(tfidf_full_result['score'])
             except Exception as e:
                 print(f"[WARNING] TF-IDF prediction failed: {e}")
         
