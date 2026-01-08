@@ -1171,11 +1171,11 @@ function displayWebResults(result) {
         const scorePercent = result.model_analysis.anomaly_score_percent || (result.model_analysis.anomaly_score * 100);
         const requestFreq = result.model_analysis.request_frequency || 0;
 
-                const webBadge = document.getElementById('webResultBadge');
-                webBadge.textContent = isAnomaly ? 'ANOMALY DETECTED' : 'NORMAL';
+        const webBadge = document.getElementById('webResultBadge');
+        webBadge.textContent = isAnomaly ? 'ANOMALY DETECTED' : 'NORMAL';
         // Use standard classes to match VirusTotal style (Square-ish + Gradient)
         webBadge.className = isAnomaly ? 'result-badge badge-warning' : 'result-badge badge-success';
-        
+
         // Remove ALL inline overrides to allow CSS to take effect
         webBadge.style = '';
 
@@ -2395,9 +2395,9 @@ async function checkEmailDomainReputation(email) {
         const suspiciousCount = data.suspicious || 0;
 
         // Clear any inline styles and classes first
-                // Reset to let CSS classes work
+        // Reset to let CSS classes work
         vtBadge.style = '';
-        
+
         if (maliciousCount > 0) {
             vtBadge.textContent = '🚨 MALICIOUS';
             vtBadge.className = 'result-badge badge-danger';
@@ -2438,7 +2438,7 @@ async function checkIPReputation(ip) {
 
         if (vtBadge) {
             // Clear any inline styles and classes first
-                        // Reset to let CSS classes work
+            // Reset to let CSS classes work
             vtBadge.style = '';
 
             if (maliciousCount > 0) {
