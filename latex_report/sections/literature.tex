@@ -1,0 +1,99 @@
+% ====== LITERATURE ANALYSIS ======
+\section{Literature Analysis}
+
+\subsection{Email Phishing Detection}
+
+Email phishing remains one of the most prevalent cyber threats, with the Anti-Phishing Working Group (APWG) reporting over 1.2 million unique phishing attacks in 2024. The academic and industrial research communities have developed numerous approaches to combat this threat.
+
+\textbf{Traditional rule-based approaches} relied primarily on blacklists and heuristic rules in early phishing detection systems. Bergholz et al. (2010) developed one of the first comprehensive rule-based systems, analysing email headers, content patterns, and embedded URLs. While these systems achieved reasonable accuracy (70--75\%), they suffered from high false positive rates and inability to detect zero-day phishing campaigns \cite{bergholz2010}.
+
+\textbf{Machine learning approaches} to phishing detection gained momentum in the early 2010s. Abu-Nimeh et al. (2007) compared multiple ML algorithms including Naive Bayes, SVM, and Random Forest, finding that ensemble methods generally outperformed single classifiers \cite{abunimeh2007}. Their work established the foundation for feature-based phishing detection.
+
+In this context, Fette et al. (2007) introduced PILFER, a system that extracted ten simple features from email headers and achieved 92\% accuracy with less than 1\% false positive rate \cite{fette2007}. This seminal work demonstrated that carefully selected features could enable effective phishing detection without analysing email content directly.
+
+\textbf{Deep learning approaches} have been the focus of more recent work. Hiransha et al. (2018) applied LSTM networks to phishing email detection, achieving 94\% accuracy by analysing sequential patterns in email text \cite{hiransha2018}. However, their approach required substantial computational resources and lacked interpretability.
+
+\textbf{URL and domain analysis techniques} were developed by researchers recognizing that URLs are critical components of phishing emails. Ma et al. (2009) used lexical and host-based features extracted from URLs to detect phishing websites with 95--99\% accuracy \cite{ma2009}. Their work highlighted the importance of domain reputation and URL structure analysis.
+
+\subsection{Web Log Analysis and Anomaly Detection}
+
+Web server log analysis for security purposes has been an active research area for over two decades, evolving from simple signature-based detection to sophisticated behavioural analysis.
+
+\textbf{Signature-based intrusion detection systems} relied on pattern matching against known attack patterns in early web security implementations. Roesch (1999) developed Snort, one of the most widely used signature-based intrusion detection systems \cite{roesch1999}. While effective against known attacks, signature-based approaches struggle with novel attack patterns and generate high false positive rates.
+
+\textbf{Anomaly detection approaches} were explored by researchers to address the limitations of signature-based detection. Lane and Brodley (1999) pioneered the use of machine learning for anomaly detection in web logs, using sequence-based analysis to identify unusual access patterns \cite{lane1999}.
+
+In a significant advancement, Kruegel and Vigna (2003) developed a multi-model approach that combined several anomaly detection techniques, including statistical analysis of parameter distributions and state-machine analysis of application workflow \cite{kruegel2003}. Their system achieved significantly better detection rates than single-model approaches.
+
+\textbf{Isolation Forest for anomaly detection} gained prominence with the work of Liu et al. (2008), who introduced the algorithm as a cornerstone of the field \cite{liu2008}. The algorithm's key insight is that anomalies are rare and different, making them easier to isolate than normal instances. Numerous studies have validated its effectiveness for various anomaly detection tasks, including network security.
+
+In the context of web security, Zhang et al. (2019) applied Isolation Forest specifically to web log analysis for detecting web application attacks, achieving 87\% detection accuracy with low false positive rates \cite{zhang2019}. Their work demonstrated that unsupervised learning approaches could effectively identify novel attack patterns without requiring labeled training data.
+
+\textbf{Behavioural analysis} was introduced by Alshammari and Zincir-Heywood (2009) through behavioural profiling for web application security, creating baseline profiles of normal user behaviour and detecting deviations \cite{alshammari2009}. This approach proved particularly effective against attacks that blend into normal traffic patterns.
+
+\subsection{Explainable AI in Cybersecurity}
+
+The need for explainability in security AI systems has received increasing attention as machine learning becomes more prevalent in cybersecurity operations.
+
+\textbf{Local Interpretable Model-agnostic Explanations (LIME)} were introduced by Ribeiro et al. (2016) as a groundbreaking technique for explaining individual predictions of any classifier \cite{ribeiro2016}. By training local surrogate models around specific predictions, LIME provides human-interpretable explanations. While originally demonstrated on image and text classification tasks, LIME has been successfully applied to security domains.
+
+In the specific context of malware detection, Marino et al. (2018) used LIME to explain decisions, demonstrating that explainable AI could help security analysts understand and trust automated detection systems \cite{marino2018}. Their work showed that explanations improved analyst confidence and reduced time spent investigating false positives.
+
+Other XAI approaches such as SHAP (SHapley Additive exPlanations) by Lundberg and Lee (2017) provide game-theory based feature attribution \cite{lundberg2017}. While SHAP offers both local and global interpretability, its computational overhead makes it less suitable for real-time security applications. For this reason, our project focuses on LIME as the primary explainability technique.
+
+XAI applications in security have been comprehensively reviewed in recent surveys by Kuppa and Le-Khac (2020) and Bhatt et al. (2020), identifying key challenges and opportunities \cite{kuppa2020, bhatt2020}. These surveys emphasize that while XAI adoption in security is growing, most implementations focus on single domains rather than integrated systems.
+
+\subsection{Multi-Vector Threat Detection and Correlation}
+
+The integration of multiple security data sources for comprehensive threat detection represents an emerging research direction.
+
+\textbf{Security Information and Event Management (SIEM)} systems traditionally aggregate logs from multiple sources but rely primarily on rule-based correlation. Sadighian et al. (2013) reviewed SIEM capabilities and identified significant limitations in handling complex, multi-stage attacks \cite{sadighian2013}. Their analysis motivated research into more intelligent correlation approaches.
+
+\textbf{Advanced persistent threat (APT) detection frameworks} focus on identifying attacks that involve multiple vectors and extended campaigns. Friedberg et al. (2015) developed a framework for detecting APTs by correlating events across network, host, and application layers \cite{friedberg2015}. However, their approach required extensive manual rule definition and struggled with unknown attack patterns.
+
+\textbf{Machine learning-based correlation approaches} have been explored in more recent work. Ghafir et al. (2018) proposed using hidden Markov models to correlate security events across different sources \cite{ghafir2018}. While promising, their approach focused primarily on network-level correlation and did not address email threats.
+
+In a related study, Shukla et al. (2020) developed a multi-source fusion approach for intrusion detection that combined network traffic, system logs, and application logs \cite{shukla2020}. Their work demonstrated improved detection rates but lacked the explainability features needed for practical deployment.
+
+\subsection{Gap Analysis and Project Positioning}
+
+Despite substantial research in individual areas, significant gaps remain in existing literature:
+
+\textbf{Integration Gap:} Most research focuses on single threat vectors. Comprehensive platforms that integrate email and web threat detection with intelligent correlation are rare in both academic literature and commercial products.
+
+\textbf{Explainability Gap:} While XAI techniques have been applied to isolated security problems, integrated security systems with comprehensive explainability across multiple detection mechanisms remain underexplored.
+
+\textbf{Practical Deployment Gap:} Much academic research presents approaches that are difficult to deploy in real-world environments due to performance requirements, complexity, or lack of user interfaces.
+
+This project addresses these gaps by:
+\begin{itemize}
+    \item Integrating email phishing detection and web log analysis in a unified platform
+    \item Incorporating explainability throughout the system, not as an afterthought
+    \item Designing for practical deployment with consideration for performance, usability, and operational workflows
+    \item Providing correlation capabilities that can identify multi-vector attacks
+    \item Offering an intuitive web-based interface for security practitioners
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Summary of Related Research}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Research} & \textbf{Techniques} & \textbf{Purpose / Focus} \\
+\hline
+Bergholz et al. (2010) & Heuristics \& Blacklists & Traditional rule-based phishing detection \\
+\hline
+Abu-Nimeh et al. (2007) & Naive Bayes, SVM, RF & ML approaches for feature-based detection \\
+\hline
+Hiransha et al. (2018) & LSTM Networks & Deep learning with sequential patterns \\
+\hline
+Liu et al. (2008) & Isolation Forest & Anomaly detection for rare instances \\
+\hline
+Ribeiro et al. (2016) & Local Surrogate Models & LIME for individual predictions \\
+\hline
+Ghafir et al. (2018) & Hidden Markov Models & ML-based correlation for network events \\
+\hline
+\end{tabularx}
+\end{table}
+
+\newpage

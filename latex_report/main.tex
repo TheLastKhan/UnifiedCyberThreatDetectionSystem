@@ -1,0 +1,113 @@
+\documentclass[12pt,a4paper]{article}
+
+% ====== PACKAGES ======
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% Graphics and tables
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% Math and symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Colors and hyperlinks
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+
+% Code listings
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red!70!black}
+}
+
+% Headers and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Cyber Threat Detection Platform}
+\lhead{Graduation Project - Final Report}
+\cfoot{\thepage}
+
+% Title spacing
+\usepackage{titlesec}
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+% Paragraph spacing
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Bibliography
+\usepackage{cite}
+
+% ====== DOCUMENT INFO ======
+\title{
+    \vspace{-2cm}
+    \textbf{GRADUATION PROJECT – I}\\
+    \textbf{FINAL REPORT}\\
+    \vspace{1cm}
+    \Large\textbf{CYBER THREAT DETECTION\\DASHBOARD PROTOTYPE}
+}
+
+\author{
+    \textbf{PROJECT TEAM:} 220315099 -- 210315096 -- 220315064\\[1cm]
+    \textbf{PROJECT ADVISOR:} Dr. Gamze TÜRKMEN
+}
+
+\date{2025}
+
+% ====== DOCUMENT ======
+\begin{document}
+
+% Cover page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of Contents
+\tableofcontents
+\newpage
+
+% Include chapters
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/constraints}
+\input{sections/literature}
+\input{sections/standards}
+\input{sections/approaches}
+\input{sections/schedule}
+\input{sections/risk}
+\input{sections/requirements}
+\input{sections/design}
+\input{sections/testing}
+\input{sections/discussion}
+\input{sections/references}
+\input{sections/interdisciplinary}
+\input{sections/sdg}
+
+\end{document}

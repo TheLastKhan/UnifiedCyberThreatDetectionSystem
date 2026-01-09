@@ -1,0 +1,15 @@
+% ====== ABSTRACT ======
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+
+The rapid evolution of cyber threats has created an urgent need for sophisticated security systems that can detect and correlate attacks across multiple platforms. Traditional cybersecurity solutions operate in isolation, analyzing email threats and web traffic separately, failing to identify coordinated multi-vector attacks. This project presents the Unified Cyber Threat Detection Platform, an innovative integrated system that combines email phishing detection with web log analysis using machine learning algorithms and explainable artificial intelligence (XAI) techniques.
+
+The platform employs a Random Forest classifier for email phishing detection, achieving over 90\% accuracy in identifying malicious emails through natural language processing and feature engineering. For web traffic analysis, an Isolation Forest algorithm detects anomalous behavior and attack patterns in server logs with 85\% detection accuracy. The core innovation lies in the correlation engine, which identifies relationships between email-based threats and web traffic anomalies, enabling the detection of coordinated cyber campaigns that would otherwise remain undetected.
+
+Explainability is integrated throughout the system using LIME (Local Interpretable Model-agnostic Explanations) technique, ensuring that security analysts can understand and trust the AI-driven decisions. The platform features an interactive Flask-based web dashboard that provides real-time threat analysis, risk scoring, and actionable security recommendations. The unified risk scoring system combines individual threat assessments with correlation factors, producing a comprehensive 0--100 scale threat metric with four severity levels: LOW, MEDIUM, HIGH, and CRITICAL.
+
+This research addresses critical gaps in current cybersecurity infrastructure by providing a holistic approach to threat detection that is both powerful and interpretable. The system has been designed with scalability and real-world deployment in mind, incorporating best practices in software engineering, machine learning operations, and security operations center (SOC) workflows. The platform represents a significant step toward proactive, intelligent, and transparent cybersecurity solutions.
+
+\textbf{Keywords:} Cyber Threat Detection, Explainable AI, Phishing Detection, Anomaly Detection, Multi-Vector Attack Correlation
+
+\newpage

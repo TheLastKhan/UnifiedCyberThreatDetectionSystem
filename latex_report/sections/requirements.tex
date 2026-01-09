@@ -1,0 +1,236 @@
+% ====== SYSTEM REQUIREMENTS ======
+\section{System Requirements Analysis}
+
+\subsection{Functional Requirements}
+
+\subsubsection{Email Phishing Detection (FR-EMAIL)}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\textbf{ID} & \textbf{Requirement Description} & \textbf{Priority} \\
+\hline
+FR-E01 & System shall analyze email content for phishing indicators & HIGH \\
+FR-E02 & System shall classify emails as Safe or Phishing & HIGH \\
+FR-E03 & System shall provide confidence score (0-100\%) & HIGH \\
+FR-E04 & System shall generate LIME explanations for predictions & HIGH \\
+FR-E05 & System shall identify suspicious keywords and phrases & MEDIUM \\
+FR-E06 & System shall detect URL manipulation patterns & HIGH \\
+FR-E07 & System shall assess sender reputation indicators & MEDIUM \\
+FR-E08 & System shall support batch email analysis & MEDIUM \\
+\hline
+\end{tabularx}
+\caption{Email Detection Functional Requirements}
+\end{table}
+
+\subsubsection{Web Log Analysis (FR-WEB)}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\textbf{ID} & \textbf{Requirement Description} & \textbf{Priority} \\
+\hline
+FR-W01 & System shall parse standard web log formats (Apache, Nginx, IIS) & HIGH \\
+FR-W02 & System shall identify anomalous access patterns & HIGH \\
+FR-W03 & System shall detect known attack patterns & HIGH \\
+FR-W04 & System shall calculate behavioral feature scores & MEDIUM \\
+FR-W05 & System shall assign risk levels (LOW to CRITICAL) & HIGH \\
+FR-W06 & System shall generate security recommendations & MEDIUM \\
+FR-W07 & System shall support real-time log streaming & LOW \\
+\hline
+\end{tabularx}
+\caption{Web Log Analysis Functional Requirements}
+\end{table}
+
+\subsubsection{Correlation Engine (FR-CORR)}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\textbf{ID} & \textbf{Requirement Description} & \textbf{Priority} \\
+\hline
+FR-C01 & System shall correlate email and web threats & HIGH \\
+FR-C02 & System shall calculate correlation confidence scores & HIGH \\
+FR-C03 & System shall identify coordinated attack campaigns & HIGH \\
+FR-C04 & System shall generate unified risk scores & HIGH \\
+FR-C05 & System shall produce comprehensive threat reports & MEDIUM \\
+\hline
+\end{tabularx}
+\caption{Correlation Engine Functional Requirements}
+\end{table}
+
+\subsubsection{Dashboard and API (FR-UI)}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\textbf{ID} & \textbf{Requirement Description} & \textbf{Priority} \\
+\hline
+FR-U01 & System shall provide web-based dashboard interface & HIGH \\
+FR-U02 & System shall display real-time analysis results & HIGH \\
+FR-U03 & System shall visualize threat intelligence & MEDIUM \\
+FR-U04 & System shall provide RESTful API endpoints & HIGH \\
+FR-U05 & System shall support user authentication & MEDIUM \\
+FR-U06 & System shall export reports in multiple formats & LOW \\
+\hline
+\end{tabularx}
+\caption{Dashboard and API Functional Requirements}
+\end{table}
+
+\subsection{Non-Functional Requirements}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|l|X|c|}
+\hline
+\textbf{ID} & \textbf{Category} & \textbf{Requirement} & \textbf{Target} \\
+\hline
+NFR-01 & Performance & Response time for analysis & $<$2 seconds \\
+NFR-02 & Performance & Concurrent user support & 50+ users \\
+NFR-03 & Accuracy & Email classification accuracy & $>$85\% \\
+NFR-04 & Accuracy & Web anomaly detection rate & $>$80\% \\
+NFR-05 & Reliability & System uptime & 99.5\% \\
+NFR-06 & Scalability & Handle log volume increase & 10x baseline \\
+NFR-07 & Security & Input validation & 100\% coverage \\
+NFR-08 & Security & Authentication & JWT tokens \\
+NFR-09 & Usability & Learning curve & $<$30 minutes \\
+NFR-10 & Maintainability & Code test coverage & $>$80\% \\
+\hline
+\end{tabularx}
+\caption{Non-Functional Requirements}
+\end{table}
+
+\subsection{Use Case Model}
+
+\subsubsection{Use Case Diagram Overview}
+
+The system involves two primary actors:
+\begin{itemize}
+    \item \textbf{Security Analyst:} Primary user who performs threat analysis
+    \item \textbf{Administrator:} Manages system configuration and users
+\end{itemize}
+
+\subsubsection{Use Case: Analyze Email for Phishing}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Use Case ID} & UC-01 \\
+\hline
+\textbf{Name} & Analyze Email for Phishing \\
+\hline
+\textbf{Actor} & Security Analyst \\
+\hline
+\textbf{Preconditions} & User is authenticated and on dashboard \\
+\hline
+\textbf{Basic Flow} & 
+1. User navigates to Email Analysis page \\
+& 2. User enters or pastes email content \\
+& 3. User clicks ``Analyze'' button \\
+& 4. System processes email through ML pipeline \\
+& 5. System displays classification result \\
+& 6. System shows LIME explanation \\
+& 7. System presents risk assessment \\
+\hline
+\textbf{Alternative Flow} & 
+A1. Invalid email format: Display error, request re-entry \\
+& A2. Analysis timeout: Show error, offer retry \\
+\hline
+\textbf{Postconditions} & Analysis result stored, visible on dashboard \\
+\hline
+\end{tabularx}
+\caption{Use Case: Analyze Email for Phishing}
+\end{table}
+
+\subsubsection{Use Case: Analyze Web Logs}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Use Case ID} & UC-02 \\
+\hline
+\textbf{Name} & Analyze Web Access Logs \\
+\hline
+\textbf{Actor} & Security Analyst \\
+\hline
+\textbf{Preconditions} & User authenticated, logs available \\
+\hline
+\textbf{Basic Flow} & 
+1. User navigates to Web Log Analysis page \\
+& 2. User uploads or pastes log entries \\
+& 3. User clicks ``Analyze Logs'' button \\
+& 4. System parses and extracts features \\
+& 5. System runs anomaly detection \\
+& 6. System displays results with risk levels \\
+& 7. System shows behavioral analysis \\
+\hline
+\textbf{Postconditions} & Analysis stored, alerts generated if needed \\
+\hline
+\end{tabularx}
+\caption{Use Case: Analyze Web Logs}
+\end{table}
+
+\subsubsection{Use Case: Generate Correlation Report}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Use Case ID} & UC-03 \\
+\hline
+\textbf{Name} & Generate Unified Threat Report \\
+\hline
+\textbf{Actor} & Security Analyst \\
+\hline
+\textbf{Preconditions} & Email and web analyses completed \\
+\hline
+\textbf{Basic Flow} & 
+1. User navigates to Correlation Analysis page \\
+& 2. User selects email and web analyses to correlate \\
+& 3. User clicks ``Generate Report'' \\
+& 4. System runs correlation engine \\
+& 5. System calculates unified risk score \\
+& 6. System displays comprehensive report \\
+& 7. System provides actionable recommendations \\
+\hline
+\textbf{Postconditions} & Unified report stored and accessible \\
+\hline
+\end{tabularx}
+\caption{Use Case: Generate Correlation Report}
+\end{table}
+
+\subsection{Object Model}
+
+The system is designed using object-oriented principles with clear separation of concerns:
+
+\textbf{Core Domain Objects:}
+\begin{itemize}
+    \item \textbf{EmailAnalysis:} Represents email phishing analysis result
+    \item \textbf{WebAnalysis:} Represents web log analysis result
+    \item \textbf{UnifiedReport:} Represents correlated threat assessment
+    \item \textbf{ThreatIndicator:} Abstract base for threat evidence
+    \item \textbf{RiskScore:} Value object for risk calculations
+\end{itemize}
+
+\textbf{Analysis Engine Classes:}
+\begin{itemize}
+    \item \textbf{EmailPhishingDetector:} ML-based email classifier
+    \item \textbf{IsolationForestModel:} Anomaly detection for logs
+    \item \textbf{CorrelationEngine:} Cross-vector threat correlation
+    \item \textbf{LIMEExplainer:} Explanation generator
+\end{itemize}
+
+\textbf{Service Layer Classes:}
+\begin{itemize}
+    \item \textbf{AnalysisService:} Orchestrates analysis workflows
+    \item \textbf{ReportService:} Generates and manages reports
+    \item \textbf{CacheService:} Manages Redis caching
+\end{itemize}
+
+\newpage

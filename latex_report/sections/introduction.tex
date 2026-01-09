@@ -1,0 +1,62 @@
+% ====== INTRODUCTION ======
+\section{Introduction}
+
+\subsection{Background and Motivation}
+
+The cybersecurity landscape has undergone dramatic transformation in recent years, with threat actors employing increasingly sophisticated attack methodologies. According to the SlashNext 2024 Phishing Intelligence Report, phishing attacks have surged by 202\% in the second half of 2024 alone, with attackers combining email phishing campaigns with web-based exploitation techniques \cite{slashnext2024}. Traditional security infrastructure, however, remains fragmented, with email security systems operating independently from web application firewalls and intrusion detection systems. This architectural isolation creates blind spots that sophisticated attackers actively exploit.
+
+The emergence of artificial intelligence in cybersecurity has promised to address some of these challenges, with machine learning models demonstrating impressive capabilities in detecting previously unknown threats. However, the ``black box'' nature of many AI systems has created a paradoxical situation: while these systems can identify threats with high accuracy, security professionals often cannot understand or trust their decisions. This lack of interpretability is a significant barrier, as establishing trust in individual predictions is essential for effective human-AI collaboration in security operations \cite{ribeiro2016}. Consequently, this opacity leads to alert fatigue, missed threats, and reduced confidence in automated security systems.
+
+To achieve this, the proposed platform leverages a hybrid approach combining Random Forest for supervised email classification and Isolation Forest for unsupervised web anomaly detection, ensuring robust coverage against both known and unknown threats.
+
+\subsection{Problem Statement}
+
+This project addresses three fundamental problems in contemporary cybersecurity infrastructure:
+
+\textbf{Problem 1: Isolated Threat Detection Systems.} Current security solutions analyze threats within their specific domains without cross-platform correlation. An email security gateway may detect a phishing attempt, and a web application firewall may log suspicious login attempts, but if these events are related and originate from the same threat actor, the connection remains undiscovered. This isolation prevents the identification of Advanced Persistent Threats (APTs) and coordinated attack campaigns.
+
+\textbf{Problem 2: Black Box AI in Security.} While machine learning models have demonstrated superior detection capabilities compared to rule-based systems, their lack of transparency creates operational challenges. Security analysts need to understand why a particular email was flagged as malicious or why specific web traffic is considered anomalous. Without this understanding, analysts cannot make informed decisions, learn from the system's detections, or improve their security posture effectively.
+
+\textbf{Problem 3: Delayed Threat Response.} The time between initial compromise and detection (dwell time) remains a critical vulnerability in cybersecurity. Traditional reactive approaches wait for attacks to succeed before triggering alerts. By then, attackers may have already exfiltrated data, established persistence, or moved laterally within the network. Proactive threat detection that can identify attack patterns in their early stages is essential for effective cyber defense.
+
+\subsection{Objectives and Scope}
+
+The primary objective of this project is to design, develop, and evaluate an integrated cyber threat detection platform that addresses the aforementioned challenges through the following specific goals:
+
+\textbf{Primary Objectives:}
+\begin{itemize}
+    \item Develop a machine learning-based email phishing detection system with over 85\% accuracy and less than 5\% false positive rate
+    \item Implement a web log analysis system capable of detecting anomalous behavior and known attack patterns with over 80\% detection accuracy
+    \item Create a correlation engine that identifies relationships between email threats and web traffic anomalies with quantifiable confidence scores
+    \item Integrate explainable AI techniques (LIME) throughout the system to provide transparent, interpretable threat assessments
+    \item Design and implement a unified risk scoring system that combines individual threat assessments into a comprehensive 0--100 scale metric
+    \item Develop an interactive web-based dashboard for real-time threat monitoring and analysis
+\end{itemize}
+
+\textbf{Secondary Objectives:}
+\begin{itemize}
+    \item Ensure system scalability and performance suitable for real-world deployment
+    \item Provide actionable security recommendations based on detected threats
+    \item Generate comprehensive threat intelligence reports
+    \item Design the system architecture to accommodate future extensions and additional threat vectors
+\end{itemize}
+
+\textbf{Scope:} This project focuses on the integration of email phishing detection and web log analysis. While the architecture supports future expansion to additional threat vectors (such as network traffic analysis, endpoint detection, or cloud security), the current implementation concentrates on these two domains to demonstrate the feasibility and effectiveness of the unified approach.
+
+\subsection{Contribution and Innovation}
+
+This project makes several significant contributions to the field of cybersecurity and machine learning:
+
+\textbf{Novel Integration Approach:} While email security and web application security are well-established domains individually, their integration into a unified threat detection platform with intelligent correlation represents a novel approach. The system demonstrates that cross-platform threat correlation can significantly improve detection rates for coordinated attacks.
+
+\textbf{Explainability in Security AI:} The integration of LIME technique into a production-oriented security platform addresses the critical challenge of AI transparency in cybersecurity. This contribution enables security professionals to understand, trust, and learn from AI-driven threat detections.
+
+\textbf{Practical Implementation:} Unlike many research projects that remain theoretical, this platform has been designed with real-world deployment considerations, including performance optimization, scalability, and integration with existing security workflows.
+
+\textbf{Open Architecture:} The modular design allows for easy extension to additional threat vectors and integration with external threat intelligence feeds, making it adaptable to evolving threat landscapes.
+
+\subsection{Report Organization}
+
+The remainder of this report is organized as follows: Section 2 discusses realistic constraints and conditions including sustainable development goals, health and environmental impacts, and legal considerations. Section 3 presents a comprehensive literature analysis of existing work in the field. Section 4 describes the engineering standards utilized in the project. Section 5 details the approaches, techniques, and technologies employed. Section 6 outlines risk management strategies. Section 7 presents the project schedule and task allocation. Section 8 provides detailed system requirements analysis including use case and object models.
+
+\newpage

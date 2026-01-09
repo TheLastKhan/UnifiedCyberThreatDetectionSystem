@@ -1,0 +1,264 @@
+% ====== SYSTEM DESIGN ======
+\section{System Design (Final)}
+
+\subsection{Software Architecture}
+
+\subsubsection{Architectural Overview}
+
+The Unified Cyber Threat Detection Platform employs a hybrid architecture combining Request-Response and Event-Driven patterns to balance real-time interactivity with asynchronous processing capabilities.
+
+\textbf{Architecture Characteristics:}
+\begin{itemize}
+    \item \textbf{Request-Response (Synchronous):} Dashboard interactions, API queries, real-time analysis requests
+    \item \textbf{Event-Driven (Asynchronous):} Log ingestion, batch processing, alert notifications, report generation
+\end{itemize}
+
+\textbf{Rationale for Hybrid Approach:}
+\begin{enumerate}
+    \item \textbf{User Experience:} Analysts expect immediate feedback when submitting emails for analysis (synchronous)
+    \item \textbf{Scalability:} Log ingestion can handle variable loads through message queuing (asynchronous)
+    \item \textbf{Reliability:} Event-driven components provide fault tolerance through message persistence
+    \item \textbf{Resource Efficiency:} Heavy computations (BERT inference, report generation) run asynchronously
+\end{enumerate}
+
+\subsubsection{Design Pattern Mapping}
+
+\begin{table}[H]
+\centering
+\caption{Design Patterns in CyberGuard Implementation}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Pattern} & \textbf{Implementation} & \textbf{Rationale} \\
+\hline
+MVC & Dashboard $\rightarrow$ Flask API $\rightarrow$ PostgreSQL/ML & Separation of presentation, logic, and data \\
+\hline
+Event-Driven & Email/Web ingestion $\rightarrow$ Detection $\rightarrow$ Correlation & Decoupled processing pipeline \\
+\hline
+Ensemble & TF-IDF + FastText + BERT voting & Combines multiple models for accuracy \\
+\hline
+Cache-Aside & Redis for dashboard statistics and API responses & Improves response time \\
+\hline
+Facade & UnifiedAnalyzer wraps Email + Web + Correlation & Simplifies API for clients \\
+\hline
+Strategy & Interchangeable ML models per analysis type & Allows algorithm switching \\
+\hline
+Repository & AnalysisRepository, ReportRepository & Abstracts data access \\
+\hline
+Factory & DetectorFactory creates appropriate analyzer & Creates analyzers dynamically \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Why Same Backend for All Analysis?}
+
+Design decision rationale:
+\begin{itemize}
+    \item \textbf{Shared State:} Correlation engine needs access to both email and web analysis results
+    \item \textbf{Consistent Risk Scoring:} Unified formula requires synchronized access to all components
+    \item \textbf{Operational Simplicity:} Single deployment unit simplifies DevOps
+    \item \textbf{Development Efficiency:} Shared utility code, models, and configurations
+\end{itemize}
+
+\subsubsection{Why Model Inference in API?}
+
+Decision to keep ML inference co-located with API:
+\begin{itemize}
+    \item \textbf{Latency:} Network hop elimination for real-time analysis ($<$50ms advantage)
+    \item \textbf{Simplicity:} No need for separate model serving infrastructure (TensorFlow Serving, TorchServe)
+    \item \textbf{Resource Sharing:} Models loaded once, shared across requests
+    \item \textbf{Explanation Generation:} LIME requires direct model access
+\end{itemize}
+
+\subsubsection{Subsystem Decomposition}
+
+The platform is organized into seven logical subsystems:
+
+\textbf{1. Presentation Subsystem}
+\begin{itemize}
+    \item Flask web application
+    \item HTML/CSS/JavaScript dashboard
+    \item Chart.js visualizations
+    \item API endpoints (REST)
+\end{itemize}
+
+\textbf{2. Email Detection Subsystem}
+\begin{itemize}
+    \item TF-IDF vectorizer
+    \item Random Forest classifier
+    \item FastText model
+    \item BERT model
+    \item Feature extraction pipeline
+\end{itemize}
+
+\textbf{3. Web Analysis Subsystem}
+\begin{itemize}
+    \item Log parser (multi-format)
+    \item Feature extractor
+    \item Isolation Forest model
+    \item Attack pattern detector
+\end{itemize}
+
+\textbf{4. Correlation Subsystem}
+\begin{itemize}
+    \item Rule engine
+    \item Pattern matcher
+    \item Confidence calculator
+    \item Campaign identifier
+\end{itemize}
+
+\textbf{5. Data Subsystem}
+\begin{itemize}
+    \item PostgreSQL database
+    \item SQLAlchemy ORM
+    \item Repository pattern implementation
+    \item Data migration scripts
+\end{itemize}
+
+\textbf{6. Integration Subsystem}
+\begin{itemize}
+    \item VirusTotal API client (planned)
+    \item Threat intelligence feeds
+    \item External webhook notifications
+\end{itemize}
+
+\textbf{7. Infrastructure Subsystem}
+\begin{itemize}
+    \item Redis caching layer
+    \item Docker containerization
+    \item Logging and monitoring
+    \item Configuration management
+\end{itemize}
+
+\subsubsection{Component Interaction Flow}
+
+\textbf{Email Analysis Request Flow:}
+\begin{enumerate}
+    \item User submits email via Dashboard (HTTP POST)
+    \item Flask API receives request, validates input
+    \item AnalysisService invokes EmailPhishingDetector
+    \item Detector runs TF-IDF vectorization
+    \item Random Forest classifier produces prediction
+    \item LIMEExplainer generates feature explanations
+    \item Results cached in Redis (1 hour TTL)
+    \item Response returned to Dashboard
+    \item Dashboard updates with visualization
+\end{enumerate}
+
+\textbf{Correlation Analysis Flow:}
+\begin{enumerate}
+    \item User triggers correlation analysis
+    \item CorrelationEngine retrieves email analysis
+    \item CorrelationEngine retrieves web analysis
+    \item Rule engine evaluates correlation rules
+    \item Pattern matcher identifies campaign indicators
+    \item Unified risk score calculated
+    \item Report generated and stored
+    \item Dashboard updated with unified threat view
+\end{enumerate}
+
+\subsection{Hardware Architecture}
+
+The platform is designed for cloud-native deployment with the following recommended configuration:
+
+\textbf{Development Environment:}
+\begin{itemize}
+    \item Single machine with Docker Desktop
+    \item 8GB RAM minimum, 16GB recommended
+    \item 4+ CPU cores for parallel processing
+    \item SSD storage for database performance
+\end{itemize}
+
+\textbf{Production Environment:}
+\begin{itemize}
+    \item Load balancer (AWS ALB, Nginx)
+    \item 2+ API server instances (horizontal scaling)
+    \item PostgreSQL (managed RDS or dedicated)
+    \item Redis cluster for caching
+    \item GPU instance for BERT inference (optional)
+\end{itemize}
+
+\subsection{Persistent Data Management}
+
+\subsubsection{Database Selection and Rationale}
+
+The platform uses a dual-database architecture:
+
+\textbf{PostgreSQL (Primary Database):}
+\begin{itemize}
+    \item ACID compliance for data integrity
+    \item Rich querying for complex reports
+    \item JSON/JSONB for semi-structured data
+    \item SQLAlchemy ORM integration
+\end{itemize}
+
+\textbf{Redis (Caching Layer):}
+\begin{itemize}
+    \item Sub-millisecond operations
+    \item TTL-based cache expiration
+    \item Pub/sub for real-time updates
+    \item Session management
+\end{itemize}
+
+\subsubsection{Core Database Schema}
+
+\begin{lstlisting}
+-- email_analyses table
+CREATE TABLE email_analyses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email_content TEXT NOT NULL,
+    sender VARCHAR(255),
+    subject VARCHAR(500),
+    prediction VARCHAR(20) NOT NULL,
+    confidence_score FLOAT NOT NULL,
+    risk_level VARCHAR(20) NOT NULL,
+    tfidf_score FLOAT,
+    fasttext_score FLOAT,
+    bert_score FLOAT,
+    lime_explanation JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- web_analyses table
+CREATE TABLE web_analyses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ip_address INET NOT NULL,
+    log_entries JSONB NOT NULL,
+    anomaly_score FLOAT NOT NULL,
+    is_anomaly BOOLEAN NOT NULL,
+    risk_level VARCHAR(20) NOT NULL,
+    attack_patterns JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- unified_reports table
+CREATE TABLE unified_reports (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email_analysis_id UUID REFERENCES email_analyses(id),
+    web_analysis_id UUID REFERENCES web_analyses(id),
+    unified_risk_score FLOAT NOT NULL,
+    threat_level VARCHAR(20) NOT NULL,
+    correlation_indicators JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+\subsubsection{Caching Strategy}
+
+\begin{itemize}
+    \item Recent analysis results: 1 hour TTL
+    \item Dashboard statistics: 5 minutes TTL
+    \item VirusTotal API responses: 24 hours TTL
+    \item Session data: 30 minutes (sliding)
+\end{itemize}
+
+\subsubsection{Data Retention Policy}
+
+GDPR and KVKK compliance:
+\begin{itemize}
+    \item Analysis results: 90 days (configurable)
+    \item Audit logs: 1 year
+    \item Aggregated statistics: Indefinite
+    \item User data: Until deletion request
+\end{itemize}
+
+\newpage

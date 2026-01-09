@@ -139,6 +139,13 @@ def load_trained_models():
             bert = get_bert_detector()
             if bert:
                 print("[SUCCESS] BERT model preloaded")
+                # Warm-up inference to compile and cache
+                print("[INFO] Warming up BERT with test inference...")
+                try:
+                    _ = bert.predict("This is a warm-up test email for model initialization.")
+                    print("[SUCCESS] BERT warm-up complete - ready for fast inference")
+                except Exception as warmup_e:
+                    print(f"[WARNING] BERT warm-up failed: {warmup_e}")
             else:
                 print("[WARNING] BERT model not available")
             
@@ -153,6 +160,7 @@ def load_trained_models():
             import traceback
             print(f"[WARNING] Could not preload advanced models: {e}")
             traceback.print_exc()
+
         
         # Return success if at least one model loaded
         if any([_tfidf_vectorizer, _stacking_model, _voting_model]):

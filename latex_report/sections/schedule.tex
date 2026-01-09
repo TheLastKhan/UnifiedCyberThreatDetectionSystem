@@ -1,0 +1,105 @@
+% ====== PROJECT SCHEDULE AND TASK SHARING ======
+\section{Project Schedule and Task Sharing}
+
+The project follows an Agile-inspired iterative development methodology, with work organized into Work Packages (WPs) distributed across team members over a 15-week period.
+
+\subsection{Work Package Schedule}
+
+\begin{longtable}{|p{0.5cm}|p{4cm}|p{2cm}|p{2cm}|p{5cm}|}
+\hline
+\textbf{WP} & \textbf{Work Package Name} & \textbf{Assigned Staff} & \textbf{Time Period} & \textbf{Success Criteria} \\
+\hline
+\endhead
+
+1 & Project Setup and Core Architecture & Hakan & Week 1-2 & System environment fully configured (Python 3.8+, virtual env, Docker). Core classes defined in src/unified\_platform. Initial data loaders and log parsers tested. \\
+\hline
+
+2 & Data Collection and Preprocessing & Hakan & Week 2-3 & Kaggle phishing datasets downloaded (100K+ emails). Data cleaning pipeline functional. Train/test split implemented (70/15/15). \\
+\hline
+
+3 & Email Phishing Detection Module & Hakan & Week 3-5 & TF-IDF vectorization with 5000 features. Random Forest classifier achieving $>$85\% accuracy. Feature extraction pipeline complete. \\
+\hline
+
+4 & Advanced Email Models (FastText, BERT) & Hakan & Week 5-6 & FastText word embeddings trained. DistilBERT fine-tuned on phishing data. Model comparison benchmarks documented. \\
+\hline
+
+5 & Web Log Analysis Module & Hakan & Week 6-7 & Multi-format log parser (Apache, Nginx, IIS). Isolation Forest anomaly detection. 85\% detection rate on test logs. Attack pattern identification. \\
+\hline
+
+6 & Correlation Engine Development & Hakan & Week 7-8 & Cross-vector threat correlation working. Rule engine with 3+ correlation rules. Confidence scoring system. Campaign detection logic. \\
+\hline
+
+7 & XAI Integration (LIME) & Hakan & Week 8-9 & LIME explanations for email predictions. Feature importance visualization. Explainability API endpoints. Human-readable output formatting. \\
+\hline
+
+8 & Unified Risk Scoring System & Hakan & Week 9-10 & Risk formula implemented (Email 40\% + Web 40\% + Correlation 20\%). Threat level classification (LOW/MEDIUM/HIGH/CRITICAL). Score aggregation tested. \\
+\hline
+
+9 & Web Dashboard Development & Hakan & Week 10-11 & Flask application with responsive design. Real-time analysis interface. Chart.js visualizations. Turkish/English language support. \\
+\hline
+
+10 & API Development and Integration & Hakan & Week 11-12 & RESTful API endpoints complete. OpenAPI documentation. Input validation and sanitization. Error handling middleware. \\
+\hline
+
+11 & Database Integration & Hakan & Week 12-13 & PostgreSQL schema implemented. SQLAlchemy ORM integration. Redis caching layer. Data persistence for analyses and reports. \\
+\hline
+
+12 & VirusTotal API Integration & Hakan & Week 13 & VirusTotal API client implemented. Rate limiting (4 req/min) handled. Fallback mechanism for API unavailability. URL/IP reputation enrichment. \\
+\hline
+
+13 & Testing and Validation & Hakan & Week 13-14 & Unit tests with $>$80\% coverage. Integration tests passing. Model performance validation. Security testing (OWASP). \\
+\hline
+
+14 & Performance Optimization & Hakan & Week 14 & Response time optimization ($<$2 seconds). Caching strategy implementation. Database query optimization. Load testing baseline. \\
+\hline
+
+15 & Documentation and Final Report & Hakan & Week 14-15 & Complete technical documentation. User guide and API reference. Final report with all sections. Presentation materials prepared. \\
+\hline
+
+\end{longtable}
+
+\subsection{Timeline Visualization}
+
+\begin{figure}[H]
+\centering
+\begin{verbatim}
+Week    1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+WP1    [=====]
+WP2        [=====]
+WP3            [=========]
+WP4                    [=====]
+WP5                        [=====]
+WP6                            [=====]
+WP7                                [=====]
+WP8                                    [=====]
+WP9                                        [=====]
+WP10                                           [=====]
+WP11                                               [=====]
+WP12                                                   [===]
+WP13                                                   [=====]
+WP14                                                       [===]
+WP15                                                       [=====]
+                                        MIDTERM           FINAL
+                                           |                |
+                                           v                v
+\end{verbatim}
+\caption{Project Gantt Chart (15 Weeks)}
+\end{figure}
+
+\subsection{Key Milestones}
+
+\begin{itemize}
+    \item \textbf{M1 (Week 3):} Data collection and preprocessing complete
+    \item \textbf{M2 (Week 5):} Email detection module operational with TF-IDF
+    \item \textbf{M3 (Week 6):} Advanced models (FastText, BERT) trained
+    \item \textbf{M4 (Week 7):} Web log analysis module complete
+    \item \textbf{M5 (Week 8):} Correlation engine integrated
+    \item \textbf{M6 (Week 9):} LIME explainability functional
+    \item \textbf{M7 (Week 10):} Midterm demo ready
+    \item \textbf{M8 (Week 11):} Dashboard complete
+    \item \textbf{M9 (Week 13):} Database and VirusTotal integration
+    \item \textbf{M10 (Week 14):} Testing complete
+    \item \textbf{M11 (Week 15):} Final submission
+\end{itemize}
+
+\newpage

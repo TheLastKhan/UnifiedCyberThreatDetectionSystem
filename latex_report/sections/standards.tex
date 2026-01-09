@@ -1,0 +1,147 @@
+% ====== STANDARDS TO BE USED ======
+\section{Standards to be Used}
+
+The development of this cybersecurity platform adheres to multiple international and industry standards to ensure quality, security, interoperability, and compliance:
+
+\subsection{Software Engineering Standards}
+
+\textbf{ISO/IEC 12207 -- Systems and Software Engineering:} This standard defines the software development lifecycle processes. Our project follows its guidelines for:
+\begin{itemize}
+    \item Requirements analysis and specification
+    \item Software design and architecture
+    \item Implementation and unit testing
+    \item Integration and system testing
+    \item Operation and maintenance planning
+\end{itemize}
+
+\textbf{ISO/IEC 25010 -- Software Quality Model:} The platform is designed according to ISO/IEC 25010 quality characteristics:
+\begin{itemize}
+    \item \textbf{Functional Suitability:} Meeting stated and implied security detection needs
+    \item \textbf{Performance Efficiency:} Real-time analysis with response times under 2 seconds
+    \item \textbf{Reliability:} High availability and fault tolerance design
+    \item \textbf{Security:} Secure coding practices, input validation, authentication
+    \item \textbf{Maintainability:} Modular architecture, comprehensive documentation
+    \item \textbf{Portability:} Platform-independent Python implementation
+\end{itemize}
+
+\subsection{Cybersecurity Standards}
+
+\textbf{ISO/IEC 27001 -- Information Security Management:} The platform design incorporates ISO 27001 principles for information security:
+\begin{itemize}
+    \item Confidentiality of analyzed data
+    \item Integrity of detection results
+    \item Availability of the service
+    \item Risk assessment methodologies
+    \item Security controls implementation
+\end{itemize}
+
+\textbf{NIST Cybersecurity Framework:} The platform aligns with NIST CSF functions:
+\begin{itemize}
+    \item \textbf{Identify:} Asset discovery, threat intelligence
+    \item \textbf{Protect:} Threat prevention capabilities
+    \item \textbf{Detect:} Real-time threat detection (core functionality)
+    \item \textbf{Respond:} Automated alerts and recommendations
+    \item \textbf{Recover:} Incident reporting and analysis
+\end{itemize}
+
+\textbf{MITRE ATT\&CK Framework:} Attack pattern detection is mapped to MITRE ATT\&CK techniques:
+\begin{itemize}
+    \item Phishing (T1566) detection in email module
+    \item Brute Force (T1110) detection in web module
+    \item Credential Access (TA0006) correlation
+    \item Initial Access (TA0001) through multiple vectors
+\end{itemize}
+
+\subsection{Data Protection and Privacy Standards}
+
+\textbf{GDPR (General Data Protection Regulation):} Technical measures for GDPR compliance include:
+\begin{itemize}
+    \item Data minimization: Only collecting necessary information
+    \item Purpose limitation: Clear definition of processing purposes
+    \item Storage limitation: Configurable data retention policies
+    \item Security of processing: Encryption and access controls
+\end{itemize}
+
+\textbf{ISO/IEC 29100 -- Privacy Framework:} Privacy principles implementation:
+\begin{itemize}
+    \item Consent and choice in data collection
+    \item Purpose legitimacy and specification
+    \item Collection limitation
+    \item Data minimization
+    \item Use, retention, and disclosure limitation
+\end{itemize}
+
+\subsection{Machine Learning and AI Standards}
+
+\textbf{ISO/IEC 22989 -- Artificial Intelligence Concepts and Terminology:} Standard AI terminology is used throughout documentation and implementation.
+
+\textbf{IEEE 7000 -- Model Process for Addressing Ethical Concerns:} Ethical considerations in AI development:
+\begin{itemize}
+    \item Transparency and explainability requirements
+    \item Bias detection and mitigation
+    \item Human oversight mechanisms
+    \item Accountability for AI decisions
+\end{itemize}
+
+\textbf{ISO/IEC 23894 -- Risk Management for AI:} AI-specific risk management:
+\begin{itemize}
+    \item Training data quality assurance
+    \item Model validation and testing
+    \item Monitoring of model performance drift
+    \item Security against adversarial attacks
+\end{itemize}
+
+\subsection{Web Development Standards}
+
+\textbf{W3C Web Standards:}
+\begin{itemize}
+    \item HTML5 for structure
+    \item CSS3 for presentation
+    \item JavaScript (ES6+) for interactivity
+    \item RESTful API design principles
+\end{itemize}
+
+\textbf{OWASP (Open Web Application Security Project):} Security best practices following OWASP Top 10:
+\begin{itemize}
+    \item Injection prevention (SQL, XSS)
+    \item Broken authentication prevention
+    \item Sensitive data exposure protection
+    \item Security misconfiguration prevention
+    \item Input validation and sanitization
+\end{itemize}
+
+\subsection{Logging and Monitoring Standards}
+
+\textbf{RFC 5424 -- Syslog Protocol:} Standardized logging format for system events and alerts.
+
+\textbf{Common Event Format (CEF):} Standardized format for security event logging to enable interoperability with SIEM systems.
+
+\subsection{API and Integration Standards}
+
+\textbf{OpenAPI Specification (formerly Swagger):} RESTful API documentation and design following OpenAPI 3.0 standards.
+
+\textbf{STIX/TAXII:} Future integration capabilities with threat intelligence feeds using STIX/TAXII standards for Structured Threat Information Expression and Trusted Automated Exchange of Intelligence Information.
+
+\subsection{Testing Standards}
+
+\textbf{ISO/IEC/IEEE 29119 -- Software Testing:} Comprehensive testing approach including:
+\begin{itemize}
+    \item Test planning and design
+    \item Unit testing with pytest
+    \item Integration testing
+    \item System testing
+    \item Performance testing
+    \item Security testing
+\end{itemize}
+
+\textbf{IEEE 730 -- Software Quality Assurance:} Quality assurance processes including:
+\begin{itemize}
+    \item Code reviews
+    \item Static code analysis
+    \item Dynamic testing
+    \item Documentation reviews
+\end{itemize}
+
+These standards ensure that the platform is developed according to industry best practices, maintainable, secure, and suitable for professional deployment in organizational environments.
+
+\newpage

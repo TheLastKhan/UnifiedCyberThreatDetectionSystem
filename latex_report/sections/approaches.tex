@@ -1,0 +1,266 @@
+% ====== APPROACHES, TECHNIQUES, AND TECHNOLOGIES ======
+\section{Approaches, Techniques, and Technologies}
+
+\subsection{Overall System Architecture}
+
+The Unified Cyber Threat Detection Platform employs a modular, layered architecture that separates concerns and enables independent development and testing of components. The architecture consists of four primary layers:
+
+\textbf{1. Data Collection Layer:}
+\begin{itemize}
+    \item Email data input interface
+    \item Web log parsing engine
+    \item Data validation and sanitization
+    \item Support for multiple log formats (Apache, Nginx, IIS)
+\end{itemize}
+
+\textbf{2. Analysis Layer:}
+\begin{itemize}
+    \item Email Phishing Detection Module
+    \item Web Log Analysis Module
+    \item Feature extraction engines
+    \item Machine learning model inference
+\end{itemize}
+
+\textbf{3. Integration Layer:}
+\begin{itemize}
+    \item Correlation Engine
+    \item Unified Risk Scoring System
+    \item Threat Intelligence Aggregation
+    \item Report Generation
+\end{itemize}
+
+\textbf{4. Presentation Layer:}
+\begin{itemize}
+    \item Flask-based Web Application
+    \item RESTful API
+    \item Interactive Dashboard
+    \item Real-time visualization
+\end{itemize}
+
+\subsection{Email Phishing Detection Module}
+
+\subsubsection{Machine Learning Algorithm: Random Forest Classifier}
+
+The email module employs a Random Forest ensemble learning algorithm for binary classification (Safe vs. Phishing). Random Forest was selected over alternatives for several reasons:
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item \textbf{Robustness:} Resistant to overfitting through ensemble averaging
+    \item \textbf{Feature Importance:} Provides interpretable feature rankings
+    \item \textbf{Performance:} Excellent accuracy-speed trade-off for real-time analysis
+    \item \textbf{Flexibility:} Handles both numerical and categorical features
+    \item \textbf{No Feature Scaling Required:} Simplifies preprocessing pipeline
+\end{itemize}
+
+\textbf{Configuration:}
+\begin{lstlisting}[language=Python]
+RandomForestClassifier(
+    n_estimators=100,        # Number of decision trees
+    max_depth=None,          # Trees grown to maximum depth
+    min_samples_split=2,     # Minimum samples to split node
+    min_samples_leaf=1,      # Minimum samples in leaf
+    random_state=42          # Reproducibility
+)
+\end{lstlisting}
+
+\subsubsection{Feature Engineering Pipeline}
+
+The system extracts 5,015 features from each email through a multi-stage pipeline:
+
+\textbf{Stage 1: Custom Features (15 features)}
+\begin{itemize}
+    \item \textbf{Structural Features:} Email length, word count, sentence count, average word length
+    \item \textbf{Character-Based Features:} Capital letter ratio, digit ratio, special character ratio
+    \item \textbf{Content-Based Features:} Exclamation marks, question marks, dollar signs
+    \item \textbf{Keyword Features:} Urgent words, financial terms, personal information words
+    \item \textbf{URL Features:} URL count, suspicious patterns, shorteners
+    \item \textbf{Sender Features:} Free email provider detection, sender reputation
+\end{itemize}
+
+\textbf{Stage 2: TF-IDF Vectorization (5,000 features)}
+\begin{lstlisting}[language=Python]
+TfidfVectorizer(
+    max_features=5000,       # Top 5000 terms
+    stop_words='english',    # Remove common words
+    ngram_range=(1, 2),      # Unigrams and bigrams
+    min_df=2,                # Minimum document frequency
+    max_df=0.95              # Maximum document frequency
+)
+\end{lstlisting}
+
+\subsection{Web Log Analysis Module}
+
+\subsubsection{Machine Learning Algorithm: Isolation Forest}
+
+The web module uses Isolation Forest, an unsupervised anomaly detection algorithm particularly suited for identifying rare events in high-dimensional data.
+
+\textbf{Algorithm Principles:}
+\begin{itemize}
+    \item Anomalies are rare and different from normal instances
+    \item Anomalies are easier to isolate than normal points
+    \item Requires fewer splits to isolate anomalies in decision trees
+\end{itemize}
+
+\textbf{Configuration:}
+\begin{lstlisting}[language=Python]
+IsolationForest(
+    n_estimators=100,        # Number of isolation trees
+    contamination=0.1,       # Expected anomaly proportion
+    max_samples='auto',      # Automatic sample size
+    max_features=1.0,        # Use all features
+    random_state=42          # Reproducibility
+)
+\end{lstlisting}
+
+\subsubsection{Behavioral Feature Extraction (20+ features)}
+
+\begin{itemize}
+    \item \textbf{Volume Metrics:} Request count, requests per minute, unique paths, path diversity
+    \item \textbf{Temporal Analysis:} Average time between requests, time variance
+    \item \textbf{Error Pattern Analysis:} Error rate, client errors, unauthorized attempts
+    \item \textbf{Method Distribution:} GET/POST/PUT/DELETE ratios
+    \item \textbf{User Agent Analysis:} Unique user agents, bot patterns
+    \item \textbf{Path Analysis:} Admin path attempts, SQL injection patterns, directory traversal
+    \item \textbf{IP Reputation:} Private IP detection, geographic risk scoring
+\end{itemize}
+
+\subsection{Explainable AI Integration}
+
+\subsubsection{LIME (Local Interpretable Model-agnostic Explanations)}
+
+LIME generates explanations by:
+\begin{enumerate}
+    \item Perturbing the input instance
+    \item Getting predictions for perturbed samples
+    \item Weighting samples by proximity to original
+    \item Training a simple interpretable model (linear regression)
+    \item Using linear model coefficients as feature importance
+\end{enumerate}
+
+\begin{lstlisting}[language=Python]
+from lime.lime_tabular import LimeTabularExplainer
+
+explainer = LimeTabularExplainer(
+    training_data=X_train,
+    feature_names=feature_names,
+    class_names=['Safe', 'Phishing'],
+    mode='classification',
+    discretize_continuous=True
+)
+\end{lstlisting}
+
+
+\subsection{Correlation Engine}
+
+The correlation engine identifies relationships between email and web threats using multiple approaches:
+
+\textbf{Rule-Based Correlation:}
+\begin{enumerate}
+    \item \textbf{High-Risk Coordination Rule:} Triggers when both email risk $>$ 70\% AND web risk = HIGH\\
+    Risk amplification: 1.8x, Confidence boost: +30\%
+    \item \textbf{IP-Based Campaign Rule:} Triggers when same IP address involved in both threats\\
+    Risk amplification: 2.0x, Confidence boost: +40\%
+    \item \textbf{Pattern Similarity Rule:} Triggers when similar attack patterns detected within 1-hour window\\
+    Risk amplification: 1.5x, Confidence boost: +20\%
+\end{enumerate}
+
+\subsection{Unified Risk Scoring System}
+
+\textbf{Risk Score Calculation Formula:}
+\begin{equation}
+\text{Unified Risk Score} = \min(100, (E_c + W_c + C_b) \times R_a)
+\end{equation}
+
+Where:
+\begin{itemize}
+    \item $E_c = \min(40, \text{Phishing\_Probability} \times 0.4)$ (Email Component)
+    \item $W_c = \text{Risk\_Level\_Score}$ (LOW=5, MEDIUM=15, HIGH=30, CRITICAL=40)
+    \item $C_b = \text{Confidence\_Score} \times 20$ (Correlation Bonus)
+    \item $R_a = $ Product of all triggered rule multipliers (Risk Amplification)
+\end{itemize}
+
+\textbf{Threat Level Classification:}
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Risk Score} & \textbf{Threat Level} & \textbf{Priority} & \textbf{Typical Actions} \\
+\hline
+0--40 & LOW & Routine & Normal monitoring \\
+40--60 & MEDIUM & Elevated & Increased attention \\
+60--80 & HIGH & Urgent & Immediate investigation \\
+80--100 & CRITICAL & Emergency & Emergency response protocol \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Model Comparison: TF-IDF vs FastText vs BERT}
+
+As requested during the midterm evaluation, we conducted a comprehensive comparison of three text classification approaches for email phishing detection.
+
+\textbf{Background and Motivation:}
+During the midterm presentation, the evaluation committee questioned the reliance on TF-IDF as the primary vectorization method. To address this, we implemented and evaluated two additional approaches: FastText (word embeddings with character n-grams) and BERT (transformer-based contextual embeddings).
+
+\begin{table}[H]
+\centering
+\caption{Model Performance Comparison}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Metric} & \textbf{TF-IDF + RF} & \textbf{FastText} & \textbf{BERT} & \textbf{Winner} \\
+\hline
+Accuracy & 89.0\% & 90.5\% & 96.2\% & BERT \\
+Precision & 88.0\% & 89.0\% & 95.0\% & BERT \\
+Recall & 91.0\% & 92.0\% & 97.0\% & BERT \\
+F1-Score & 0.895 & 0.905 & 0.960 & BERT \\
+ROC-AUC & 0.940 & 0.952 & 0.985 & BERT \\
+\hline
+Inference Time & 0.5ms & 1.5ms & 75ms & TF-IDF \\
+Training Time & 10.5 sec & 2 min 15 sec & 15--20 min & TF-IDF \\
+Model Size & 7.2 MB & 12 MB & 268 MB & TF-IDF \\
+LIME Compatibility & Excellent & Good & Partial & TF-IDF \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item BERT achieves the highest accuracy (96.2\%) due to its contextual understanding of language, but at 150x slower inference than TF-IDF.
+    \item FastText provides balanced performance (90.5\% accuracy) with reasonable speed (1.5ms).
+    \item TF-IDF remains in production dashboard due to faster inference and excellent LIME compatibility.
+\end{enumerate}
+
+\textbf{Hybrid Ensemble Approach:}
+\begin{equation}
+\text{Ensemble Score} = (\text{BERT} \times 0.5) + (\text{FastText} \times 0.3) + (\text{TF-IDF} \times 0.2)
+\end{equation}
+
+This ensemble approach achieves 97.1\% accuracy on the test set, outperforming any individual model.
+
+\subsection{Technology Stack}
+
+\textbf{Backend Technologies:}
+\begin{itemize}
+    \item \textbf{Python 3.8+:} Core language for ML ecosystem
+    \item \textbf{scikit-learn 1.1.0:} Random Forest, Isolation Forest
+    \item \textbf{LIME 0.2.0.1:} Local explanations
+    \item \textbf{Flask 2.2.0:} REST API framework
+    \item \textbf{PostgreSQL:} Relational database
+    \item \textbf{Redis:} Caching layer
+\end{itemize}
+
+\textbf{Frontend Technologies:}
+\begin{itemize}
+    \item HTML5, CSS3, JavaScript ES6+
+    \item Chart.js for visualizations
+    \item Responsive design
+\end{itemize}
+
+\textbf{DevOps:}
+\begin{itemize}
+    \item Docker for containerization
+    \item Docker Compose for orchestration
+    \item Git/GitHub for version control
+    \item pytest for testing
+\end{itemize}
+
+\newpage

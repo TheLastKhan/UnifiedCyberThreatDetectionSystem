@@ -27,23 +27,11 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 30s
     
-  # PostgreSQL Database
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['db:5432']
-        labels:
-          service: 'database'
-          component: 'postgresql'
-    scrape_interval: 60s
-    
-  # Redis Cache
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['cache:6379']
-        labels:
-          service: 'cache'
-          component: 'redis'
-    scrape_interval: 30s
+  # Note: PostgreSQL and Redis don't expose /metrics endpoints natively
+  # To monitor them, you would need to add:
+  # - postgres_exporter for PostgreSQL
+  # - redis_exporter for Redis
+  # These are not included in the current setup
     
   # Prometheus self-monitoring
   - job_name: 'prometheus'

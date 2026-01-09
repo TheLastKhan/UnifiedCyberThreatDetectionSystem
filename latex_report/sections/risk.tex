@@ -1,0 +1,112 @@
+% ====== RISK MANAGEMENT ======
+\section{Risk Management}
+
+Effective risk management is essential for the successful completion of this project. The following section identifies potential risks, assesses their probability and impact, and outlines mitigation strategies.
+
+\subsection{Risk Assessment Matrix}
+
+\begin{longtable}{|p{0.5cm}|p{3.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{5cm}|}
+\hline
+\textbf{ID} & \textbf{Risk Description} & \textbf{Prob.} & \textbf{Impact} & \textbf{Score} & \textbf{Mitigation Strategy} \\
+\hline
+\endhead
+
+R1 & Insufficient training data quality & Medium & High & H & Collect data from multiple sources (Kaggle, synthetic generation). Implement data augmentation. \\
+\hline
+
+R2 & Model performance below target & Medium & High & H & Hyperparameter tuning pipeline. Alternative algorithms ready (SVM, XGBoost). Ensemble methods. \\
+\hline
+
+R3 & Integration complexity between modules & High & Medium & H & Modular architecture design. Clear API contracts. Incremental integration testing. \\
+\hline
+
+R4 & Explainability computation overhead & Medium & Medium & M & Caching for explanations. Lazy computation. On-demand explanation generation. \\
+\hline
+
+R5 & Security vulnerabilities in web app & Medium & High & H & OWASP guidelines adherence. Input validation. Security testing. Code review. \\
+\hline
+
+R6 & Performance bottlenecks in real-time analysis & Medium & High & H & Profiling and optimization. Async processing. Redis caching layer. \\
+\hline
+
+R7 & Scope creep & High & Medium & H & Clear requirements documentation. Change control process. Prioritized feature backlog. \\
+\hline
+
+R8 & Team member unavailability & Low & High & M & Documentation for knowledge transfer. Modular task assignment. \\
+\hline
+
+R9 & Third-party library compatibility & Medium & Medium & M & Dependency version pinning. Virtual environments. Regular dependency updates. \\
+\hline
+
+R10 & Concept drift in prod deployment & Medium & Medium & M & Model monitoring infrastructure. Retraining pipeline. Performance alerts. \\
+\hline
+
+\end{longtable}
+
+\subsection{Risk Scoring Methodology}
+
+Risk scores are calculated as:
+\begin{equation}
+\text{Risk Score} = \text{Probability} \times \text{Impact}
+\end{equation}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+& \multicolumn{4}{c|}{\textbf{Impact}} \\
+\cline{2-5}
+\textbf{Probability} & Low & Medium & High & Critical \\
+\hline
+High & M & H & H & C \\
+Medium & L & M & H & H \\
+Low & L & L & M & H \\
+\hline
+\end{tabular}
+\caption{Risk Matrix (L=Low, M=Medium, H=High, C=Critical)}
+\end{table}
+
+\subsection{Monitored Risks and Status}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|}
+\hline
+\textbf{Risk ID} & \textbf{Current Status} & \textbf{Action Taken} & \textbf{Outcome} \\
+\hline
+R1 & Mitigated & Multiple datasets collected & 100K+ labeled emails \\
+R2 & Mitigated & RF achieved 89\% accuracy & Target met \\
+R3 & Ongoing & API contracts defined & Integration smooth \\
+R4 & Mitigated & Caching implemented & $<$2s response \\
+R5 & Ongoing & Security review planned & Tests passing \\
+\hline
+\end{tabular}
+\caption{Risk Monitoring Summary}
+\end{table}
+
+\subsection{Contingency Planning}
+
+For high-impact risks, the following contingency plans are in place:
+
+\textbf{Model Performance Failure (R2):}
+\begin{itemize}
+    \item Fallback to simpler rule-based classification
+    \item Pre-trained BERT model as backup
+    \item Ensemble voting to improve accuracy
+\end{itemize}
+
+\textbf{Security Vulnerability Discovery (R5):}
+\begin{itemize}
+    \item Immediate patch deployment process
+    \item Incident response plan documented
+    \item User notification protocol
+\end{itemize}
+
+\textbf{System Performance Issues (R6):}
+\begin{itemize}
+    \item Load balancing across workers
+    \item Feature reduction for real-time path
+    \item Batch processing option for complex analysis
+\end{itemize}
+
+\newpage
